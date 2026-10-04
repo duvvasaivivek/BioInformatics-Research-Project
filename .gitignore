@@ -1,3 +1,18 @@
-/graphs
-/images
-/venv
+# Python environment and cache
+venv/
+__pycache__/
+*.pyc
+
+# Machine Learning models
+*.pt
+*.pth
+*.h5
+
+# Project specific outputs (ensures images don't get uploaded)
+Initial Model/images/
+images/
+graphs/
+
+# OS files
+.DS_Store
+Thumbs.db
