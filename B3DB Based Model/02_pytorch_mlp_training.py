@@ -138,13 +138,12 @@ def main():
             epochs_no_improve += 1
             is_best = False
             
-        if epoch % 2 == 0 or is_best:
-            best_marker = " (Best!)" if is_best else ""
-            print(f"Epoch {epoch:03d} | Train Loss: {train_loss:.4f} | Test Loss: {test_loss:.4f} | Acc: {acc:.4f}{best_marker}")
+        best_marker = " (Best!)" if is_best else ""
+        print(f"Epoch {epoch:03d} | Train Loss: {train_loss:.4f} | Test Loss: {test_loss:.4f} | Acc: {acc:.4f}{best_marker}")
             
         if epochs_no_improve >= PATIENCE:
-            print(f"\nEarly stopping triggered at epoch {epoch}! No improvement in test loss for {PATIENCE} epochs.")
-            break
+            pass # print(f"\nEarly stopping triggered at epoch {epoch}! No improvement in test loss for {PATIENCE} epochs.")
+            # break
 
     print("\nTraining Complete! Loading best model weights...")
     # Roll back to the best model (e.g. at epoch 10) instead of the overfitted model at epoch 50
