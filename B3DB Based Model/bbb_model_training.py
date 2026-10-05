@@ -17,7 +17,7 @@ def print_best_callback(study, trial):
 
 def load_data():
     print("Loading dataset...")
-    df = pd.read_csv("processed_b3db_data_advanced.csv")
+    df = pd.read_csv("data/processed_b3db_data_advanced.csv")
     X = df.drop(columns=['SMILES', 'Label'])
     y = df['Label']
     return train_test_split(X, y, test_size=0.2, random_state=42)
@@ -106,7 +106,7 @@ def main():
     print(f"Recall:    {recall_score(y_test, y_pred):.4f}")
     print(f"F1-Score:  {f1_score(y_test, y_pred):.4f}")
     
-    save_path = "bbb_xgboost_optuna_best.json"
+    save_path = "models/bbb_xgboost_optuna_best.json"
     final_model.save_model(save_path)
     print(f"\nSaved best tuned model to {save_path}")
 

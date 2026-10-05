@@ -81,7 +81,7 @@ def main():
     # Load Graph Data
     print("Loading Graph Dataset (this may take a few seconds)...")
     # Setting weights_only=False is required in PyTorch 2.6+ to load custom objects like PyG Data
-    graph_data_list = torch.load("b3db_graphs.pt", weights_only=False)
+    graph_data_list = torch.load("data/b3db_graphs.pt", weights_only=False)
     
     # Train/Test Split
     train_data, test_data = train_test_split(graph_data_list, test_size=0.2, random_state=42)
@@ -184,7 +184,7 @@ def main():
     print(f"Recall:    {rec:.4f}")
     print(f"F1-Score:  {f1:.4f}")
     
-    save_path = "bbb_gnn_model.pth"
+    save_path = "models/bbb_gnn_model.pth"
     torch.save(model.state_dict(), save_path)
     print(f"\nModel saved to {save_path}")
 

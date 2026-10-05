@@ -71,7 +71,7 @@ def main():
     PATIENCE = 10 # Stop if test loss doesn't improve for 10 epochs
 
     # Pointing to the new dataset with the 2D descriptors!
-    dataset = BBBDataset("processed_b3db_data_advanced.csv")
+    dataset = BBBDataset("data/processed_b3db_data_advanced.csv")
     train_size = int(0.8 * len(dataset))
     test_size = len(dataset) - train_size
     train_dataset, test_dataset = random_split(dataset, [train_size, test_size], generator=torch.Generator().manual_seed(42))
@@ -168,7 +168,7 @@ def main():
     print(f"Recall:    {rec:.4f}")
     print(f"F1-Score:  {f1:.4f}")
     
-    save_path = "bbb_mlp_model_advanced.pth"
+    save_path = "models/bbb_mlp_model_advanced.pth"
     torch.save(model.state_dict(), save_path)
     print(f"\nModel saved to {save_path}")
 

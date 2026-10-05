@@ -8,8 +8,8 @@ from torch_geometric.data import Data
 # Suppress RDKit warnings
 RDLogger.DisableLog('rdApp.*')
 
-DATA_PATH = "B3DB_classification.tsv"
-OUTPUT_PATH = "b3db_graphs.pt"
+DATA_PATH = "data/B3DB_classification.tsv"
+OUTPUT_PATH = "data/b3db_graphs.pt"
 
 # Helper function to one-hot encode categorical features
 def one_hot_encoding(value, choices):

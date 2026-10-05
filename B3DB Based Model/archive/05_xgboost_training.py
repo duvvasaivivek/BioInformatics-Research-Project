@@ -6,7 +6,7 @@ import time
 
 def main():
     print("Loading data from processed_b3db_data_advanced.csv...")
-    df = pd.read_csv("processed_b3db_data_advanced.csv")
+    df = pd.read_csv("data/processed_b3db_data_advanced.csv")
     
     # Drop SMILES string and separate the target Label
     X = df.drop(columns=['SMILES', 'Label'])
@@ -63,7 +63,7 @@ def main():
     print(f"Recall:    {rec:.4f}")
     print(f"F1-Score:  {f1:.4f}")
     
-    save_path = "bbb_xgboost_model.json"
+    save_path = "models/bbb_xgboost_model.json"
     model.save_model(save_path)
     print(f"\nModel saved to {save_path}")
 
