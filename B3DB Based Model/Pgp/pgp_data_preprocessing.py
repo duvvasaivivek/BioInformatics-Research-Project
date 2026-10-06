@@ -14,7 +14,7 @@ RDLogger.DisableLog('rdApp.*')
 def process_pgp_data():
     print("Loading P-glycoprotein (P-gp) dataset...")
     # Read the downloaded TDC tab dataset
-    df = pd.read_csv('data/pgp_broccatelli.tab', sep='\t')
+    df = pd.read_csv('../data/pgp_broccatelli.tab', sep='\t')
     
     print(f"\nLoaded {len(df)} molecules.")
     print("Extracting 2D Morgan Fingerprints and 3D Shape Descriptors (This may take a few minutes)...")
@@ -79,7 +79,7 @@ def process_pgp_data():
         'means': scaler.mean_.tolist(),
         'stds': scaler.scale_.tolist()
     }
-    with open('models/pgp_scaler_metadata.json', 'w') as f:
+    with open('../models/pgp_scaler_metadata.json', 'w') as f:
         json.dump(metadata, f)
     print("Saved scaler metadata to models/pgp_scaler_metadata.json")
     
@@ -96,7 +96,7 @@ def process_pgp_data():
     
     df_final = pd.concat([df_valid, fp_df, desc_df], axis=1)
     
-    output_path = "data/processed_pgp_data.csv"
+    output_path = "../data/processed_pgp_data.csv"
     df_final.to_csv(output_path, index=False)
     print(f"\nFeature engineering complete! Saved {df_final.shape[0]} molecules to {output_path}")
 

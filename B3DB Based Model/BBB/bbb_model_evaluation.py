@@ -8,14 +8,14 @@ import seaborn as sns
 import os
 
 print("Loading dataset and model...")
-df = pd.read_csv("data/processed_pgp_data.csv")
+df = pd.read_csv("../data/processed_b3db_data_advanced.csv")
 X = df.drop(columns=['SMILES', 'Label'])
 y = df['Label']
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 model = xgb.XGBClassifier()
-model.load_model("models/pgp_xgboost_model.json")
+model.load_model("../models/bbb_xgboost_optuna_best.json")
 
 print("Making predictions...")
 preds = model.predict(X_test)
@@ -36,13 +36,13 @@ os.makedirs(out_dir, exist_ok=True)
 plt.figure(figsize=(6,5))
 cm = confusion_matrix(y_test, preds)
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
-            xticklabels=['Non-Substrate', 'Substrate'],
-            yticklabels=['Non-Substrate', 'Substrate'])
-plt.title('P-gp 3D Model Confusion Matrix (Test Set)')
+            xticklabels=['BBB- (Non-Permeable)', 'BBB+ (Permeable)'],
+            yticklabels=['BBB- (Non-Permeable)', 'BBB+ (Permeable)'])
+plt.title('BBB Permeability Confusion Matrix (Test Set)')
 plt.ylabel('True Label')
 plt.xlabel('Predicted Label')
 plt.tight_layout()
-plt.savefig(os.path.join(out_dir, "confusion_matrix.png"), dpi=300)
+plt.savefig(os.path.join(out_dir, "bbb_confusion_matrix.png"), dpi=300)
 plt.close()
 
 # 2. ROC Curve
@@ -54,10 +54,10 @@ plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Receiver Operating Characteristic (ROC)')
+plt.title('Receiver Operating Characteristic (ROC) - BBB Permeability')
 plt.legend(loc="lower right")
 plt.tight_layout()
-plt.savefig(os.path.join(out_dir, "roc_curve.png"), dpi=300)
+plt.savefig(os.path.join(out_dir, "bbb_roc_curve.png"), dpi=300)
 plt.close()
 
-print("Saved plots successfully!")
+print("Saved BBB plots successfully!")

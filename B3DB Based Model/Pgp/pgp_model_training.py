@@ -6,7 +6,7 @@ import json
 
 def train_pgp_model():
     print("Loading P-glycoprotein dataset...")
-    df = pd.read_csv("data/processed_pgp_data.csv")
+    df = pd.read_csv("../data/processed_pgp_data.csv")
     
     # Separate features and target
     X = df.drop(columns=['SMILES', 'Label'])
@@ -52,7 +52,7 @@ def train_pgp_model():
     print(f"F1-Score:  {f1:.4f}")
     
     # Save the model
-    model_path = "models/pgp_xgboost_model.json"
+    model_path = "../models/pgp_xgboost_model.json"
     model.save_model(model_path)
     print(f"\nModel saved to {model_path}")
     
