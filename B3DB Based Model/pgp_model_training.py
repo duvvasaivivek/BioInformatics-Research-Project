@@ -56,37 +56,7 @@ def train_pgp_model():
     model.save_model(model_path)
     print(f"\nModel saved to {model_path}")
     
-    # Save the StandardScaler means/stds for inference script
-    # We can calculate them from the original continuous columns
-    import numpy as np
-    from rdkit import Chem
-    from rdkit.Chem import Descriptors
-    
-    df_raw = pd.read_csv('data/pgp_broccatelli.tab', sep='\t')
-    descriptors = []
-    for smiles in df_raw['Drug']:
-        mol = Chem.MolFromSmiles(smiles)
-        if mol:
-            descriptors.append([
-                Descriptors.MolWt(mol),
-                Descriptors.MolLogP(mol),
-                Descriptors.TPSA(mol),
-                Descriptors.NumHDonors(mol),
-                Descriptors.NumHAcceptors(mol),
-                Descriptors.NumRotatableBonds(mol)
-            ])
-    descriptors = np.array(descriptors)
-    
-    pgp_means = np.mean(descriptors, axis=0).tolist()
-    pgp_stds = np.std(descriptors, axis=0).tolist()
-    
-    metadata = {
-        'means': pgp_means,
-        'stds': pgp_stds
-    }
-    with open('models/pgp_scaler_metadata.json', 'w') as f:
-        json.dump(metadata, f)
-    print("Saved P-gp scaler metadata to pgp_scaler_metadata.json")
+
 
 if __name__ == "__main__":
     train_pgp_model()

@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 from rdkit import Chem
-from rdkit.Chem import AllChem, Descriptors
+from rdkit.Chem import AllChem, Descriptors, Descriptors3D
 from rdkit import RDLogger
 import warnings
 import json
@@ -37,16 +37,14 @@ def load_scaler_metadata(file_path):
         print(f"[ERROR] Could not load {file_path}: {e}")
         return None, None
 
-def extract_features(smiles):
+def extract_features_bbb(smiles):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         return None
         
-    # 1. Morgan Fingerprint (2048 bits, radius 2)
     fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
     fp_array = np.array(list(fp.ToBitString())).astype(int)
     
-    # 2. Continuous Descriptors (6 key physicochemical properties)
     mol_wt = Descriptors.MolWt(mol)
     logp = Descriptors.MolLogP(mol)
     tpsa = Descriptors.TPSA(mol)
@@ -56,7 +54,42 @@ def extract_features(smiles):
     
     return fp_array, [mol_wt, logp, tpsa, h_donors, h_acceptors, rot_bonds]
 
-def prepare_dataframe(fp_array, continuous_features, means, stds):
+def extract_features_pgp(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return None
+        
+    mol = Chem.AddHs(mol)
+    params = AllChem.ETKDGv3()
+    params.randomSeed = 42
+    res = AllChem.EmbedMolecule(mol, params)
+    
+    if res != 0:
+        res = AllChem.EmbedMolecule(mol, randomSeed=42, maxAttempts=100)
+        
+    if res != 0:
+        return None # Embedding failed, cannot calculate 3D descriptors
+        
+    fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
+    fp_array = np.array(list(fp.ToBitString())).astype(int)
+    
+    desc = [
+        Descriptors.MolWt(mol),
+        Descriptors.MolLogP(mol),
+        Descriptors.TPSA(mol),
+        Descriptors.NumHDonors(mol),
+        Descriptors.NumHAcceptors(mol),
+        Descriptors.NumRotatableBonds(mol),
+        Descriptors3D.RadiusOfGyration(mol),
+        Descriptors3D.Asphericity(mol),
+        Descriptors3D.Eccentricity(mol),
+        Descriptors3D.SpherocityIndex(mol),
+        Descriptors3D.NPR1(mol),
+        Descriptors3D.NPR2(mol)
+    ]
+    return fp_array, desc
+
+def prepare_dataframe(fp_array, continuous_features, means, stds, is_pgp=False):
     # Standardize: (Value - Mean) / Std
     scaled = [(val - means[i]) / stds[i] for i, val in enumerate(continuous_features)]
     
@@ -64,13 +97,16 @@ def prepare_dataframe(fp_array, continuous_features, means, stds):
     for i in range(2048):
         features[f'FP_{i}'] = fp_array[i]
         
-    features['MolWt'] = scaled[0]
-    features['LogP'] = scaled[1]
-    features['TPSA'] = scaled[2]
-    features['HDonors'] = scaled[3]
-    features['HAcceptors'] = scaled[4]
-    features['RotBonds'] = scaled[5]
     
+    if is_pgp:
+        desc_names = ['MolWt', 'LogP', 'TPSA', 'HDonors', 'HAcceptors', 'RotBonds',
+                      'RadiusOfGyration', 'Asphericity', 'Eccentricity', 'SpherocityIndex', 'NPR1', 'NPR2']
+    else:
+        desc_names = ['MolWt', 'LogP', 'TPSA', 'HDonors', 'HAcceptors', 'RotBonds']
+        
+    for i, name in enumerate(desc_names):
+        features[name] = scaled[i]
+        
     return pd.DataFrame([features])
 
 def main():
@@ -110,20 +146,27 @@ def main():
             if not user_input:
                 continue
                 
-            features_tuple = extract_features(user_input)
-            if features_tuple is None:
-                print(f"[ERROR] Invalid SMILES string: {user_input}")
-                continue
+            # Extract Features for BBB (2D) and P-gp (3D)
+            bbb_feats = extract_features_bbb(user_input)
+            pgp_feats = extract_features_pgp(user_input)
             
-            fp_array, continuous_desc = features_tuple
+            if bbb_feats is None:
+                print(f"{Colors.RED}[ERROR] Invalid SMILES string: {user_input}{Colors.ENDC}")
+                continue
+            if pgp_feats is None:
+                print(f"{Colors.RED}[ERROR] Could not generate 3D conformer for: {user_input}{Colors.ENDC}")
+                continue
+                
+            bbb_fp, bbb_desc = bbb_feats
+            pgp_fp, pgp_desc = pgp_feats
             
             # Predict BBB Permeability
-            bbb_df = prepare_dataframe(fp_array, continuous_desc, bbb_means, bbb_stds)
+            bbb_df = prepare_dataframe(bbb_fp, bbb_desc, bbb_means, bbb_stds, is_pgp=False)
             bbb_prob = bbb_model.predict_proba(bbb_df)[0][1]
             bbb_pred = int(bbb_prob > 0.5)
             
             # Predict P-gp Substrate
-            pgp_df = prepare_dataframe(fp_array, continuous_desc, pgp_means, pgp_stds)
+            pgp_df = prepare_dataframe(pgp_fp, pgp_desc, pgp_means, pgp_stds, is_pgp=True)
             pgp_prob = pgp_model.predict_proba(pgp_df)[0][1]
             pgp_pred = int(pgp_prob > 0.5)
             
