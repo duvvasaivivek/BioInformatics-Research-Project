@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn.functional as F
 
@@ -11,8 +12,10 @@ from torch_geometric.nn import GINEConv
 # ============================================================
 
 MODEL_FILE = "best_bbb_gnn_model.pt"
+if not os.path.exists(MODEL_FILE) and os.path.exists("best_bbb_gnn_model_fold_1.pt"):
+    MODEL_FILE = "best_bbb_gnn_model_fold_1.pt"
 
-HIDDEN_CHANNELS = 128
+HIDDEN_CHANNELS = 256
 NODE_FEATURES = 9
 EDGE_FEATURES = 7
 

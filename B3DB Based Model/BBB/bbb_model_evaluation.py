@@ -29,7 +29,8 @@ auc = roc_auc_score(y_test, probs)
 
 print(f"Metrics: Acc={acc:.4f}, Prec={prec:.4f}, Rec={rec:.4f}, F1={f1:.4f}, AUC={auc:.4f}")
 
-out_dir = r"C:\Users\saivi\.gemini\antigravity-ide\brain\619012dd-ffbd-469e-bc73-d0122efef94e"
+base_dir = os.path.dirname(os.path.abspath(__file__))
+out_dir = os.path.join(base_dir, "..", "plots")
 os.makedirs(out_dir, exist_ok=True)
 
 # 1. Confusion Matrix
