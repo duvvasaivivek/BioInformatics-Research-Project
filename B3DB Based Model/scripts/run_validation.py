@@ -1,16 +1,20 @@
 """
-Rigorous Leakage-Resistant Scientific Validation Protocol for BBB and P-gp Models.
-Performs stratified k-fold and scaffold-aware evaluation, calculating:
-Accuracy, Balanced Accuracy, Precision, Recall/Sensitivity, Specificity, F1-Score,
-ROC-AUC, PR-AUC, Matthews Correlation Coefficient (MCC), and Brier Score,
-along with 95% Bootstrap Confidence Intervals.
+Rigorous Scientific Validation Protocol for BBB and P-gp Models.
+Performs:
+1. Random Held-Out Test Set Validation (In-Distribution Generalization) with 95% Bootstrap CI.
+2. Genuine Bemis-Murcko Scaffold Split Evaluation (Out-of-Distribution Chemotype Generalization).
+3. Metric Suite: Accuracy, Balanced Accuracy, Precision, Recall/Sensitivity, Specificity,
+   F1-Score, ROC-AUC, PR-AUC, Matthews Correlation Coefficient (MCC), and Brier Score.
 """
 
 import os
+import sys
+import json
 import numpy as np
 import pandas as pd
 from typing import Dict, Any, List, Tuple
-from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (
     accuracy_score, balanced_accuracy_score, precision_score, recall_score,
     f1_score, roc_auc_score, average_precision_score, matthews_corrcoef,
@@ -23,6 +27,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from core.features import BBB_DESCRIPTOR_NAMES, PGP_DESCRIPTOR_NAMES
+
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 FIGURES_DIR = os.path.join(BASE_DIR, "figures")
@@ -33,13 +42,12 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 
 
 def calculate_metrics_with_ci(y_true, y_pred, y_prob, n_bootstraps=1000, seed=42) -> Dict[str, Any]:
-    """Computes all required classification metrics with 95% bootstrap confidence intervals."""
+    """Computes all classification metrics with 95% bootstrap confidence intervals."""
     rng = np.random.RandomState(seed)
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
     y_prob = np.array(y_prob)
 
-    # Base metrics
     cm = confusion_matrix(y_true, y_pred)
     tn, fp, fn, tp = cm.ravel()
     specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
@@ -58,7 +66,6 @@ def calculate_metrics_with_ci(y_true, y_pred, y_prob, n_bootstraps=1000, seed=42
         "TP": int(tp), "FP": int(fp), "TN": int(tn), "FN": int(fn)
     }
 
-    # 1000 Bootstrap Resamplings for 95% CI
     boot_records = {k: [] for k in point_metrics if k not in ["TP", "FP", "TN", "FN"]}
     n_samples = len(y_true)
 
@@ -68,7 +75,6 @@ def calculate_metrics_with_ci(y_true, y_pred, y_prob, n_bootstraps=1000, seed=42
         b_pred = y_pred[idx]
         b_prob = y_prob[idx]
 
-        # Skip degenerate samples with single class
         if len(np.unique(b_true)) < 2:
             continue
 
@@ -90,7 +96,6 @@ def calculate_metrics_with_ci(y_true, y_pred, y_prob, n_bootstraps=1000, seed=42
         boot_records["MCC"].append(matthews_corrcoef(b_true, b_pred))
         boot_records["Brier_Score"].append(brier_score_loss(b_true, b_prob))
 
-    # Calculate 2.5th and 97.5th percentiles
     ci_results = {}
     for k, val in point_metrics.items():
         if k in boot_records and len(boot_records[k]) > 0:
@@ -108,6 +113,36 @@ def calculate_metrics_with_ci(y_true, y_pred, y_prob, n_bootstraps=1000, seed=42
     return ci_results
 
 
+def generate_bemis_murcko_split(df: pd.DataFrame, smiles_col: str = 'SMILES', test_size: float = 0.20, seed: int = 42) -> Tuple[List[int], List[int]]:
+    """
+    Partitions dataset by Bemis-Murcko scaffolds.
+    Guarantees 0% scaffold overlap between train and test sets.
+    """
+    scaffold_map: Dict[str, List[int]] = {}
+    for idx, smi in enumerate(df[smiles_col]):
+        try:
+            m = Chem.MolFromSmiles(str(smi))
+            scaff = MurckoScaffold.MurckoScaffoldSmiles(mol=m) if m else ""
+        except Exception:
+            scaff = ""
+        scaffold_map.setdefault(scaff, []).append(idx)
+
+    # Sort scaffold clusters by size
+    clusters = sorted(scaffold_map.values(), key=len, reverse=True)
+    target_test_size = int(len(df) * test_size)
+
+    train_indices = []
+    test_indices = []
+
+    for cluster in clusters:
+        if len(test_indices) + len(cluster) <= target_test_size:
+            test_indices.extend(cluster)
+        else:
+            train_indices.extend(cluster)
+
+    return train_indices, test_indices
+
+
 def evaluate_bbb_model():
     print("\n--- Validating BBB Model (B3DB Benchmark, 7,807 molecules) ---")
     data_path = os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv")
@@ -115,19 +150,29 @@ def evaluate_bbb_model():
     X = df.drop(columns=['SMILES', 'Label'])
     y = df['Label']
 
-    # Exact held-out split matching bbb_model_training.py (ensures 0% train contamination)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
+    # Exact held-out 15% test split matching bbb_model_training.py
+    X_temp, X_test, y_temp, y_test = train_test_split(
+        X, y, test_size=0.15, random_state=42, stratify=y
     )
+
+    # Scale continuous features using trained scaler metadata
+    scaler_path = os.path.join(MODELS_DIR, "bbb_scaler_metadata.json")
+    with open(scaler_path, 'r', encoding='utf-8') as f:
+        meta = json.load(f)
+    means, stds = meta['means'], meta['stds']
+
+    X_test_scaled = X_test.copy()
+    for i, name in enumerate(BBB_DESCRIPTOR_NAMES):
+        X_test_scaled[name] = (X_test_scaled[name] - means[i]) / (stds[i] if stds[i] != 0 else 1.0)
 
     model = xgb.XGBClassifier()
     model.load_model(os.path.join(MODELS_DIR, "bbb_xgboost_optuna_best.json"))
 
-    preds = model.predict(X_test)
-    probs = model.predict_proba(X_test)[:, 1]
+    preds = model.predict(X_test_scaled)
+    probs = model.predict_proba(X_test_scaled)[:, 1]
 
     results = calculate_metrics_with_ci(y_test, preds, probs)
-    print("BBB Test Set Evaluation Results (95% Bootstrap CI):")
+    print("BBB Random Held-Out Test Set (95% Bootstrap CI):")
     for k, v in results.items():
         if isinstance(v, dict) and "display" in v:
             print(f" * {k:<20}: {v['display']}")
@@ -145,7 +190,33 @@ def evaluate_bbb_model():
     plt.savefig(os.path.join(FIGURES_DIR, "bbb_test_confusion_matrix.png"), dpi=300)
     plt.close()
 
-    return results
+    # Bemis-Murcko Scaffold Evaluation for BBB
+    print("\n--- Evaluating BBB Model on Bemis-Murcko Scaffold Split (Zero Chemotype Overlap) ---")
+    tr_idx, te_idx = generate_bemis_murcko_split(df, smiles_col='SMILES', test_size=0.15, seed=42)
+    X_tr_scaff, X_te_scaff = X.iloc[tr_idx].copy(), X.iloc[te_idx].copy()
+    y_tr_scaff, y_te_scaff = y.iloc[tr_idx], y.iloc[te_idx]
+
+    # Fit scaler strictly on scaffold train
+    sc_scaff = StandardScaler()
+    X_tr_scaff[BBB_DESCRIPTOR_NAMES] = sc_scaff.fit_transform(X_tr_scaff[BBB_DESCRIPTOR_NAMES])
+    X_te_scaff[BBB_DESCRIPTOR_NAMES] = sc_scaff.transform(X_te_scaff[BBB_DESCRIPTOR_NAMES])
+
+    scaff_model = xgb.XGBClassifier(
+        n_estimators=300, learning_rate=0.05, max_depth=6,
+        subsample=0.8, colsample_bytree=0.8, random_state=42,
+        eval_metric='logloss', tree_method='hist'
+    )
+    scaff_model.fit(X_tr_scaff, y_tr_scaff, verbose=False)
+    scaff_preds = scaff_model.predict(X_te_scaff)
+    scaff_probs = scaff_model.predict_proba(X_te_scaff)[:, 1]
+
+    scaff_results = calculate_metrics_with_ci(y_te_scaff, scaff_preds, scaff_probs)
+    print("BBB Bemis-Murcko Scaffold Generalization Results (95% Bootstrap CI):")
+    for k, v in scaff_results.items():
+        if isinstance(v, dict) and "display" in v:
+            print(f" * {k:<20}: {v['display']}")
+
+    return results, scaff_results
 
 
 def evaluate_pgp_model():
@@ -159,14 +230,24 @@ def evaluate_pgp_model():
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
+    # Scale continuous features using trained scaler metadata
+    scaler_path = os.path.join(MODELS_DIR, "pgp_scaler_metadata.json")
+    with open(scaler_path, 'r', encoding='utf-8') as f:
+        meta = json.load(f)
+    means, stds = meta['means'], meta['stds']
+
+    X_test_scaled = X_test.copy()
+    for i, name in enumerate(PGP_DESCRIPTOR_NAMES):
+        X_test_scaled[name] = (X_test_scaled[name] - means[i]) / (stds[i] if stds[i] != 0 else 1.0)
+
     model = xgb.XGBClassifier()
     model.load_model(os.path.join(MODELS_DIR, "pgp_xgboost_model.json"))
 
-    preds = model.predict(X_test)
-    probs = model.predict_proba(X_test)[:, 1]
+    preds = model.predict(X_test_scaled)
+    probs = model.predict_proba(X_test_scaled)[:, 1]
 
     results = calculate_metrics_with_ci(y_test, preds, probs)
-    print("P-gp Test Set Evaluation Results (95% Bootstrap CI):")
+    print("P-gp Random Held-Out Test Set (95% Bootstrap CI):")
     for k, v in results.items():
         if isinstance(v, dict) and "display" in v:
             print(f" * {k:<20}: {v['display']}")
@@ -184,59 +265,42 @@ def evaluate_pgp_model():
     plt.savefig(os.path.join(FIGURES_DIR, "pgp_test_confusion_matrix.png"), dpi=300)
     plt.close()
 
-    return results
+    # Bemis-Murcko Scaffold Evaluation for P-gp
+    print("\n--- Evaluating P-gp Model on Bemis-Murcko Scaffold Split (Zero Chemotype Overlap) ---")
+    tr_idx, te_idx = generate_bemis_murcko_split(df, smiles_col='SMILES', test_size=0.20, seed=42)
+    X_tr_scaff, X_te_scaff = X.iloc[tr_idx].copy(), X.iloc[te_idx].copy()
+    y_tr_scaff, y_te_scaff = y.iloc[tr_idx], y.iloc[te_idx]
 
+    sc_scaff = StandardScaler()
+    X_tr_scaff[PGP_DESCRIPTOR_NAMES] = sc_scaff.fit_transform(X_tr_scaff[PGP_DESCRIPTOR_NAMES])
+    X_te_scaff[PGP_DESCRIPTOR_NAMES] = sc_scaff.transform(X_te_scaff[PGP_DESCRIPTOR_NAMES])
 
-def generate_scaffold_split_summary():
-    """Evaluates Murcko scaffold diversity across B3DB and Broccatelli datasets."""
-    print("\n--- Murcko Scaffold Diversity and Generalization Analysis ---")
-    
-    # BBB scaffolds
-    df_bbb = pd.read_csv(os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv"))
-    bbb_scaffolds = set()
-    for s in df_bbb['SMILES']:
-        try:
-            m = Chem.MolFromSmiles(s)
-            if m:
-                scaff = MurckoScaffold.MurckoScaffoldSmiles(mol=m)
-                bbb_scaffolds.add(scaff)
-        except Exception:
-            pass
-    
-    # P-gp scaffolds
-    df_pgp = pd.read_csv(os.path.join(DATA_DIR, "processed_pgp_data.csv"))
-    pgp_scaffolds = set()
-    for s in df_pgp['SMILES']:
-        try:
-            m = Chem.MolFromSmiles(s)
-            if m:
-                scaff = MurckoScaffold.MurckoScaffoldSmiles(mol=m)
-                pgp_scaffolds.add(scaff)
-        except Exception:
-            pass
+    scaff_model = xgb.XGBClassifier(
+        n_estimators=300, learning_rate=0.05, max_depth=5,
+        subsample=0.8, colsample_bytree=0.8, random_state=42,
+        eval_metric='logloss', tree_method='hist'
+    )
+    scaff_model.fit(X_tr_scaff, y_tr_scaff, verbose=False)
+    scaff_preds = scaff_model.predict(X_te_scaff)
+    scaff_probs = scaff_model.predict_proba(X_te_scaff)[:, 1]
 
-    shared_scaffolds = bbb_scaffolds.intersection(pgp_scaffolds)
-    print(f" * B3DB Unique Murcko Scaffolds: {len(bbb_scaffolds)} across {len(df_bbb)} molecules (Diversity: {len(bbb_scaffolds)/len(df_bbb):.3f})")
-    print(f" * P-gp Unique Murcko Scaffolds: {len(pgp_scaffolds)} across {len(df_pgp)} molecules (Diversity: {len(pgp_scaffolds)/len(df_pgp):.3f})")
-    print(f" * Overlapping Core Scaffolds between Datasets: {len(shared_scaffolds)}")
+    scaff_results = calculate_metrics_with_ci(y_te_scaff, scaff_preds, scaff_probs)
+    print("P-gp Bemis-Murcko Scaffold Generalization Results (95% Bootstrap CI):")
+    for k, v in scaff_results.items():
+        if isinstance(v, dict) and "display" in v:
+            print(f" * {k:<20}: {v['display']}")
 
-    return {
-        "bbb_scaffolds": len(bbb_scaffolds),
-        "pgp_scaffolds": len(pgp_scaffolds),
-        "shared_scaffolds": len(shared_scaffolds)
-    }
+    return results, scaff_results
 
 
 def main():
     print("=" * 80)
-    print("   LEAKAGE-RESISTANT SCIENTIFIC VALIDATION PROTOCOL (BOOTSTRAP 95% CI)   ")
+    print("   LEAKAGE-RESISTANT SCIENTIFIC VALIDATION & SCAFFOLD BENCHMARK (95% CI)   ")
     print("=" * 80)
 
-    bbb_res = evaluate_bbb_model()
-    pgp_res = evaluate_pgp_model()
-    scaff_res = generate_scaffold_split_summary()
+    bbb_rand, bbb_scaff = evaluate_bbb_model()
+    pgp_rand, pgp_scaff = evaluate_pgp_model()
 
-    # Compile structured summary table
     summary_rows = []
     metrics_to_export = [
         "Accuracy", "Balanced_Accuracy", "Precision", "Recall_Sensitivity",
@@ -246,16 +310,20 @@ def main():
     for m in metrics_to_export:
         summary_rows.append({
             "Metric": m,
-            "BBB_Estimate": bbb_res[m]["estimate"],
-            "BBB_95CI": f"[{bbb_res[m]['ci_lower']} - {bbb_res[m]['ci_upper']}]",
-            "Pgp_Estimate": pgp_res[m]["estimate"],
-            "Pgp_95CI": f"[{pgp_res[m]['ci_lower']} - {pgp_res[m]['ci_upper']}]"
+            "BBB_Random_Estimate": bbb_rand[m]["estimate"],
+            "BBB_Random_95CI": f"[{bbb_rand[m]['ci_lower']} - {bbb_rand[m]['ci_upper']}]",
+            "BBB_Scaffold_Estimate": bbb_scaff[m]["estimate"],
+            "BBB_Scaffold_95CI": f"[{bbb_scaff[m]['ci_lower']} - {bbb_scaff[m]['ci_upper']}]",
+            "Pgp_Random_Estimate": pgp_rand[m]["estimate"],
+            "Pgp_Random_95CI": f"[{pgp_rand[m]['ci_lower']} - {pgp_rand[m]['ci_upper']}]",
+            "Pgp_Scaffold_Estimate": pgp_scaff[m]["estimate"],
+            "Pgp_Scaffold_95CI": f"[{pgp_scaff[m]['ci_lower']} - {pgp_scaff[m]['ci_upper']}]",
         })
 
     summary_df = pd.DataFrame(summary_rows)
     csv_path = os.path.join(RESULTS_DIR, "validation_metrics_summary.csv")
     summary_df.to_csv(csv_path, index=False)
-    print(f"\nSaved complete validation metrics table to {csv_path}")
+    print(f"\nSaved comprehensive dual-split validation metrics table to {csv_path}")
 
 
 if __name__ == "__main__":

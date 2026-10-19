@@ -7,16 +7,23 @@ stratified 5-fold cross-validation protocol:
 """
 
 import os
+import sys
 import numpy as np
 import pandas as pd
 from typing import Dict, Any, List
 from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, roc_auc_score, average_precision_score, matthews_corrcoef
 import xgboost as xgb
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from core.features import BBB_DESCRIPTOR_NAMES, PGP_DESCRIPTOR_NAMES
+
 DATA_DIR = os.path.join(BASE_DIR, "data")
 FIGURES_DIR = os.path.join(BASE_DIR, "figures")
 RESULTS_DIR = os.path.join(BASE_DIR, "results")
@@ -24,17 +31,26 @@ RESULTS_DIR = os.path.join(BASE_DIR, "results")
 os.makedirs(FIGURES_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
+ALL_CONT_DESCRIPTORS = set(BBB_DESCRIPTOR_NAMES + PGP_DESCRIPTOR_NAMES)
+
 
 def evaluate_feature_subset_cv(X: pd.DataFrame, y: pd.Series, feature_cols: List[str], n_splits: int = 5) -> Dict[str, float]:
-    """Runs stratified 5-fold cross-validation on a specific feature subset."""
+    """Runs stratified 5-fold cross-validation on a specific feature subset with within-fold scaling."""
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
     accs, baccs, f1s, aucs, praucs, mccs = [], [], [], [], [], []
 
     X_sub = X[feature_cols].copy()
+    cont_cols = [c for c in feature_cols if c in ALL_CONT_DESCRIPTORS]
 
     for train_idx, val_idx in skf.split(X_sub, y):
-        X_tr, X_val = X_sub.iloc[train_idx], X_sub.iloc[val_idx]
+        X_tr = X_sub.iloc[train_idx].copy()
+        X_val = X_sub.iloc[val_idx].copy()
         y_tr, y_val = y.iloc[train_idx], y.iloc[val_idx]
+
+        if cont_cols:
+            scaler = StandardScaler()
+            X_tr[cont_cols] = scaler.fit_transform(X_tr[cont_cols])
+            X_val[cont_cols] = scaler.transform(X_val[cont_cols])
 
         model = xgb.XGBClassifier(
             n_estimators=300,

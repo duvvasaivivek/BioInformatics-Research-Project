@@ -5,9 +5,12 @@ re-extracts full 2D/3D descriptors, and identifies minimal structural modificati
 that flip BBB or P-gp classification while preserving chemical sanity.
 """
 
+import numpy as np
 from typing import Dict, Any, List, Optional
 from rdkit import Chem
-from rdkit.Chem import AllChem, rdChemReactions, DataStructs
+from rdkit.Chem import AllChem, rdChemReactions, DataStructs, rdFingerprintGenerator
+
+_MORGAN_GEN = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 
 
 class MolecularCounterfactualEngine:
@@ -50,17 +53,19 @@ class MolecularCounterfactualEngine:
         current_bbb_pred: int,
         current_pgp_pred: int,
         target_endpoint: str = "both",  # "BBB", "Pgp", or "both"
-        max_counterfactuals: int = 3
+        max_counterfactuals: int = 3,
+        min_similarity: float = 0.50
     ) -> List[Dict[str, Any]]:
         """
         Generates chemically valid analogs and evaluates if any flip the prediction
-        towards the desired outcome (e.g. BBB+ and/or P-gp-).
+        towards the desired outcome (e.g. BBB+ and/or P-gp-) while maintaining
+        high structural similarity (Tanimoto >= min_similarity).
         """
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return []
 
-        orig_fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=2048)
+        orig_fp = _MORGAN_GEN.GetFingerprint(mol)
         counterfactuals = []
         seen_smiles = {Chem.MolToSmiles(mol)}
 
@@ -86,6 +91,12 @@ class MolecularCounterfactualEngine:
                     continue
                 seen_smiles.add(cand_smiles)
 
+                # Check structural similarity first
+                cand_fp = _MORGAN_GEN.GetFingerprint(cand_mol)
+                tanimoto = float(DataStructs.TanimotoSimilarity(orig_fp, cand_fp))
+                if tanimoto < min_similarity:
+                    continue
+
                 # Predict on the new candidate
                 eval_res = self._evaluate_candidate(cand_mol, cand_smiles)
                 if eval_res is None:
@@ -110,9 +121,6 @@ class MolecularCounterfactualEngine:
                     )
 
                 if flipped:
-                    cand_fp = AllChem.GetMorganFingerprintAsBitVect(cand_mol, radius=2, nBits=2048)
-                    tanimoto = float(DataStructs.TanimotoSimilarity(orig_fp, cand_fp))
-
                     counterfactuals.append({
                         "analog_smiles": cand_smiles,
                         "transformation": description,
@@ -138,8 +146,10 @@ class MolecularCounterfactualEngine:
         from rdkit.Chem import Descriptors, Descriptors3D
 
         # 1. BBB features
-        fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
-        fp_array = [int(b) for b in fp.ToBitString()]
+        fp = _MORGAN_GEN.GetFingerprint(mol)
+        arr = np.zeros((0,), dtype=np.int8)
+        DataStructs.ConvertToNumpyArray(fp, arr)
+        fp_array = arr.tolist()
 
         mw = Descriptors.MolWt(mol)
         logp = Descriptors.MolLogP(mol)

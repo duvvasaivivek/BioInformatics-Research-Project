@@ -10,7 +10,9 @@ import numpy as np
 import pandas as pd
 from typing import Dict, Any, List, Optional
 from rdkit import Chem
-from rdkit.Chem import AllChem, DataStructs
+from rdkit.Chem import AllChem, DataStructs, rdFingerprintGenerator
+
+_MORGAN_GEN = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 
 
 class ApplicabilityDomainEstimator:
@@ -18,7 +20,7 @@ class ApplicabilityDomainEstimator:
     Assesses chemical domain validity and uncertainty for candidate molecules.
     """
 
-    def __init__(self, data_dir: Optional[str] = None):
+    def __init__(self, data_dir: Optional[str] = None, max_samples: Optional[int] = None):
         if data_dir is None:
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             data_dir = os.path.join(base_dir, "data")
@@ -26,22 +28,23 @@ class ApplicabilityDomainEstimator:
 
         self.bbb_fps: List[Any] = []
         self.pgp_fps: List[Any] = []
-        self._load_reference_fingerprints()
+        self._load_reference_fingerprints(max_samples=max_samples)
 
-    def _load_reference_fingerprints(self, max_samples: int = 1000):
-        """Loads a representative sample of training fingerprints for fast Tanimoto screening."""
+    def _load_reference_fingerprints(self, max_samples: Optional[int] = None):
+        """Loads reference training fingerprints for fast Tanimoto screening across full dataset."""
         # 1. BBB reference
         bbb_path = os.path.join(self.data_dir, "B3DB_classification.tsv")
         if os.path.exists(bbb_path):
             try:
                 df_bbb = pd.read_csv(bbb_path, sep='\t')
                 smiles_list = df_bbb['SMILES'].dropna().tolist()
-                step = max(1, len(smiles_list) // max_samples)
-                sample_smiles = smiles_list[::step]
-                for s in sample_smiles:
+                if max_samples and max_samples < len(smiles_list):
+                    step = max(1, len(smiles_list) // max_samples)
+                    smiles_list = smiles_list[::step]
+                for s in smiles_list:
                     m = Chem.MolFromSmiles(s)
                     if m is not None:
-                        fp = AllChem.GetMorganFingerprintAsBitVect(m, radius=2, nBits=2048)
+                        fp = _MORGAN_GEN.GetFingerprint(m)
                         self.bbb_fps.append(fp)
             except Exception as e:
                 print(f"[WARN] Failed to load BBB reference for applicability domain: {e}")
@@ -53,10 +56,13 @@ class ApplicabilityDomainEstimator:
                 df_pgp = pd.read_csv(pgp_path, sep='\t')
                 smiles_col = 'Drug' if 'Drug' in df_pgp.columns else df_pgp.columns[1]
                 smiles_list = df_pgp[smiles_col].dropna().tolist()
+                if max_samples and max_samples < len(smiles_list):
+                    step = max(1, len(smiles_list) // max_samples)
+                    smiles_list = smiles_list[::step]
                 for s in smiles_list:
                     m = Chem.MolFromSmiles(s)
                     if m is not None:
-                        fp = AllChem.GetMorganFingerprintAsBitVect(m, radius=2, nBits=2048)
+                        fp = _MORGAN_GEN.GetFingerprint(m)
                         self.pgp_fps.append(fp)
             except Exception as e:
                 print(f"[WARN] Failed to load P-gp reference for applicability domain: {e}")
@@ -87,7 +93,7 @@ class ApplicabilityDomainEstimator:
         ref_fps = self.pgp_fps if is_pgp else self.bbb_fps
 
         # 1. Structural Similarity via Tanimoto
-        test_fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=2048)
+        test_fp = _MORGAN_GEN.GetFingerprint(mol)
         max_tanimoto = 0.0
         if ref_fps:
             sims = DataStructs.BulkTanimotoSimilarity(test_fp, ref_fps)

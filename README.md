@@ -44,8 +44,8 @@ This gives rise to **"paradoxical drugs"** (e.g., **Loperamide**), which possess
 ## 2. Key Capabilities & Architecture
 
 1. **Dual-Barrier Classifiers:**
-   - **BBB Permeability Classifier ($\mathcal{M}_{\text{BBB}}$):** Optuna Bayesian-tuned XGBoost ensemble trained on the B3DB benchmark ($7,805$ curated small molecules). **ROC-AUC: 0.9544 [95% CI: 0.9449 - 0.9644]**, **Accuracy: 0.8962 [95% CI: 0.8815 - 0.9116]**.
-   - **P-gp Efflux Classifier ($\mathcal{M}_{\text{Pgp}}$):** 3D conformation-augmented XGBoost classifier trained on the Broccatelli TDC benchmark ($1,205$ molecules) with 6 stereochemical shape descriptors ($R_g$, Asphericity, Eccentricity, Spherocity, $NPR_1, NPR_2$) generated via RDKit ETKDGv3. **ROC-AUC: 0.9593 [95% CI: 0.9320 - 0.9822]**, **Accuracy: 0.9336**.
+   - **BBB Permeability Classifier ($\mathcal{M}_{\text{BBB}}$):** Optuna Bayesian-tuned XGBoost ensemble trained on the B3DB benchmark ($7,805$ small molecules) under a leakage-free 70/15/15 split. **In-Domain ROC-AUC: 0.9522 [95% CI: 0.9410 - 0.9629]**, **Accuracy: 0.8856 [95% CI: 0.8659 - 0.9035]**, **Bemis-Murcko Scaffold ROC-AUC: 0.9048**.
+   - **P-gp Efflux Classifier ($\mathcal{M}_{\text{Pgp}}$):** 3D shape-integrated XGBoost classifier trained on the Broccatelli TDC benchmark ($1,205$ molecules) with 6 stereochemical conformer shape descriptors ($R_g$, Asphericity, Eccentricity, Spherocity, $NPR_1, NPR_2$) generated via RDKit ETKDGv3. **In-Domain ROC-AUC: 0.9587 [95% CI: 0.9330 - 0.9806]**, **Accuracy: 0.9295**, **Bemis-Murcko Scaffold ROC-AUC: 0.9631**. Standalone 3D shape descriptors alone achieve **0.8425 ROC-AUC**.
 2. **Mathematically Rigorous TreeSHAP Explainability:**
    - Model attributions computed in log-odds margin space ($f(x) = \phi_0 + \sum \phi_i$) with base value reporting.
    - Automatic deconvolution of active 2048-bit Morgan fingerprint bits back to atomic subgraphs and functional group tags via `MorganSubstructureMapper`.
@@ -133,6 +133,10 @@ python "B3DB Based Model/scripts/run_explainability_analysis.py"
 ```
 BioInformatics Project/
 ├── B3DB Based Model/
+│   ├── core/                        # Centralized feature extraction & domain logic
+│   │   ├── __init__.py
+│   │   ├── features.py              # 2D, Morgan FP, and 3D conformer extractors
+│   │   └── decision_matrix.py       # 4-quadrant decision logic & benchmark definitions
 │   ├── BBB/                         # BBB model training & evaluation
 │   │   ├── bbb_data_preprocessing.py
 │   │   ├── bbb_model_training.py
@@ -143,20 +147,16 @@ BioInformatics Project/
 │   │   └── pgp_model_evaluation.py
 │   ├── explainability/              # Modular explainability package
 │   │   ├── __init__.py
-│   │   ├── shap_explainer.py        # TreeSHAP in margin space
+│   │   ├── shap_explainer.py        # TreeSHAP in log-odds margin space
 │   │   ├── substructure_mapper.py   # Morgan bit-to-subgraph deconvolution
-│   │   ├── shared_properties.py     # Cross-task shared properties analysis
+│   │   ├── shared_properties.py     # Cross-task shared properties divergence
 │   │   ├── applicability_domain.py  # Tanimoto & leverage domain estimation
 │   │   ├── counterfactual.py        # Reaction-based analog search
 │   │   └── report_generator.py      # Standalone HTML, CSV, JSON export
-│   ├── data/                        # Processed B3DB and TDC benchmarks
+│   ├── data/                        # Curated B3DB and TDC benchmarks
 │   ├── models/                      # Serialized models & scaler metadata
-│   ├── docs/                        # In-depth scientific documentation
-│   │   ├── BBB_EXPLAINABILITY.md
-│   │   ├── PGP_EXPLAINABILITY.md
-│   │   ├── SHARED_PROPERTIES_ANALYSIS.md
-│   │   ├── VALIDATION_PROTOCOL.md
-│   │   └── REPRODUCIBILITY.md
+│   ├── docs/                        # Consolidated scientific documentation
+│   │   └── SCIENTIFIC_DOCUMENTATION.md
 │   ├── figures/                     # High-resolution publication figures
 │   ├── results/                     # Generated CSV metrics and HTML reports
 │   ├── scripts/                     # Automated scientific reproduction scripts
@@ -165,7 +165,7 @@ BioInformatics Project/
 │   │   └── run_ablation_study.py
 │   ├── tests/                       # Automated regression test suite
 │   │   └── test_explainability.py
-│   └── inference.py                 # Unified CLI prediction interface
+│   └── inference.py                 # Streamlined CLI prediction interface
 ├── Initial Model/                   # Base paper replication (GINEConv GNN)
 ├── RESEARCH_PAPER_MANUSCRIPT.md     # Full academic manuscript draft
 ├── requirements.txt
