@@ -1,81 +1,92 @@
+"""
+BBB Data Preprocessing Pipeline.
+Processes raw B3DB classification dataset, generates 2048-bit Morgan Fingerprints
+and standardized 2D physicochemical descriptors using core feature extraction routines,
+and serializes scaler metadata for deterministic inference.
+"""
+
+import os
+import sys
+import json
 import pandas as pd
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import AllChem
-from rdkit.Chem import Descriptors
 from rdkit import RDLogger
 from sklearn.preprocessing import StandardScaler
-import os
 
-# Suppress RDKit warnings
+# Suppress RDKit C++ warnings
 RDLogger.DisableLog('rdApp.*')
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "data")
+BASE_DIR = os.path.dirname(SCRIPT_DIR)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from core.features import (
+    BBB_DESCRIPTOR_NAMES,
+    calculate_2d_descriptors,
+    calculate_morgan_fingerprint
+)
+
+DATA_DIR = os.path.join(BASE_DIR, "data")
+MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_PATH = os.path.join(DATA_DIR, "B3DB_classification.tsv")
 OUTPUT_PATH = os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv")
+SCALER_METADATA_PATH = os.path.join(MODELS_DIR, "bbb_scaler_metadata.json")
+
 
 def process_data():
-    print(f"Loading dataset from {DATA_PATH}...")
-    try:
-        df = pd.read_csv(DATA_PATH, sep='\t')
-    except FileNotFoundError:
+    print(f"Loading BBB dataset from {DATA_PATH}...")
+    if not os.path.exists(DATA_PATH):
         print(f"Error: Could not find {DATA_PATH}.")
         return
 
+    df = pd.read_csv(DATA_PATH, sep='\t')
     df = df[['SMILES', 'BBB+/BBB-']].dropna()
     df['Label'] = df['BBB+/BBB-'].map({'BBB+': 1, 'BBB-': 0})
     df = df.drop('BBB+/BBB-', axis=1)
-    
-    print("Generating Morgan Fingerprints and 2D Descriptors...")
+
+    print("Generating Morgan Fingerprints (2048 bits) and 2D Descriptors...")
     fingerprints = []
     descriptors = []
     valid_indices = []
-    
+
     for idx, row in df.iterrows():
         smiles = row['SMILES']
         mol = Chem.MolFromSmiles(smiles)
-        
+
         if mol is not None:
-            # 1. Fingerprint (2048 bits)
-            fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=2048)
-            arr = np.zeros((0,), dtype=np.int8)
-            Chem.DataStructs.ConvertToNumpyArray(fp, arr)
-            fingerprints.append(arr.tolist())
-            
-            # 2. 2D Physicochemical Descriptors (6 continuous features)
-            desc = [
-                Descriptors.MolWt(mol),             # Molecular Weight
-                Descriptors.MolLogP(mol),           # Lipophilicity
-                Descriptors.TPSA(mol),              # Topological Polar Surface Area
-                Descriptors.NumHDonors(mol),        # Hydrogen Bond Donors
-                Descriptors.NumHAcceptors(mol),     # Hydrogen Bond Acceptors
-                Descriptors.NumRotatableBonds(mol)  # Flexibility
-            ]
-            descriptors.append(desc)
+            fp_arr = calculate_morgan_fingerprint(mol, radius=2, n_bits=2048)
+            desc_dict = calculate_2d_descriptors(mol)
+
+            fingerprints.append(fp_arr.tolist())
+            descriptors.append([desc_dict[k] for k in BBB_DESCRIPTOR_NAMES])
             valid_indices.append(idx)
-            
+
     df_valid = df.loc[valid_indices].copy()
-    
-    # Scale descriptors (Standardization) so large numbers like MolWt 
-    # don't overshadow the small 0/1 fingerprint values
-    print("Normalizing 2D descriptors...")
+
+    print("Normalizing 2D continuous descriptors...")
     scaler = StandardScaler()
     scaled_desc = scaler.fit_transform(descriptors)
-    
-    # Create columns
+
+    # Save scaler metadata for deterministic inference
+    os.makedirs(MODELS_DIR, exist_ok=True)
+    metadata = {
+        'means': scaler.mean_.tolist(),
+        'stds': scaler.scale_.tolist()
+    }
+    with open(SCALER_METADATA_PATH, 'w', encoding='utf-8') as f:
+        json.dump(metadata, f, indent=2)
+    print(f"Saved scaler metadata to {SCALER_METADATA_PATH}")
+
     fp_cols = [f'FP_{i}' for i in range(2048)]
-    desc_cols = ['MolWt', 'LogP', 'TPSA', 'HDonors', 'HAcceptors', 'RotBonds']
-    
-    # Combine everything into one giant Dataframe
     fp_df = pd.DataFrame(fingerprints, columns=fp_cols, index=df_valid.index)
-    desc_df = pd.DataFrame(scaled_desc, columns=desc_cols, index=df_valid.index)
-    
+    desc_df = pd.DataFrame(scaled_desc, columns=BBB_DESCRIPTOR_NAMES, index=df_valid.index)
+
     df_final = pd.concat([df_valid, fp_df, desc_df], axis=1)
-    
-    print(f"Feature engineering complete. Final dataset shape: {df_final.shape}")
     df_final.to_csv(OUTPUT_PATH, index=False)
-    print(f"Saved to {OUTPUT_PATH}")
+    print(f"Feature engineering complete. Saved {df_final.shape[0]} molecules to {OUTPUT_PATH}")
+
 
 if __name__ == "__main__":
     process_data()

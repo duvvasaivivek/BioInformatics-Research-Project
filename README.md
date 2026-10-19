@@ -133,6 +133,10 @@ python "B3DB Based Model/scripts/run_explainability_analysis.py"
 ```
 BioInformatics Project/
 ├── B3DB Based Model/
+│   ├── core/                        # Centralized feature extraction & domain logic
+│   │   ├── __init__.py
+│   │   ├── features.py              # 2D, Morgan FP, and 3D conformer extractors
+│   │   └── decision_matrix.py       # 4-quadrant decision logic & benchmark definitions
 │   ├── BBB/                         # BBB model training & evaluation
 │   │   ├── bbb_data_preprocessing.py
 │   │   ├── bbb_model_training.py
@@ -143,20 +147,16 @@ BioInformatics Project/
 │   │   └── pgp_model_evaluation.py
 │   ├── explainability/              # Modular explainability package
 │   │   ├── __init__.py
-│   │   ├── shap_explainer.py        # TreeSHAP in margin space
+│   │   ├── shap_explainer.py        # TreeSHAP in log-odds margin space
 │   │   ├── substructure_mapper.py   # Morgan bit-to-subgraph deconvolution
-│   │   ├── shared_properties.py     # Cross-task shared properties analysis
+│   │   ├── shared_properties.py     # Cross-task shared properties divergence
 │   │   ├── applicability_domain.py  # Tanimoto & leverage domain estimation
 │   │   ├── counterfactual.py        # Reaction-based analog search
 │   │   └── report_generator.py      # Standalone HTML, CSV, JSON export
-│   ├── data/                        # Processed B3DB and TDC benchmarks
+│   ├── data/                        # Curated B3DB and TDC benchmarks
 │   ├── models/                      # Serialized models & scaler metadata
-│   ├── docs/                        # In-depth scientific documentation
-│   │   ├── BBB_EXPLAINABILITY.md
-│   │   ├── PGP_EXPLAINABILITY.md
-│   │   ├── SHARED_PROPERTIES_ANALYSIS.md
-│   │   ├── VALIDATION_PROTOCOL.md
-│   │   └── REPRODUCIBILITY.md
+│   ├── docs/                        # Consolidated scientific documentation
+│   │   └── SCIENTIFIC_DOCUMENTATION.md
 │   ├── figures/                     # High-resolution publication figures
 │   ├── results/                     # Generated CSV metrics and HTML reports
 │   ├── scripts/                     # Automated scientific reproduction scripts
@@ -165,7 +165,7 @@ BioInformatics Project/
 │   │   └── run_ablation_study.py
 │   ├── tests/                       # Automated regression test suite
 │   │   └── test_explainability.py
-│   └── inference.py                 # Unified CLI prediction interface
+│   └── inference.py                 # Streamlined CLI prediction interface
 ├── Initial Model/                   # Base paper replication (GINEConv GNN)
 ├── RESEARCH_PAPER_MANUSCRIPT.md     # Full academic manuscript draft
 ├── requirements.txt

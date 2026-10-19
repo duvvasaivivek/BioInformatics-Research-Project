@@ -25,13 +25,13 @@ MODELS_DIR = os.path.join(B3DB_DIR, "models")
 
 sys.path.insert(0, B3DB_DIR)
 
-from inference import (
+from core.features import (
     extract_features_bbb,
     extract_features_pgp,
     prepare_dataframe,
-    determine_dual_barrier_quadrant,
     load_scaler_metadata
 )
+from core.decision_matrix import determine_dual_barrier_quadrant
 from explainability import (
     DualBarrierShapExplainer,
     MorganSubstructureMapper,
