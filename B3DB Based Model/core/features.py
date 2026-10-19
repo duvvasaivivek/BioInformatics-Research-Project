@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from typing import Dict, List, Tuple, Optional, Any
 from rdkit import Chem
-from rdkit.Chem import AllChem, Descriptors, Descriptors3D
+from rdkit.Chem import AllChem, Descriptors, Descriptors3D, rdFingerprintGenerator
 from rdkit import RDLogger
 
 # Suppress RDKit C++ warnings
@@ -23,6 +23,8 @@ PGP_DESCRIPTOR_NAMES = [
     'MolWt', 'LogP', 'TPSA', 'HDonors', 'HAcceptors', 'RotBonds',
     'RadiusOfGyration', 'Asphericity', 'Eccentricity', 'SpherocityIndex', 'NPR1', 'NPR2'
 ]
+
+_MORGAN_GEN_R2_2048 = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 
 
 def load_scaler_metadata(
@@ -84,8 +86,12 @@ def calculate_3d_descriptors(mol: Chem.Mol, seed: int = 42) -> Tuple[Optional[Di
 
 
 def calculate_morgan_fingerprint(mol: Chem.Mol, radius: int = 2, n_bits: int = 2048) -> np.ndarray:
-    """Calculates Morgan circular fingerprint as an integer numpy bit array."""
-    fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=radius, nBits=n_bits)
+    """Calculates Morgan circular fingerprint on heavy atoms as an integer numpy bit array."""
+    if radius == 2 and n_bits == 2048:
+        fp = _MORGAN_GEN_R2_2048.GetFingerprint(mol)
+    else:
+        gen = rdFingerprintGenerator.GetMorganGenerator(radius=radius, fpSize=n_bits)
+        fp = gen.GetFingerprint(mol)
     arr = np.zeros((0,), dtype=np.int8)
     Chem.DataStructs.ConvertToNumpyArray(fp, arr)
     return arr.astype(int)

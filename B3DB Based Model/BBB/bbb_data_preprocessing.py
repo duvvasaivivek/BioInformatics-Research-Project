@@ -65,27 +65,13 @@ def process_data():
 
     df_valid = df.loc[valid_indices].copy()
 
-    print("Normalizing 2D continuous descriptors...")
-    scaler = StandardScaler()
-    scaled_desc = scaler.fit_transform(descriptors)
-
-    # Save scaler metadata for deterministic inference
-    os.makedirs(MODELS_DIR, exist_ok=True)
-    metadata = {
-        'means': scaler.mean_.tolist(),
-        'stds': scaler.scale_.tolist()
-    }
-    with open(SCALER_METADATA_PATH, 'w', encoding='utf-8') as f:
-        json.dump(metadata, f, indent=2)
-    print(f"Saved scaler metadata to {SCALER_METADATA_PATH}")
-
     fp_cols = [f'FP_{i}' for i in range(2048)]
     fp_df = pd.DataFrame(fingerprints, columns=fp_cols, index=df_valid.index)
-    desc_df = pd.DataFrame(scaled_desc, columns=BBB_DESCRIPTOR_NAMES, index=df_valid.index)
+    desc_df = pd.DataFrame(descriptors, columns=BBB_DESCRIPTOR_NAMES, index=df_valid.index)
 
     df_final = pd.concat([df_valid, fp_df, desc_df], axis=1)
     df_final.to_csv(OUTPUT_PATH, index=False)
-    print(f"Feature engineering complete. Saved {df_final.shape[0]} molecules to {OUTPUT_PATH}")
+    print(f"Feature engineering complete. Saved {df_final.shape[0]} molecules with raw descriptors to {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

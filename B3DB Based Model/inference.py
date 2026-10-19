@@ -17,7 +17,8 @@ from rdkit import Chem
 from rdkit import RDLogger
 
 # Enable ANSI escape sequences on Windows
-os.system('color')
+if os.name == 'nt':
+    os.system('color')
 warnings.filterwarnings('ignore')
 RDLogger.DisableLog('rdApp.*')
 
@@ -263,7 +264,7 @@ def main():
     parser.add_argument("--smiles", type=str, help="Single SMILES string to analyze")
     parser.add_argument("--explain", action="store_true", help="Display full biophysical and feature attribution explainability report")
     parser.add_argument("--counterfactual", action="store_true", help="Generate chemically valid counterfactual analog suggestions")
-    parser.add_argument("--test-benchmark", action="store_true", help="Execute the clinical reference benchmark suite")
+    parser.add_argument("--test-benchmark", "--benchmark", action="store_true", help="Execute the clinical reference benchmark suite")
     parser.add_argument("--export-html", type=str, help="Save publication-grade scientific HTML report to specified path")
     parser.add_argument("--export-csv", type=str, help="Export prediction metrics and top attributions to CSV")
     parser.add_argument("--export-json", type=str, help="Save structured prediction and attribution dictionary to JSON")
