@@ -3,10 +3,16 @@ import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import json
+import os
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(SCRIPT_DIR)
+DATA_PATH = os.path.join(BASE_DIR, "data", "processed_pgp_data.csv")
+MODELS_DIR = os.path.join(BASE_DIR, "models")
 
 def train_pgp_model():
     print("Loading P-glycoprotein dataset...")
-    df = pd.read_csv("../data/processed_pgp_data.csv")
+    df = pd.read_csv(DATA_PATH)
     
     # Separate features and target
     X = df.drop(columns=['SMILES', 'Label'])
@@ -52,7 +58,7 @@ def train_pgp_model():
     print(f"F1-Score:  {f1:.4f}")
     
     # Save the model
-    model_path = "../models/pgp_xgboost_model.json"
+    model_path = os.path.join(MODELS_DIR, "pgp_xgboost_model.json")
     model.save_model(model_path)
     print(f"\nModel saved to {model_path}")
     

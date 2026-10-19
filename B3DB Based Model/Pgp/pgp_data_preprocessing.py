@@ -11,10 +11,17 @@ import json
 warnings.filterwarnings('ignore')
 RDLogger.DisableLog('rdApp.*')
 
+import os
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(SCRIPT_DIR)
+DATA_PATH = os.path.join(BASE_DIR, "data", "pgp_broccatelli.tab")
+MODELS_DIR = os.path.join(BASE_DIR, "models")
+
 def process_pgp_data():
     print("Loading P-glycoprotein (P-gp) dataset...")
     # Read the downloaded TDC tab dataset
-    df = pd.read_csv('../data/pgp_broccatelli.tab', sep='\t')
+    df = pd.read_csv(DATA_PATH, sep='\t')
     
     print(f"\nLoaded {len(df)} molecules.")
     print("Extracting 2D Morgan Fingerprints and 3D Shape Descriptors (This may take a few minutes)...")
@@ -79,9 +86,10 @@ def process_pgp_data():
         'means': scaler.mean_.tolist(),
         'stds': scaler.scale_.tolist()
     }
-    with open('../models/pgp_scaler_metadata.json', 'w') as f:
+    metadata_path = os.path.join(MODELS_DIR, "pgp_scaler_metadata.json")
+    with open(metadata_path, 'w') as f:
         json.dump(metadata, f)
-    print("Saved scaler metadata to models/pgp_scaler_metadata.json")
+    print(f"Saved scaler metadata to {metadata_path}")
     
     fp_cols = [f'FP_{i}' for i in range(2048)]
     desc_cols = ['MolWt', 'LogP', 'TPSA', 'HDonors', 'HAcceptors', 'RotBonds', 
@@ -96,7 +104,7 @@ def process_pgp_data():
     
     df_final = pd.concat([df_valid, fp_df, desc_df], axis=1)
     
-    output_path = "../data/processed_pgp_data.csv"
+    output_path = os.path.join(BASE_DIR, "data", "processed_pgp_data.csv")
     df_final.to_csv(output_path, index=False)
     print(f"\nFeature engineering complete! Saved {df_final.shape[0]} molecules to {output_path}")
 

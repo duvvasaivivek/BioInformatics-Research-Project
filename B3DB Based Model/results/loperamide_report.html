@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dual-Barrier CNS Drug Report - CN(C)C(=O)CC(c1ccccc1)(c2ccccc2)CCN3CCC(CC3)(c4ccc(cc4)Cl)O</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f7fafc;
+            color: #2d3748;
+            margin: 0;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a365d, #2b6cb0);
+            color: white;
+            padding: 24px 30px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header h1 { margin: 0 0 10px 0; font-size: 1.8rem; }
+        .header p { margin: 4px 0; font-size: 0.95rem; opacity: 0.9; }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+        .card h2 {
+            color: #1a365d;
+            margin-top: 0;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 10px;
+        }
+        .quadrant-box {
+            padding: 18px 24px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 6px solid #3182ce;
+            background: #ebf8ff;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .metric-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .badge-green { background: #c6f6d5; color: #22543d; }
+        .badge-red { background: #fed7d7; color: #742a2a; }
+        .badge-yellow { background: #fefcbf; color: #744210; }
+        .badge {
+            display: inline-block;
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        .data-table th, .data-table td {
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+        }
+        .cf-card {
+            background: #f8fafc;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        .disclaimer {
+            background: #fffaf0;
+            border-left: 4px solid #dd6b20;
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            color: #7b341e;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        code {
+            background: #edf2f7;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.88rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Dual-Barrier CNS Drug Candidate Evaluation Report</h1>
+        <p><strong>Candidate SMILES:</strong> <code>CN(C)C(=O)CC(c1ccccc1)(c2ccccc2)CCN3CCC(CC3)(c4ccc(cc4)Cl)O</code></p>
+        <p><strong>Generated on:</strong> 2026-10-19 11:29:23 | <strong>Pipeline Version:</strong> Dual-Barrier XAI v2.0</p>
+    </div>
+
+    <!-- 1. Dual-Barrier Classification -->
+    <div class="card">
+        <h2>1. Dual-Barrier Four-Quadrant Assessment</h2>
+        <div class="quadrant-box">
+            <h3 style="margin:0 0 8px 0; font-size:1.2rem;">Classification: Quadrant 2: BBB+ / P-gp+ [Paradoxical Drug / High Efflux Risk]</h3>
+            <p style="margin:0; font-size:0.95rem;">Compound readily partitions into endothelial membranes (BBB+), but high spatial bulk or Seelig H-bonding motifs trigger active luminal extrusion by P-glycoprotein. Resembles Loperamide: high in vitro lipophilicity but negligible brain exposure.</p>
+        </div>
+        <div class="grid-2" style="margin-top:15px;">
+            <div style="background:#f7fafc; padding:15px; border-radius:6px;">
+                <p style="margin:0 0 5px 0;"><strong>Blood-Brain Barrier (BBB) Permeability:</strong></p>
+                <span class="metric-badge badge-green">BBB+ (Permeable)</span>
+                <span style="margin-left:10px; font-weight:600;">93.4% Confidence</span>
+                <p style="font-size:0.85rem; color:#718096; margin-top:8px;">Model: Bayesian Optuna-XGBoost (B3DB Benchmark, 7,807 molecules)</p>
+            </div>
+            <div style="background:#f7fafc; padding:15px; border-radius:6px;">
+                <p style="margin:0 0 5px 0;"><strong>P-glycoprotein (ABCB1) Efflux Status:</strong></p>
+                <span class="metric-badge badge-red">P-gp+ (Substrate / Effluxed)</span>
+                <span style="margin-left:10px; font-weight:600;">90.7% Confidence</span>
+                <p style="font-size:0.85rem; color:#718096; margin-top:8px;">Model: 3D Conformation-Augmented XGBoost (Broccatelli TDC Benchmark)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. BBB Detailed Explainability -->
+    <div class="card">
+        <h2>2. Blood-Brain Barrier (BBB) Permeability Explainability (TreeSHAP)</h2>
+        <p><strong>Model Base Value (&phi;<sub>0</sub>):</strong> -0.3121 | <strong>Total Margin Output f(x):</strong> +2.6488 (Log-odds space)</p>
+        <p><strong>Biophysical Basis:</strong> Optimal lipophilicity (LogP 5.48 >= 1.5) provides favorable membrane partition thermodynamics. Low polar surface area (TPSA 43.8 <= 90 A^2) incurs low desolvation penalty upon entering lipid bilayers. Restricted hydrogen-bond donors (HBD 1 <= 2) limits dipole-dipole water trapping in the lumen.</p>
+        <p><strong>Medicinal Chemistry Reference:</strong> Conforms to Pajouhesh & Lenz (2005) CNS medicinal chemistry guidelines (MW < 400, LogP 2-4, TPSA < 90 A^2).</p>
+        
+        <h4 style="margin:18px 0 8px 0; color:#2c5282;">Top Features Supporting Predicted BBB Outcome</h4>
+        
+            <table class='data-table'>
+                <thead>
+                    <tr><th>Feature</th><th>Value</th><th>TreeSHAP Attribution (Margin)</th><th>Substructural Motif</th></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><strong>TPSA</strong></td>
+                    <td>43.780</td>
+                    <td style='color:#38a169; font-weight:bold;'>+1.2020</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_1791</strong></td>
+                    <td>1.000</td>
+                    <td style='color:#38a169; font-weight:bold;'>+0.5234</td>
+                    <td><code>CN(C)C</code> (Basic / Aromatic Nitrogen Heterocycle)</td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_1163</strong></td>
+                    <td>1.000</td>
+                    <td style='color:#38a169; font-weight:bold;'>+0.4208</td>
+                    <td><code>CN</code> (Carbon Backbone / Hydrocarbon Fragment)</td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_1145</strong></td>
+                    <td>1.000</td>
+                    <td style='color:#38a169; font-weight:bold;'>+0.3932</td>
+                    <td><code>CCN</code> (Carbon Backbone / Hydrocarbon Fragment)</td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_484</strong></td>
+                    <td>1.000</td>
+                    <td style='color:#38a169; font-weight:bold;'>+0.3831</td>
+                    <td><code>cccc(c)C</code> (Aromatic Hydrophobic Core)</td>
+                </tr>
+                </tbody>
+            </table>
+            
+
+        <h4 style="margin:18px 0 8px 0; color:#742a2a;">Top Features Opposing Predicted BBB Outcome</h4>
+        
+            <table class='data-table'>
+                <thead>
+                    <tr><th>Feature</th><th>Value</th><th>TreeSHAP Attribution (Margin)</th><th>Substructural Motif</th></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><strong>MolWt</strong></td>
+                    <td>491.075</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.8883</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_1977</strong></td>
+                    <td>1.000</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.3726</td>
+                    <td><code>CC(c)(O)CCN</code> (Aromatic Hydrophobic Core)</td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_1717</strong></td>
+                    <td>1.000</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.2627</td>
+                    <td><code>ccc(cc)C(C)(C)O</code> (Aromatic Hydrophobic Core)</td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_1417</strong></td>
+                    <td>1.000</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.2213</td>
+                    <td><code>cc(c)C</code> (Carbon Backbone / Hydrocarbon Fragment)</td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_389</strong></td>
+                    <td>1.000</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.1741</td>
+                    <td><code>ccccc</code> (Aromatic Hydrophobic Core)</td>
+                </tr>
+                </tbody>
+            </table>
+            
+    </div>
+
+    <!-- 3. P-gp Detailed Explainability -->
+    <div class="card">
+        <h2>3. P-glycoprotein (P-gp / ABCB1) Efflux Explainability (TreeSHAP & 3D Conformation)</h2>
+        <p><strong>Model Base Value (&phi;<sub>0</sub>):</strong> +0.1519 | <strong>Total Margin Output f(x):</strong> +2.2734</p>
+        <p><strong>Efflux Cavity Mechanism:</strong> Spacious spatial envelope (MW 491.1 Da, Rg 5.17 A) spans P-gp's large translocating cavity (~6000 A^3). High conformational flexibility (RotBonds 8 >= 6) allows induced-fit binding inside the transmembrane helices.</p>
+        <p><strong>Pharmacological Reference:</strong> Aligns with Seelig (1998) pharmacophore rules and Broccatelli (2011) 3D cavity recognition patterns.</p>
+
+        <h4 style="margin:18px 0 8px 0; color:#2c5282;">Top Features Supporting P-gp Outcome</h4>
+        
+            <table class='data-table'>
+                <thead>
+                    <tr><th>Feature</th><th>Value</th><th>TreeSHAP Attribution (Margin)</th><th>Substructural Motif</th></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><strong>LogP</strong></td>
+                    <td>5.478</td>
+                    <td style='color:#38a169; font-weight:bold;'>+2.0399</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>RadiusOfGyration</strong></td>
+                    <td>5.171</td>
+                    <td style='color:#38a169; font-weight:bold;'>+0.7021</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>NPR2</strong></td>
+                    <td>0.964</td>
+                    <td style='color:#38a169; font-weight:bold;'>+0.4718</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>MolWt</strong></td>
+                    <td>491.075</td>
+                    <td style='color:#38a169; font-weight:bold;'>+0.4057</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_881</strong></td>
+                    <td>1.000</td>
+                    <td style='color:#38a169; font-weight:bold;'>+0.2074</td>
+                    <td><code>N</code> (Aliphatic Amine / Nitrogen Center)</td>
+                </tr>
+                </tbody>
+            </table>
+            
+
+        <h4 style="margin:18px 0 8px 0; color:#742a2a;">Top Features Opposing P-gp Outcome</h4>
+        
+            <table class='data-table'>
+                <thead>
+                    <tr><th>Feature</th><th>Value</th><th>TreeSHAP Attribution (Margin)</th><th>Substructural Motif</th></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><strong>FP_1073</strong></td>
+                    <td>0.000</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.8247</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_695</strong></td>
+                    <td>0.000</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.2143</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_1754</strong></td>
+                    <td>0.000</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.1203</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_1656</strong></td>
+                    <td>0.000</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.1193</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                
+                <tr>
+                    <td><strong>FP_302</strong></td>
+                    <td>0.000</td>
+                    <td style='color:#e53e3e; font-weight:bold;'>-0.1045</td>
+                    <td><span style='color:#a0aec0;'>Continuous / Global</span></td>
+                </tr>
+                </tbody>
+            </table>
+            
+    </div>
+
+    <!-- 4. Shared Properties Analysis -->
+    <div class="card">
+        <h2>4. BBB - P-gp Shared Molecular Properties Analysis</h2>
+        <p style="font-size:0.95rem; color:#4a5568;">Comparative assessment of 6 common physicochemical descriptors across both barrier mechanisms:</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                    <th>BBB Model Impact (&phi;)</th>
+                    <th>P-gp Model Impact (&phi;)</th>
+                    <th>Task Relationship</th>
+                    <th>Scientific Interpretation</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td><strong>Molecular Weight (Da)</strong></td>
+                <td>491.08</td>
+                <td style='font-weight:bold;'>-0.8883</td>
+                <td style='font-weight:bold;'>+0.4057</td>
+                <td><span class='badge'>Compound Barrier Burden</span></td>
+                <td><small>Elevated MW (491.1 Da) simultaneously retards passive transcellular diffusion (BBB-) and provides bulk contact points for P-gp binding (P-gp+).</small></td>
+            </tr>
+            
+            <tr>
+                <td><strong>Lipophilicity (MolLogP)</strong></td>
+                <td>5.48</td>
+                <td style='font-weight:bold;'>+0.2387</td>
+                <td style='font-weight:bold;'>+2.0399</td>
+                <td><span class='badge'>Antagonistic (Divergent)</span></td>
+                <td><small>LogP (5.48) promotes passive membrane partition (BBB+), but simultaneously increases hydrophobic cavity affinity for P-gp efflux pump (P-gp+).</small></td>
+            </tr>
+            
+            <tr>
+                <td><strong>Polar Surface Area (TPSA, A^2)</strong></td>
+                <td>43.78</td>
+                <td style='font-weight:bold;'>+1.2020</td>
+                <td style='font-weight:bold;'>+0.1753</td>
+                <td><span class='badge'>Permeation Favorable</span></td>
+                <td><small>Compact polar area (43.8 A^2 <= 90) permits smooth desolvation upon membrane entry.</small></td>
+            </tr>
+            
+            <tr>
+                <td><strong>H-Bond Donors (HBD)</strong></td>
+                <td>1.00</td>
+                <td style='font-weight:bold;'>+0.2204</td>
+                <td style='font-weight:bold;'>+0.0652</td>
+                <td><span class='badge'>Seelig Pharmacophore Trigger</span></td>
+                <td><small>HDonors (1) fits Seelig's spatial hydrogen-bonding motifs, triggering P-gp ATPase activation and efflux.</small></td>
+            </tr>
+            
+            <tr>
+                <td><strong>H-Bond Acceptors (HBA)</strong></td>
+                <td>3.00</td>
+                <td style='font-weight:bold;'>-0.0878</td>
+                <td style='font-weight:bold;'>-0.0222</td>
+                <td><span class='badge'>Restricted H-Bonding</span></td>
+                <td><small>Low HAcceptors (3) avoids forming electrostatic anchor points with P-gp transmembrane helices.</small></td>
+            </tr>
+            
+            <tr>
+                <td><strong>Rotatable Bonds (Flexibility)</strong></td>
+                <td>8.00</td>
+                <td style='font-weight:bold;'>+0.2076</td>
+                <td style='font-weight:bold;'>-0.0050</td>
+                <td><span class='badge'>Rigid Framework</span></td>
+                <td><small>Low rotatable bond count (8) provides rigid structural compactness, resisting induced-fit entrapment.</small></td>
+            </tr>
+            
+            </tbody>
+        </table>
+        <div style="background:#f7fafc; padding:12px; border-radius:6px; font-size:0.9rem;">
+            <strong>Cross-Task Synthesis:</strong> Antagonistic forces observed in Lipophilicity (MolLogP): properties that facilitate passive lipid membrane partition simultaneously promote active ABCB1 recognition.
+        </div>
+    </div>
+
+    <!-- 5. Applicability Domain -->
+    <div class="card">
+        <h2>5. Applicability Domain & Uncertainty Assessment</h2>
+        <div class="grid-2">
+            <div style="background:#f7fafc; padding:14px; border-radius:6px;">
+                <h4 style="margin:0 0 8px 0;">BBB Chemical Domain</h4>
+                <p style="margin:4px 0;">Status: <strong>Borderline Domain</strong></p>
+                <p style="margin:4px 0;">Max Tanimoto to Training: <code>0.3425</code></p>
+                <p style="margin:4px 0;">Descriptor Leverage: <code>0.836</code></p>
+            </div>
+            <div style="background:#f7fafc; padding:14px; border-radius:6px;">
+                <h4 style="margin:0 0 8px 0;">P-gp Chemical Domain</h4>
+                <p style="margin:4px 0;">Status: <strong>Inside Domain</strong></p>
+                <p style="margin:4px 0;">Max Tanimoto to Training: <code>0.7143</code></p>
+                <p style="margin:4px 0;">Descriptor Leverage: <code>0.802</code></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Counterfactuals (if any) -->
+    
+            <div class='card'>
+                <h2>6. Chemically Valid Counterfactual Analogs (Molecular Optimization)</h2>
+                
+                <div class='cf-card'>
+                    <div style='display:flex; justify-content:space-between; align-items:center;'>
+                        <span class='badge' style='background:#2b6cb0;'>Tanimoto: 0.3158</span>
+                        <span style='font-size:0.85rem; color:#4a5568;'>Tertiary to Secondary Amine Demethylation</span>
+                    </div>
+                    <p style='margin:8px 0; font-family:monospace; word-break:break-all;'><strong>Analog SMILES:</strong> [H]N1CCC(O)(c2ccc(Cl)cc2)CC1</p>
+                    <p style='color:#2f855a; margin:4px 0;'><strong>Effect:</strong> Successfully evaded P-gp efflux (P-gp+ -> P-gp-).</p>
+                    <small>BBB Prob: 67.2% | P-gp Prob: 0.9%</small>
+                </div>
+                
+                <div class='cf-card'>
+                    <div style='display:flex; justify-content:space-between; align-items:center;'>
+                        <span class='badge' style='background:#2b6cb0;'>Tanimoto: 0.0</span>
+                        <span style='font-size:0.85rem; color:#4a5568;'>Ether O-Demethylation (-OMe -> -OH: reduces lipophilicity for excessive LogP)</span>
+                    </div>
+                    <p style='margin:8px 0; font-family:monospace; word-break:break-all;'><strong>Analog SMILES:</strong> [H]O</p>
+                    <p style='color:#2f855a; margin:4px 0;'><strong>Effect:</strong> Successfully evaded P-gp efflux (P-gp+ -> P-gp-).</p>
+                    <small>BBB Prob: 72.7% | P-gp Prob: 1.2%</small>
+                </div>
+                
+            </div>
+            
+
+    <div class="disclaimer">
+        <strong>Scientific and Regulatory Disclaimer:</strong> This computational report is designed for preclinical screening, lead optimization, and research prioritization. A predicted BBB+ / P-gp- profile does not guarantee in vivo CNS efficacy or safety, as total brain exposure depends upon free unbound fraction (f_u,brain), metabolic stability, plasma protein binding, and non-Pgp clearance pathways.
+    </div>
+</div>
+</body>
+</html>

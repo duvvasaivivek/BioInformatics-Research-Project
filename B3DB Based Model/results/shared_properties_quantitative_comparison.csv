@@ -1,0 +1,7 @@
+Property,BBB_Mean_Abs_SHAP,Pgp_Mean_Abs_SHAP,BBB_Signed_SHAP,Pgp_Signed_SHAP,Task_Category,Scientific_Interpretation
+MolWt,0.6955,0.6292,-0.0412,0.02,Compound Barrier,Impedes passive diffusion (BBB-) while expanding contacts within the P-gp translocation pocket (P-gp+).
+LogP,0.3957,1.4074,0.0545,0.1139,Antagonistic,Promotes passive lipid partitioning (BBB+) but simultaneously increases affinity for the P-gp cavity (P-gp+).
+TPSA,0.9875,0.1266,0.2473,0.0268,Desolvation Filter,Polar penalty reduces transcellular influx (BBB-) while moderately deterring hydrophobic P-gp cleft binding.
+HDonors,0.2548,0.068,0.0421,0.0129,Efflux Trigger (Seelig),Hydrogen-bonding pairs act as primary recognition motifs for ABCB1 transmembrane helices.
+HAcceptors,0.1118,0.0479,0.0321,-0.019,Efflux Trigger (Seelig),Hydrogen-bonding pairs act as primary recognition motifs for ABCB1 transmembrane helices.
+RotBonds,0.1591,0.0671,0.0139,-0.0049,Conformational Flexibility,Rotatable bonds allow induced-fit cavity binding inside the multidrug transporter chamber.

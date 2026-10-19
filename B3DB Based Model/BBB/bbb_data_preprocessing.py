@@ -10,8 +10,10 @@ import os
 # Suppress RDKit warnings
 RDLogger.DisableLog('rdApp.*')
 
-DATA_PATH = "../data/B3DB_classification.tsv"
-OUTPUT_PATH = "../data/processed_b3db_data_advanced.csv"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "data")
+DATA_PATH = os.path.join(DATA_DIR, "B3DB_classification.tsv")
+OUTPUT_PATH = os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv")
 
 def process_data():
     print(f"Loading dataset from {DATA_PATH}...")
