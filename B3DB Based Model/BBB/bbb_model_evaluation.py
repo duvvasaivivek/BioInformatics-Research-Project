@@ -7,15 +7,20 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(SCRIPT_DIR)
+DATA_PATH = os.path.join(BASE_DIR, "data", "processed_b3db_data_advanced.csv")
+MODEL_PATH = os.path.join(BASE_DIR, "models", "bbb_xgboost_optuna_best.json")
+
 print("Loading dataset and model...")
-df = pd.read_csv("../data/processed_b3db_data_advanced.csv")
+df = pd.read_csv(DATA_PATH)
 X = df.drop(columns=['SMILES', 'Label'])
 y = df['Label']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 model = xgb.XGBClassifier()
-model.load_model("../models/bbb_xgboost_optuna_best.json")
+model.load_model(MODEL_PATH)
 
 print("Making predictions...")
 preds = model.predict(X_test)
@@ -29,8 +34,7 @@ auc = roc_auc_score(y_test, probs)
 
 print(f"Metrics: Acc={acc:.4f}, Prec={prec:.4f}, Rec={rec:.4f}, F1={f1:.4f}, AUC={auc:.4f}")
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
-out_dir = os.path.join(base_dir, "..", "plots")
+out_dir = os.path.join(BASE_DIR, "figures")
 os.makedirs(out_dir, exist_ok=True)
 
 # 1. Confusion Matrix

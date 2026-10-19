@@ -12,12 +12,19 @@ warnings.filterwarnings('ignore', category=UserWarning)
 # Disable Optuna's default messy logger
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
+import os
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(SCRIPT_DIR)
+DATA_PATH = os.path.join(BASE_DIR, "data", "processed_b3db_data_advanced.csv")
+MODELS_DIR = os.path.join(BASE_DIR, "models")
+
 def print_best_callback(study, trial):
     print(f"Trial {trial.number:02d} finished | Current F1: {trial.value:.4f} | Best F1: {study.best_value:.4f}")
 
 def load_data():
     print("Loading dataset...")
-    df = pd.read_csv("../data/processed_b3db_data_advanced.csv")
+    df = pd.read_csv(DATA_PATH)
     X = df.drop(columns=['SMILES', 'Label'])
     y = df['Label']
     return train_test_split(X, y, test_size=0.2, random_state=42)
@@ -106,7 +113,7 @@ def main():
     print(f"Recall:    {recall_score(y_test, y_pred):.4f}")
     print(f"F1-Score:  {f1_score(y_test, y_pred):.4f}")
     
-    save_path = "../models/bbb_xgboost_optuna_best.json"
+    save_path = os.path.join(MODELS_DIR, "bbb_xgboost_optuna_best.json")
     final_model.save_model(save_path)
     print(f"\nSaved best tuned model to {save_path}")
 
