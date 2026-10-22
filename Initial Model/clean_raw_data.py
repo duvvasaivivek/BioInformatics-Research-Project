@@ -1,8 +1,8 @@
 import pandas as pd
 from rdkit import Chem
 
-
-FILE_PATH = "Dataset/ci600312d_si_001.xls"
+import os
+FILE_PATH = "Dataset/raw_adenot_li.xls" if os.path.exists("Dataset/raw_adenot_li.xls") else "Dataset/ci600312d_si_001.xls"
 
 
 # ============================================================
