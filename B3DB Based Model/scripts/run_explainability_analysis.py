@@ -32,6 +32,7 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 # Add explainability package
 sys.path.insert(0, BASE_DIR)
 from explainability import DualBarrierShapExplainer
+from core.features import load_processed_dataset
 
 
 def run_global_analysis():
@@ -41,14 +42,19 @@ def run_global_analysis():
 
     # 1. Load BBB Model & Data
     print("\n[1/5] Loading BBB dataset and Optuna-tuned model...")
-    bbb_data_path = os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv")
-    df_bbb = pd.read_csv(bbb_data_path)
-    X_bbb = df_bbb.drop(columns=['SMILES', 'Label'])
-    y_bbb = df_bbb['Label']
+    # Features arrive z-scored with the training-derived scaler. Reading the
+    # processed CSV directly - as this script previously did - feeds RAW
+    # descriptors to a model trained on z-scores, so MolWt entered at ~384
+    # instead of ~0 and every attribution below was invalid.
+    X_bbb, y_bbb, _ = load_processed_dataset(
+        os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv"),
+        os.path.join(MODELS_DIR, "bbb_scaler_metadata.json"),
+        is_pgp=False
+    )
 
-    # Exact held-out split matching bbb_model_training.py
+    # Exact held-out split matching bbb_model_training.py: 15%, stratified.
     X_bbb_train, X_bbb_test, y_bbb_train, y_bbb_test = train_test_split(
-        X_bbb, y_bbb, test_size=0.2, random_state=42
+        X_bbb, y_bbb, test_size=0.15, random_state=42, stratify=y_bbb
     )
 
     bbb_model = xgb.XGBClassifier()
@@ -56,11 +62,13 @@ def run_global_analysis():
 
     # 2. Load P-gp Model & Data
     print("[2/5] Loading P-gp dataset and 3D shape model...")
-    pgp_data_path = os.path.join(DATA_DIR, "processed_pgp_data.csv")
-    df_pgp = pd.read_csv(pgp_data_path)
-    X_pgp = df_pgp.drop(columns=['SMILES', 'Label'])
-    y_pgp = df_pgp['Label']
+    X_pgp, y_pgp, _ = load_processed_dataset(
+        os.path.join(DATA_DIR, "processed_pgp_data.csv"),
+        os.path.join(MODELS_DIR, "pgp_scaler_metadata.json"),
+        is_pgp=True
+    )
 
+    # Matches pgp_model_training.py: 20%, stratified.
     X_pgp_train, X_pgp_test, y_pgp_train, y_pgp_test = train_test_split(
         X_pgp, y_pgp, test_size=0.2, random_state=42, stratify=y_pgp
     )

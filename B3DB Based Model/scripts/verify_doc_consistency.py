@@ -126,14 +126,27 @@ def verify_shap_table() -> None:
     check('every BBB mean |SHAP| value appears in the prose', not missing,
           f'missing {missing}' if missing else f'{len(df)} properties checked')
 
-    # These numbers are produced by a pipeline that omits the scaler, so any doc
-    # presenting them must carry the caveat rather than stating them bare.
+    # The generating script must apply the training-derived scaler. These numbers
+    # were invalid for as long as it did not, so this is checked at the source
+    # rather than trusted.
+    script = os.path.join(BASE_DIR, 'scripts', 'run_explainability_analysis.py')
+    with open(script, 'r', encoding='utf-8') as f:
+        src = f.read()
+    check('run_explainability_analysis.py loads scaled features',
+          'load_processed_dataset' in src,
+          'must route through core.features.load_processed_dataset')
+    check('run_explainability_analysis.py uses the training BBB split',
+          'test_size=0.15' in src and 'stratify=y_bbb' in src,
+          'bbb_model_training.py uses test_size=0.15, stratified')
+
+    # With the scaler applied the values are valid, so the provisional caveat must
+    # be gone. A stale caveat is as misleading as a missing one.
     for name, text in (('manuscript', man), ('scidoc', sci)):
         if not text:
             continue
-        has = 'Pending recomputation' in text or 'pending recomputation' in text
-        check(f'{name} flags the SHAP values as provisional', has,
-              'required while run_explainability_analysis.py applies no scaler')
+        stale = 'Pending recomputation' in text or 'pending recomputation' in text
+        check(f'{name} no longer carries the stale provisional caveat', not stale,
+              'scaler is applied, so the values are no longer provisional')
 
 
 def verify_parameter_census() -> None:
@@ -210,15 +223,44 @@ def verify_docking_count() -> None:
     n = len(pd.read_csv(csv))
     print(f'      docked compounds in results: {n}')
 
+    df = pd.read_csv(csv)
+    counts = df.quadrant.value_counts().to_dict()
+    print(f'      quadrant composition: {counts}')
+
     man = read_doc('RESEARCH_PAPER_MANUSCRIPT.md')
     if man:
-        check('manuscript does not claim twenty-two docked compounds',
-              'Twenty-two representative therapeutics spanning' not in man)
         check('manuscript states the correct docked count',
-              'Twenty-one representative therapeutics' in man, f'n = {n}')
-        check('manuscript documents the excluded compound',
-              'Topotecan' in man and 'excluded' in man,
-              'Topotecan failed kekulisation and produced no pose')
+              f'All **{n}** representative therapeutics' in man, f'n = {n}')
+        check('manuscript no longer excludes Topotecan',
+              'excluded from all results' not in man,
+              'Topotecan now docks after the SMILES correction')
+        check('every docked compound is named in the manuscript',
+              all(name in man for name in df.compound_name),
+              f'{len(df)} compounds checked')
+        for q, c in counts.items():
+            check(f'manuscript reports n={c} for {q}',
+                  f'$n={c}$' in man, f'{q} has {c} compounds')
+        check('manuscript records the structure-provenance correction',
+              'Structure provenance' in man,
+              'six benchmark SMILES had the wrong skeleton')
+        check('manuscript states the quoted docking statistics',
+              f'{abs(float(df[df.quadrant == "Q2"].delta_g_bind_kcal_mol.mean())):.2f}' in man,
+              'Q2 mean binding energy')
+
+    # The ML probabilities must come from the models, not from literals.
+    script = os.path.join(BASE_DIR, 'scripts', 'run_cryoem_docking_validation.py')
+    with open(script, 'r', encoding='utf-8') as f:
+        src = f.read()
+    n_literals = src.count("'prob_pgp_ml': 0.")
+    check('docking script holds no hard-coded ML probabilities', n_literals == 0,
+          f'{n_literals} literals found' if n_literals else 'computed at runtime')
+    check('docking script resolves structures from curated sources',
+          'resolve_benchmark_smiles' in src)
+    # Vina seeds from the clock by default, so an unseeded run cannot reproduce
+    # any binding energy the manuscript quotes.
+    check('docking is seeded and therefore reproducible',
+          '"--seed"' in src and 'VINA_SEED' in src,
+          'AutoDock Vina is stochastic without an explicit seed')
 
 
 def verify_deleted_files_absent() -> None:

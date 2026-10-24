@@ -170,17 +170,16 @@ $$P(\text{BBB}^+) = \frac{1}{1 + e^{-f(\mathbf{x})}}$$
 
 ### Empirical Feature Rankings for BBB Permeation
 
-> **Caveat.** The attributions below are reproduced from
-> `results/shared_properties_quantitative_comparison.csv`, but
-> `scripts/run_explainability_analysis.py` applies no scaler before explaining a
-> model trained on z-scored descriptors. These values are therefore **provisional
-> and pending recomputation**; the ranking may change once the scaler is applied.
-1. **Topological Polar Surface Area (TPSA):** Mean $|\text{SHAP}| = 0.9875$ (Primary desolvation filter).
-2. **Molecular Weight (MolWt):** Mean $|\text{SHAP}| = 0.6955$ (Steric kinetic diffusion retardant).
-3. **Lipophilicity (MolLogP):** Mean $|\text{SHAP}| = 0.3957$ (Membrane partition driver).
-4. **Hydrogen Bond Donors (HDonors):** Mean $|\text{SHAP}| = 0.2548$.
-5. **Rotatable Bonds (RotBonds):** Mean $|\text{SHAP}| = 0.1591$.
-6. **Hydrogen Bond Acceptors (HAcceptors):** Mean $|\text{SHAP}| = 0.1118$.
+> Computed on correctly z-scored descriptors via
+> `core.features.load_processed_dataset`, which applies the training-derived scaler.
+> An earlier version of this analysis omitted that step and reported attributions on
+> raw descriptor values.
+1. **Topological Polar Surface Area (TPSA):** Mean $|\text{SHAP}| = 1.1825$ (Primary desolvation filter).
+2. **Molecular Weight (MolWt):** Mean $|\text{SHAP}| = 0.5366$ (Steric kinetic diffusion retardant).
+3. **Lipophilicity (MolLogP):** Mean $|\text{SHAP}| = 0.3992$ (Membrane partition driver).
+4. **Hydrogen Bond Donors (HDonors):** Mean $|\text{SHAP}| = 0.2711$.
+5. **Hydrogen Bond Acceptors (HAcceptors):** Mean $|\text{SHAP}| = 0.1198$.
+6. **Rotatable Bonds (RotBonds):** Mean $|\text{SHAP}| = 0.1113$.
 
 ---
 
@@ -213,12 +212,12 @@ Because P-gp's multisite cavity recognizes spatial molecular geometry, 2D finger
 
 | Property | BBB Mean \|SHAP\| | P-gp Mean \|SHAP\| | Task Category | Biophysical Interpretation |
 |---|:---:|:---:|:---:|---|
-| **TPSA ($\text{\AA}^2$)** | **0.9875** | 0.1266 | Desolvation Filter | Primary barrier for passive BBB crossing due to desolvation penalty; negligible impact on P-gp efflux. |
-| **MolLogP** | 0.3957 | **1.4074** | **Antagonistic (Divergent)** | High lipophilicity favors passive entry ($\text{BBB}^+$), but simultaneously acts as the strongest recruiter for active P-gp efflux ($\text{P-gp}^+$). |
-| **MolWt (Da)** | 0.6955 | 0.6292 | Compound Barrier Burden | High size retards passive membrane diffusion while expanding interaction contacts inside the P-gp cavity. |
-| **HDonors (HBD)** | 0.2548 | 0.0680 | Seelig Efflux Trigger | Increasing donors creates aqueous clusters retarding permeation while activating Seelig recognition patterns. |
-| **HAcceptors (HBA)**| 0.1118 | 0.0479 | Efflux Trigger | Hydrogen bonding acceptors increase polarity and activate P-gp ATPase. |
-| **RotBonds** | 0.1591 | 0.0671 | Induced-Fit Risk | Flexibility allows molecules to adopt induced-fit conformations inside P-gp transmembrane helices. |
+| **TPSA ($\text{\AA}^2$)** | **1.1825** | 0.1434 | Desolvation Filter | Primary barrier for passive BBB crossing due to desolvation penalty; negligible impact on P-gp efflux. |
+| **MolLogP** | 0.3992 | **1.3949** | **Antagonistic (Divergent)** | High lipophilicity favors passive entry ($\text{BBB}^+$), but simultaneously acts as the strongest recruiter for active P-gp efflux ($\text{P-gp}^+$). |
+| **MolWt (Da)** | 0.5366 | 0.5783 | Compound Barrier Burden | High size retards passive membrane diffusion while expanding interaction contacts inside the P-gp cavity. |
+| **HDonors (HBD)** | 0.2711 | 0.0911 | Seelig Efflux Trigger | Increasing donors creates aqueous clusters retarding permeation while activating Seelig recognition patterns. |
+| **HAcceptors (HBA)**| 0.1198 | 0.0708 | Efflux Trigger | Hydrogen bonding acceptors increase polarity and activate P-gp ATPase. |
+| **RotBonds** | 0.1113 | 0.0387 | Induced-Fit Risk | Flexibility allows molecules to adopt induced-fit conformations inside P-gp transmembrane helices. |
 
 ### Spearman Rank Correlation
 $$\rho = 0.7714 \quad (p = 0.0724)$$

@@ -156,3 +156,53 @@ def prepare_dataframe(
         features[name] = scaled[i]
 
     return pd.DataFrame([features])
+
+
+def load_processed_dataset(
+    data_path: str,
+    scaler_metadata_path: str,
+    is_pgp: bool = False
+) -> Tuple[pd.DataFrame, pd.Series, pd.Series]:
+    """
+    Loads a processed feature CSV and returns TRAINING-SCALED features.
+
+    The processed CSVs store RAW descriptor values by design, so every consumer
+    has to apply the training-derived scaler itself. Three call sites previously
+    forgot, which produced invalid global SHAP attributions and two invalid
+    evaluation scripts. Routing every read through this helper makes the scaling
+    non-optional rather than a convention each script has to remember.
+
+    Returns (X_scaled, y, smiles). Column order is preserved exactly: the saved
+    boosters are position-sensitive, and reordering silently corrupts inference.
+
+    Raises FileNotFoundError if the scaler metadata is missing. Failing loudly is
+    deliberate - silently returning unscaled features is the original defect.
+    """
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f"Processed dataset not found: {data_path}")
+
+    means, stds = load_scaler_metadata(scaler_metadata_path)
+    if means is None or stds is None:
+        raise FileNotFoundError(
+            f"Scaler metadata missing or unreadable: {scaler_metadata_path}. "
+            f"Refusing to return unscaled features."
+        )
+
+    df = pd.read_csv(data_path)
+    y = df['Label']
+    smiles = df['SMILES']
+    X = df.drop(columns=['SMILES', 'Label'])
+
+    names = PGP_DESCRIPTOR_NAMES if is_pgp else BBB_DESCRIPTOR_NAMES
+    missing = [c for c in names if c not in X.columns]
+    if missing:
+        raise ValueError(f"Processed dataset {data_path} lacks descriptor columns: {missing}")
+    if len(means) != len(names) or len(stds) != len(names):
+        raise ValueError(
+            f"Scaler metadata describes {len(means)} features but {len(names)} expected "
+            f"for {'P-gp' if is_pgp else 'BBB'}"
+        )
+
+    X = X.copy()
+    X[names] = (X[names].to_numpy(dtype=float) - np.asarray(means)) / np.asarray(stds)
+    return X, y, smiles

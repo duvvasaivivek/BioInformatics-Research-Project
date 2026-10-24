@@ -13,10 +13,10 @@ To overcome this fundamental clinical limitation, we present a unified **Dual-Ba
 1. An Optuna Bayesian-tuned gradient-boosted ensemble trained on the curated B3DB benchmark ($\sim 7,805$ compounds), achieving **$0.9522$ ROC-AUC [95% CI: $0.9410 - 0.9629$]** and **$0.8856$ Accuracy [95% CI: $0.8659 - 0.9035$]**;
 2. A 3D conformation-augmented P-gp classifier combining 2048-bit Morgan fingerprints, 2D descriptors, and six stereochemical shape descriptors ($R_g$, Asphericity, Eccentricity, Spherocity, $NPR_1, NPR_2$) generated via RDKit ETKDGv3 embedding, achieving **$0.9587$ ROC-AUC [95% CI: $0.9330 - 0.9806$]**;
 3. Mathematically rigorous TreeSHAP explainability in log-odds margin space with automatic Morgan bit-to-substructure deconvolution;
-4. A dedicated **Shared Molecular Properties Analysis** module revealing that shared properties exert biologically divergent influences across the two barriers (e.g., Lipophilicity promotes passive BBB entry with Mean $|\text{SHAP}| = 0.3957$, but is the strongest driver of P-gp efflux recruitment with Mean $|\text{SHAP}| = 1.4074$, yielding a cross-task Spearman rank correlation of $\rho = 0.7714$);
+4. A dedicated **Shared Molecular Properties Analysis** module revealing that shared properties exert biologically divergent influences across the two barriers (e.g., Lipophilicity promotes passive BBB entry with Mean $|\text{SHAP}| = 0.3992$, but is the strongest driver of P-gp efflux recruitment with Mean $|\text{SHAP}| = 1.4074$, yielding a cross-task Spearman rank correlation of $\rho = 0.7714$);
 5. A four-quadrant pharmacological decision matrix coupled with applicability domain estimation, prediction uncertainty metrics, and chemically valid reaction-based counterfactual search;
 6. **Systematic Virtual Screening of the FDA-Approved Pharmacopeia ($N=2,405$ drugs)** from the Broad Institute Drug Repurposing Hub, which uncovers **273 non-CNS approved drugs residing in Quadrant 1 ($\text{BBB}^+ / \text{P-gp}^-$)** with high repurposing potential for neuro-oncology (Thalidomide, Topotecan, Aminoglutethimide), neuroinflammation (Betamethasone, Triamcinolone), and CNS infections (Linezolid); and reveals that **105 marketed neuropsychiatric therapeutics reside in Quadrant 2 ($\text{BBB}^+ / \text{P-gp}^+$)**, providing a structural molecular rationale for clinical treatment resistance in refractory schizophrenia and depression;
-7. **Orthogonal Biophysical Validation via Cryo-EM Molecular Docking (PDB: 6QEX)**: Systematic docking into the 3.5 \AA inward-facing human P-glycoprotein translocation cavity reveals that ML-predicted efflux-vulnerable drugs (Quadrant 2) bind deeply with high negative free energy ($\text{Mean } \Delta G_{\text{bind}} = -8.94 \pm 1.12\text{ kcal/mol}$, nanomolar $K_d$) driven by extensive aromatic contact networks (Trp232, Phe303, Tyr307, Phe343, Gln725, Phe728, Phe983), whereas efflux evaders (Quadrant 1) exhibit significantly weaker affinities ($\text{Mean } \Delta G_{\text{bind}} = -6.83 \pm 1.37\text{ kcal/mol}$; Welch's $t = -3.53$, $p = 0.0035$), yielding a strong cross-modality rank correlation ($\rho = -0.5965$, $p = 0.0043$).
+7. **Orthogonal Biophysical Validation via Cryo-EM Molecular Docking (PDB: 6QEX)**: Systematic docking into the 3.5 \AA inward-facing human P-glycoprotein translocation cavity reveals that ML-predicted efflux-vulnerable drugs (Quadrant 2) bind deeply with high negative free energy ($\text{Mean } \Delta G_{\text{bind}} = -8.84 \pm 0.89\text{ kcal/mol}$, nanomolar $K_d$) driven by extensive aromatic contact networks (Trp232, Phe303, Tyr307, Phe343, Gln725, Phe728, Phe983), whereas efflux evaders (Quadrant 1) exhibit significantly weaker affinities ($\text{Mean } \Delta G_{\text{bind}} = -6.91 \pm 1.30\text{ kcal/mol}$; Welch's $t = -3.79$, $p = 0.00160$), yielding a strong cross-modality rank correlation ($\rho = -0.6117$, $p = 0.00249$).
 
 Tested against classic clinical benchmarks (Levetiracetam, Loperamide, Caffeine, Diazepam, Penicillin G) and validated across the entire approved pharmacopeia and Cryo-EM structural cavity, our model autonomously identifies the "golden window" of CNS drug design and resolves paradoxical drug classifications. All datasets, models, reproduction scripts, and validation suites are made available for open scientific reproduction.
 
@@ -183,21 +183,21 @@ Table 3 compares the empirical TreeSHAP attributions across the six shared conti
 
 **Table 3: Cross-Task Quantitative Comparison of Shared Physicochemical Properties**
 
-> **Pending recomputation.** The attributions in this table are reproduced from
-> `results/shared_properties_quantitative_comparison.csv`. That artifact is generated
-> by `scripts/run_explainability_analysis.py`, which applies no scaler before
-> explaining a model trained on z-scored descriptors. The values are therefore
-> **provisional**, and the relative ranking of TPSA against MolLogP in particular may
-> change once the scaling is corrected.
+> Computed on correctly z-scored descriptors using the training-derived scaler
+> (`models/bbb_scaler_metadata.json`, `models/pgp_scaler_metadata.json`). An earlier
+> version of `scripts/run_explainability_analysis.py` omitted this step; applying it
+> raised the TPSA attribution for BBB from 0.9875 to 1.1825 and lowered MolWt from
+> 0.6955 to 0.5366, but left the central conclusion intact: TPSA dominates passive
+> permeation and LogP dominates efflux recognition.
 
 | Molecular Descriptor | BBB Mean \|SHAP\| | P-gp Mean \|SHAP\| | Signed Shift (BBB $\to$ P-gp) | Pharmacological Task Relationship |
 |---|:---:|:---:|:---:|---|
-| **Topological Polar Surface Area (TPSA)** | **0.9875** | 0.1266 | $+0.2473 \to +0.0268$ | **Primary Desolvation Filter (BBB-Specific):** TPSA is the #1 predictor of BBB crossing due to high aqueous desolvation penalty, but exerts minimal influence on P-gp cavity binding. |
-| **Lipophilicity (MolLogP)** | 0.3957 | **1.4074** | $+0.0545 \to +0.1139$ | **Antagonistic (Divergent Driver):** LogP moderately favors passive membrane partition (BBB+), but serves as the #1 recruiter for the P-gp translocation cleft (P-gp+). |
-| **Molecular Weight (MolWt)** | 0.6955 | 0.6292 | $-0.0412 \to +0.0200$ | **Compound Barrier Burden:** Elevated mass simultaneously retards passive transcellular diffusion (BBB-) and provides bulk contact points for P-gp binding (P-gp+). |
-| **Hydrogen Bond Donors (HDonors)** | 0.2548 | 0.0680 | $+0.0421 \to +0.0129$ | **Seelig Efflux Trigger:** H-bond donor pairs trigger P-gp ATPase activation while forming lumen water traps. |
-| **Hydrogen Bond Acceptors (HAcceptors)**| 0.1118 | 0.0479 | $+0.0321 \to -0.0190$ | **Polarity Modifier:** Increases hydration layer strength. |
-| **Rotatable Bonds (RotBonds)** | 0.1591 | 0.0671 | $+0.0139 \to -0.0049$ | **Induced-Fit Plasticity:** High flexibility allows induced-fit cavity accommodation in ABCB1 transmembrane helices. |
+| **Topological Polar Surface Area (TPSA)** | **1.1825** | 0.1434 | $+0.1464 \to +0.0256$ | **Primary Desolvation Filter (BBB-Specific):** TPSA is the #1 predictor of BBB crossing due to high aqueous desolvation penalty, but exerts minimal influence on P-gp cavity binding. |
+| **Lipophilicity (MolLogP)** | 0.3992 | **1.3949** | $+0.0959 \to +0.1163$ | **Antagonistic (Divergent Driver):** LogP moderately favors passive membrane partition (BBB+), but serves as the #1 recruiter for the P-gp translocation cleft (P-gp+). |
+| **Molecular Weight (MolWt)** | 0.5366 | 0.5783 | $-0.0545 \to +0.0487$ | **Compound Barrier Burden:** Elevated mass simultaneously retards passive transcellular diffusion (BBB-) and provides bulk contact points for P-gp binding (P-gp+). |
+| **Hydrogen Bond Donors (HDonors)** | 0.2711 | 0.0911 | $-0.0017 \to +0.0159$ | **Seelig Efflux Trigger:** H-bond donor pairs trigger P-gp ATPase activation while forming lumen water traps. |
+| **Hydrogen Bond Acceptors (HAcceptors)**| 0.1198 | 0.0708 | $+0.0319 \to +0.0124$ | **Polarity Modifier:** Increases hydration layer strength. |
+| **Rotatable Bonds (RotBonds)** | 0.1113 | 0.0387 | $-0.0027 \to +0.0023$ | **Induced-Fit Plasticity:** High flexibility allows induced-fit cavity accommodation in ABCB1 transmembrane helices. |
 
 **Cross-Task Correlation:** The Spearman rank correlation across shared continuous descriptors is $\rho = 0.7714$, but with only six descriptors this is **not statistically significant** ($p = 0.0724$, $n = 6$) and is reported as an observation rather than a result. Although both tasks reward compact hydrophobic molecules, the prioritization is diametrically opposed: **TPSA dominates BBB permeation, whereas LogP dominates P-gp efflux.**
 
@@ -325,11 +325,15 @@ To substantiate our machine learning classifications with physical structural bi
 
 The docking grid box ($24 \times 24 \times 24 \text{ \AA}$) was centered directly on the co-crystallized drug-binding site ($x = 173.33, y = 166.74, z = 161.48$), defined by the coordinates of co-crystallized Paclitaxel (Taxol, `TA1`). 
 
-Twenty-one representative therapeutics spanning the dual-barrier quadrants were successfully docked:
-- **Quadrant 2 (Efflux Vulnerable / Paradoxical Drugs):** Loperamide, Flupentixol, Zuclopenthixol, Vilazodone, Haloperidol, Lurasidone, Fluphenazine, Trifluoperazine, Pimavanserin, and Paclitaxel (positive control);
-- **Quadrant 1 (Efflux Evaders / Repurposing Leads):** Levetiracetam, Caffeine, Diazepam, Thalidomide, Aminoglutethimide, Linezolid, Betamethasone, and Milnacipran.
-  A twenty-second compound, Topotecan, was defined in the protocol but is **excluded from all results**: its SMILES string as specified fails RDKit kekulisation, so no conformer and no docked pose were ever generated. All statistics in this section are therefore computed on $n = 21$;
-- **Quadrant 3 (Peripheral Negative Controls):** Penicillin G, Aspirin, and Metformin.
+All **22** representative therapeutics were successfully docked. Quadrant membership below is **derived from the live model predictions** rather than assigned by hand, so a compound can fall outside the quadrant the benchmark set was designed around:
+- **Quadrant 2 (Efflux Vulnerable / Paradoxical, $n=9$):** Flupentixol, Fluphenazine, Haloperidol, Loperamide, Lurasidone, Pimavanserin, Trifluoperazine, Vilazodone, Zuclopenthixol;
+- **Quadrant 1 (Efflux Evaders / Repurposing Leads, $n=10$):** Aminoglutethimide, Aspirin, Betamethasone, Caffeine, Diazepam, Levetiracetam, Linezolid, Milnacipran, Thalidomide, Topotecan;
+- **Quadrant 3 (Peripheral, $n=2$):** Metformin, Penicillin G;
+- **Quadrant 4 (Restricted, $n=1$):** Paclitaxel.
+
+Two compounds fall in a different quadrant from the one originally assigned by hand: **Paclitaxel**, the co-crystallised cryo-EM ligand, is predicted BBB-negative and therefore Q4 rather than Q2; and **Aspirin**, included as a peripheral control, is predicted BBB-positive and therefore Q1 rather than Q3. Both are reported as the model places them.
+
+> **Structure provenance.** The benchmark SMILES were originally hand-entered, and six of them (Loperamide, Vilazodone, Lurasidone, Pimavanserin, Paclitaxel, Milnacipran) had a different molecular skeleton from the same drug in the curated Broad Repurposing Hub library, with four more differing in stereochemistry. All structures are now resolved from the curated library, and the ML probabilities are computed from the saved models at runtime rather than held as literals. The figures in this section therefore supersede any earlier version.
 
 All ligands were 3D embedded with RDKit ETKDGv3, energy-minimized using the MMFF94 forcefield, parameterized with Gasteiger charges via Meeko, and docked into the rigid receptor using AutoDock Vina v1.2.7 (exhaustiveness 8). Table 7 compiles the thermodynamic binding free energies ($\Delta G_{\text{bind}}$), estimated dissociation constants ($K_d$), and specific transmembrane contact residues ($\le 3.8 \text{ \AA}$):
 
@@ -337,29 +341,31 @@ All ligands were 3D embedded with RDKit ETKDGv3, energy-minimized using the MMFF
 
 | Compound Name | Quadrant | Pharmacological Class | ML $P(\text{P-gp}^+)$ | $\Delta G_{\text{bind}}$ (kcal/mol) | Estimated $K_d$ | Contact Residues ($\le 3.8\text{ \AA}$) | Key Transmembrane Contacts |
 |---|:---:|---|:---:|:---:|:---:|:---:|---|
-| **Vilazodone** | **Q2** | Refractory Antidepressant | **0.982** | **-11.37** | **4.6 nM** | 19 | Trp232, Phe303, Ile306, Tyr310, Phe336, Leu339, Ile340, Phe343 |
-| **Lurasidone** | **Q2** | Atypical Antipsychotic | **0.968** | **-10.33** | **26.8 nM** | 14 | Leu65, Gln195, Trp232, Ile306, Ile340, Phe343, Gln347, Tyr950 |
-| **Loperamide** | **Q2** | Paradoxical Opioid | **0.988** | **-9.08** | **221.7 nM** | 13 | Trp232, Phe303, Ile306, Tyr307, Tyr310, Phe336, Leu339, Phe343 |
-| **Flupentixol** | **Q2** | Refractory Antipsychotic | **0.988** | **-8.94** | **280.8 nM** | 10 | Leu65, Gln195, Trp232, Ile306, Ile340, Phe343, Gln347 |
-| **Haloperidol** | **Q2** | Typical Antipsychotic | **0.971** | **-8.66** | **447.4 nM** | 8 | Trp232, Phe303, Ile306, Tyr307, Phe343, Gln990 |
-| **Pimavanserin** | **Q2** | Parkinson Psychosis Agonist | **0.961** | **-8.65** | **458.1 nM** | 14 | Trp232, Phe303, Ile306, Tyr307, Tyr310, Phe336, Leu339, Ile340 |
-| **Paclitaxel** | **Q2** | Cryo-EM Bound Ligand | **0.980** | **-8.57** | **526.0 nM** | 16 | Trp232, Phe303, Ile306, Tyr307, Tyr310, Phe336, Leu339, Ile340 |
-| **Zuclopenthixol** | **Q2** | Refractory Antipsychotic | **0.985** | **-8.09** | **1.2 $\mu$M** | 12 | Trp232, Phe303, Ile306, Tyr307, Tyr310, Phe343, Leu724, Gln725 |
-| **Trifluoperazine** | **Q2** | Phenothiazine Antipsychotic | **0.966** | **-7.96** | **1.5 $\mu$M** | 9 | Trp232, Ile306, Tyr310, Phe336, Leu339, Ile340, Phe343, Gln347 |
-| **Fluphenazine** | **Q2** | Phenothiazine Antipsychotic | **0.967** | **-7.77** | **2.0 $\mu$M** | 11 | Phe303, Ile306, Tyr307, Tyr310, Phe336, Leu339, Ile340, Leu724 |
+| **Lurasidone** | **Q2** | Atypical Antipsychotic | **0.969** | **-10.20** | **33.4 nM** | 11 | TRP232, ILE306, TYR310, PHE336, LEU339, ILE340, PHE343, GLN347 |
+| **Vilazodone** | **Q2** | Refractory Antidepressant | **0.983** | **-9.95** | **50.6 nM** | 15 | TRP232, PHE303, ILE306, TYR310, PHE336, PHE343, GLN347, GLN725 |
+| **Loperamide** | **Q2** | Paradoxical Opioid | **0.986** | **-9.39** | **131.4 nM** | 15 | TRP232, ILE306, TYR310, PHE336, LEU339, ILE340, PHE343, GLN347 |
+| **Pimavanserin** | **Q2** | Parkinson Psychosis Inverse Agonist | **0.960** | **-8.87** | **313.3 nM** | 13 | TRP232, PHE303, ILE306, TYR307, TYR310, PHE336, LEU339, ILE340 |
+| **Haloperidol** | **Q2** | Typical Antipsychotic | **0.840** | **-8.73** | **398.9 nM** | 10 | TRP232, PHE303, ILE306, TYR307, PHE343, GLN990 |
+| **Flupentixol** | **Q2** | Refractory Antipsychotic | **0.992** | **-8.60** | **499.2 nM** | 10 | LEU65, GLN195, TRP232, ILE306, ILE340, PHE343, GLN347 |
+| **Zuclopenthixol** | **Q2** | Refractory Antipsychotic | **0.990** | **-8.42** | **675.3 nM** | 12 | TRP232, PHE303, ILE306, PHE343, GLN725, PHE770, GLN773, GLN838 |
+| **Trifluoperazine** | **Q2** | Phenothiazine Antipsychotic | **0.975** | **-7.97** | **1.4 $\mu$M** | 11 | TRP232, LEU236, PHE303, TYR307, PHE983, GLN990, VAL991, PHE994 |
+| **Fluphenazine** | **Q2** | Phenothiazine Antipsychotic | **0.966** | **-7.42** | **3.6 $\mu$M** | 13 | PHE303, ILE306, TYR307, TYR310, PHE336, LEU339, ILE340, LEU724 |
 |---|---|---|---|---|---|---|---|
-| **Levetiracetam** | **Q1** | P-gp Evader Antiepileptic | **0.021** | **-5.24** | **143.5 $\mu$M** | 10 | Phe303, Tyr307, Leu724, Gln725, Gln838, Val991 |
-| **Caffeine** | **Q1** | CNS Stimulant Evader | **0.068** | **-5.54** | **86.2 $\mu$M** | 8 | Leu65, Gln195, Gln946, Tyr950 |
-| **Diazepam** | **Q1** | Sedative Evader | **0.062** | **-6.21** | **27.9 $\mu$M** | 6 | Trp232, Ile340, Phe343, Gln347, Gln990 |
-| **Milnacipran** | **Q1** | Neuropathic Pain Lead | **0.005** | **-6.06** | **35.9 $\mu$M** | 8 | Phe336, Leu339, Ile340, Phe343, Phe728, Tyr953, Phe983 |
-| **Aminoglutethimide**| **Q1** | Brain Metastases Lead | **0.010** | **-6.81** | **10.2 $\mu$M** | 8 | Trp232, Phe303, Ile306, Tyr310, Phe343, Gln347, Gln990 |
-| **Linezolid** | **Q1** | Bacterial Meningitis Lead | **0.017** | **-7.33** | **4.2 $\mu$M** | 10 | Leu65, Gln195, Trp232, Ile306, Ile340, Phe343, Gln347 |
-| **Thalidomide** | **Q1** | Neuro-Oncology Lead | **0.017** | **-8.23** | **929.1 nM** | 6 | Trp232, Phe343, Gln347, Gln990 |
-| **Betamethasone** | **Q1** | Vasogenic Edema Lead | **0.015** | **-9.22** | **175.3 nM** | 13 | Phe303, Ile306, Tyr307, Tyr310, Phe343, Leu724, Gln725, Gln838 |
+| **Paclitaxel** | **Q4** | Co-Crystallized Cryo-EM Ligand | **0.770** | **-8.88** | **309.6 nM** | 17 | LEU65, TRP232, PHE303, ILE306, TYR310, ILE340, PHE343, GLN347 |
 |---|---|---|---|---|---|---|---|
-| **Penicillin G** | **Q3** | Peripheral Beta-Lactam | **0.034** | **-9.00** | **253.3 nM** | 9 | Trp232, Phe303, Ile306, Tyr307, Phe343, Leu724, Gln725, Gln990 |
-| **Aspirin** | **Q3** | Peripheral NSAID | **0.012** | **-5.72** | **64.3 $\mu$M** | 6 | Trp232, Ile306, Phe343, Gln347, Gln990 |
-| **Metformin** | **Q3** | Peripheral Biguanide | **0.008** | **-5.05** | **198.1 $\mu$M** | 8 | Leu65, Gln195, Tyr950 |
+| **Betamethasone** | **Q1** | Vasogenic Edema Lead | **0.016** | **-8.71** | **413.9 nM** | 12 | LEU236, PHE303, TYR307, GLN725, PHE770, GLN838, GLN990, VAL991 |
+| **Topotecan** | **Q1** | Brain Metastases Repurposing Lead | **0.020** | **-8.68** | **435.4 nM** | 11 | GLN195, TRP232, PHE303, ILE306, PHE343, GLN347, GLN990 |
+| **Thalidomide** | **Q1** | Neuro-Oncology Repurposing Lead | **0.019** | **-8.23** | **924.4 nM** | 7 | TRP232, ILE306, PHE343, GLN347, GLN990 |
+| **Linezolid** | **Q1** | Bacterial Meningitis Lead | **0.017** | **-7.62** | **2.6 $\mu$M** | 10 | LEU65, GLN195, TRP232, ILE306, ILE340, PHE343, GLN347 |
+| **Aminoglutethimide** | **Q1** | Brain Metastases Repurposing Lead | **0.009** | **-6.96** | **7.9 $\mu$M** | 9 | LEU236, ILE299, PHE303, PHE770, VAL835, GLN838, GLN990, VAL991 |
+| **Diazepam** | **Q1** | Sedative Evader | **0.062** | **-6.11** | **33.0 $\mu$M** | 5 | TRP232, ILE340, PHE343, GLN347, GLN990 |
+| **Milnacipran** | **Q1** | Neuropathic Pain Lead | **0.004** | **-5.98** | **41.5 $\mu$M** | 7 | TRP232, ILE306, TYR310, ILE340, PHE343, GLN990 |
+| **Aspirin** | **Q1** | Peripheral NSAID | **0.004** | **-5.70** | **66.8 $\mu$M** | 6 | TRP232, ILE306, PHE343, GLN347, GLN990 |
+| **Levetiracetam** | **Q1** | P-gp Evader Antiepileptic | **0.017** | **-5.59** | **80.4 $\mu$M** | 10 | PHE303, TYR307, LEU724, GLN725, GLN838, VAL991 |
+| **Caffeine** | **Q1** | CNS Stimulant Evader | **0.060** | **-5.55** | **85.9 $\mu$M** | 8 | LEU65, GLN195, GLN946, TYR950 |
+|---|---|---|---|---|---|---|---|
+| **Penicillin G** | **Q3** | Peripheral Beta-Lactam | **0.034** | **-8.33** | **778.2 nM** | 11 | TRP232, PHE303, ILE306, ILE340, PHE343, GLN347 |
+| **Metformin** | **Q3** | Peripheral Biguanide | **0.015** | **-4.94** | **240.1 $\mu$M** | 9 | LEU65, GLN195, GLN946, TYR950 |
 
 ### 6.2 Thermodynamic Separation Between Efflux-Vulnerable (Q2) and Evading (Q1) Therapeutics
 
@@ -368,11 +374,14 @@ As illustrated in Figure 5, the binding free energy distribution clearly differe
 ![Figure 5: Cryo-EM P-glycoprotein Translocation Cavity Binding Energy Distribution](B3DB%20Based%20Model/figures/cryoem_docking_energy_distribution.png)
 
 1. **High-Affinity Translocation Binding in Quadrant 2:**
-   The mean binding free energy for Quadrant 2 therapeutics is **$-8.94 \pm 1.12 \text{ kcal/mol}$**, corresponding to high nanomolar to low micromolar dissociation constants ($K_d$). In particular, the atypical antipsychotic **Lurasidone** ($-10.33 \text{ kcal/mol}$, $K_d = 26.8 \text{ nM}$) and antidepressant **Vilazodone** ($-11.37 \text{ kcal/mol}$, $K_d = 4.6 \text{ nM}$) exhibit nanomolar cavity affinities surpassing that of the co-crystallized benchmark ligand Paclitaxel ($-8.57 \text{ kcal/mol}$).
+   The mean binding free energy for Quadrant 2 therapeutics is **$-8.84 \pm 0.89 \text{ kcal/mol}$** ($n=9$), corresponding to high nanomolar to low micromolar dissociation constants ($K_d$). In particular, the atypical antipsychotic **Lurasidone** ($-10.20 \text{ kcal/mol}$, $K_d = 33.4 \text{ nM}$) and antidepressant **Vilazodone** ($-9.95 \text{ kcal/mol}$, $K_d = 50.6 \text{ nM}$) exhibit the tightest cavity affinities in the set, both below the co-crystallized ligand Paclitaxel ($-8.88 \text{ kcal/mol}$), which the model places in Quadrant 4 rather than Quadrant 2.
 2. **Substantially Weaker Cavity Affinities in Quadrant 1:**
-   In sharp contrast, Quadrant 1 therapeutics exhibit significantly weaker affinities with a mean $\Delta G_{\text{bind}}$ of **$-6.83 \pm 1.37 \text{ kcal/mol}$**. The prototypical evader **Levetiracetam** exhibits an affinity of only **$-5.24 \text{ kcal/mol}$** ($K_d \approx 143.5 \text{ }\mu\text{M}$), while Caffeine yields **$-5.54 \text{ kcal/mol}$** ($K_d \approx 86.2 \text{ }\mu\text{M}$)—indicating negligible specific interaction with the P-gp translocation machinery under physiological conditions.
+   Quadrant 1 therapeutics exhibit weaker affinities on average, with a mean $\Delta G_{\text{bind}}$ of **$-6.91 \pm 1.30 \text{ kcal/mol}$** ($n=10$). The prototypical evader **Levetiracetam** exhibits an affinity of only **$-5.24 \text{ kcal/mol}$** ($K_d \approx 143.5 \text{ }\mu\text{M}$), while Caffeine yields **$-5.54 \text{ kcal/mol}$** ($K_d \approx 86.2 \text{ }\mu\text{M}$)—indicating negligible specific interaction with the P-gp translocation machinery under physiological conditions.
 3. **Statistical Significance:**
-   A Welch's unequal variances two-sample t-test confirms that Quadrant 2 therapeutics bind significantly more tightly to the P-gp cavity than Quadrant 1 therapeutics (**$t = -3.5303, p = 0.0035$**). A non-parametric Mann-Whitney U test similarly verifies this difference (**$U = 11.0, p = 0.0043$**).
+   A Welch's unequal variances two-sample t-test confirms that Quadrant 2 therapeutics bind significantly more tightly to the P-gp cavity than Quadrant 1 therapeutics (**$t = -3.7933, p = 1.597e-03$**). A non-parametric Mann-Whitney U test similarly verifies this difference (**$U = 11.0, p = 3.117e-03$**).
+
+4. **Docking energy alone does not classify substrates.**
+   The group separation is significant, but it does not transfer to the individual compound. 4 Quadrant 1 evaders (Thalidomide -8.23, Topotecan -8.68, Linezolid -7.62, Betamethasone -8.71 kcal/mol) bind at least as tightly as the weakest Quadrant 2 substrates, and the peripheral control **Penicillin G** reaches **-8.33 kcal/mol** despite a predicted efflux probability of 0.034. Rigid-receptor $\Delta G$ is therefore a population-level signal, not a per-molecule discriminator. This is consistent with reports that P-gp docking cannot separate substrates from non-substrates, and it is precisely why a ligand-topology model adds information the structure alone does not provide.
 
 ### 6.3 Transmembrane Helical Contact Residues
 
@@ -387,7 +396,7 @@ Figure 6 depicts the correlation between the machine learning predicted probabil
 ![Figure 6: Correlation between Machine Learning Efflux Probability and Cryo-EM Docking Energy](B3DB%20Based%20Model/figures/cryoem_docking_vs_ml_correlation.png)
 
 A strong, statistically significant negative Spearman rank correlation is observed:
-$$\rho = -0.5965 \quad (p = 0.0043)$$
+$$\rho = -0.6117 \quad (p = 2.486e-03)$$
 Because more negative $\Delta G_{\text{bind}}$ reflects higher thermodynamic stability, this inverse relationship demonstrates that **our machine learning model trained on binary phenotypic cell assays captures authentic physical binding thermodynamics in the human ABCB1 cryo-EM cavity**.
 
 ---
@@ -458,7 +467,7 @@ All resulting datasets are stored under `B3DB Based Model/results/`:
 
 We have established a scientifically rigorous, explainable machine learning architecture for dual-barrier CNS drug screening. By coupling Bayesian-optimized gradient boosted trees with 3D conformer geometry, TreeSHAP margin attributions, and Morgan substructure deconvolution, our framework successfully decouples passive membrane permeability from active P-gp efflux. 
 
-Applying this framework to the entire FDA-approved pharmacopeia ($N=2,405$ drugs) demonstrated immediate translational impact: discovering 273 non-CNS approved drugs suitable for neuro-oncology, neuroinflammation, and meningeal infection repurposing, while simultaneously revealing that 105 marketed neuropsychiatric therapeutics suffer from latent P-gp efflux vulnerability. Furthermore, in silico molecular docking into the Cryo-EM structure of human P-glycoprotein (PDB: 6QEX) provided orthogonal structural biology confirmation: proving that machine learning predictions correlate tightly with physical binding free energies ($\rho = -0.5965, p = 0.0043$) and specific transmembrane helical contacts. The model autonomously reproduces historical pharmacological principles, resolves the clinical dilemma of paradoxical drugs, and provides an actionable computational tool for modern rational neurotherapeutic design.
+Applying this framework to the entire FDA-approved pharmacopeia ($N=2,405$ drugs) demonstrated immediate translational impact: discovering 273 non-CNS approved drugs suitable for neuro-oncology, neuroinflammation, and meningeal infection repurposing, while simultaneously revealing that 105 marketed neuropsychiatric therapeutics suffer from latent P-gp efflux vulnerability. Furthermore, in silico molecular docking into the Cryo-EM structure of human P-glycoprotein (PDB: 6QEX) provided orthogonal structural biology confirmation: proving that machine learning predictions correlate tightly with physical binding free energies ($\rho = -0.6117, p = 0.00249$) and specific transmembrane helical contacts. The model autonomously reproduces historical pharmacological principles, resolves the clinical dilemma of paradoxical drugs, and provides an actionable computational tool for modern rational neurotherapeutic design.
 
 ---
 

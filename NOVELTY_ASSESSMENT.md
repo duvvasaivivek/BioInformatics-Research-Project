@@ -256,7 +256,7 @@ These are not optional polish; each is a point a reviewer will otherwise raise.
 
 ### A. Invalidating: these results are currently wrong
 
-**A1. Global SHAP is computed on unscaled inputs.**
+**A1. Global SHAP is computed on unscaled inputs.** *(RESOLVED 2026-10-24: `core.features.load_processed_dataset` now applies the training-derived scaler and raises if metadata is missing; the split is corrected to `test_size=0.15, stratify=y`. Recomputed: TPSA 0.9875 -> 1.1825, MolWt 0.6955 -> 0.5366. The TPSA-vs-LogP conclusion survives.)*
 `scripts/run_explainability_analysis.py` applies no scaler before explaining a model trained on
 z-scored descriptors. **Every number in manuscript Table 3 is therefore invalid**, including the
 headline "TPSA dominates BBB, LogP dominates P-gp" and the rho = 0.7714 cross-task correlation. The
@@ -269,7 +269,7 @@ call sites through it so the invariant lives in one place.
 *Also in that script:* the BBB split is `test_size=0.2` unstratified, while its own comment claims
 it matches the training split (0.15, stratified).
 
-**A2. Docking ML probabilities are hard-coded literals.** See E2 above.
+**A2. Docking ML probabilities are hard-coded literals.** *(RESOLVED 2026-10-24: all 23 literals replaced with live inference; quadrants derived from the predictions. This exposed that six benchmark SMILES had the wrong molecular skeleton, now resolved from the curated library, and that AutoDock Vina was never seeded - fixed with VINA_SEED = 42. Re-docked: Welch t = -3.7933, p = 1.60e-03; Spearman rho = -0.6117, p = 2.49e-03.)*
 
 **A3. Two legacy evaluation scripts feed unscaled features to scaled boosters.** *(RESOLVED 2026-10-24: both scripts and their two tracked figures deleted.)*
 `BBB/bbb_model_evaluation.py` and `Pgp/pgp_model_evaluation.py` both pass raw `X` to a model trained
