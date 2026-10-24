@@ -1,0 +1,2 @@
+Task,Evaluation,N,Accuracy,Accuracy_CI95,Balanced_Accuracy,Balanced_Accuracy_CI95,Precision,Precision_CI95,Recall_Sensitivity,Recall_Sensitivity_CI95,Specificity,Specificity_CI95,F1_Score,F1_Score_CI95,ROC_AUC,ROC_AUC_CI95,PR_AUC,PR_AUC_CI95,MCC,MCC_CI95,Brier_Score,Brier_Score_CI95,TP,FP,TN,FN
+bbb,single_bbb_scaffold_encoded,1036,0.7027,0.6757 - 0.7307,0.6783,0.6527 - 0.7052,0.6851,0.6536 - 0.7196,0.8731,0.8460 - 0.9011,0.4834,0.4394 - 0.5319,0.7677,0.7434 - 0.7935,0.7583,0.7288 - 0.7862,0.7742,0.7333 - 0.8123,0.3927,0.3396 - 0.4483,0.2038,0.1898 - 0.2184,509,234,219,74

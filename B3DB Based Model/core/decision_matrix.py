@@ -85,3 +85,32 @@ def determine_dual_barrier_quadrant(bbb_pred: int, pgp_pred: int) -> Tuple[str, 
             "Compound is doubly impeded: it fails passive BBB permeation and is actively recognized by P-gp as an efflux substrate. "
             "Action is strictly confined to peripheral compartments."
         )
+
+
+QUADRANT_NAMES: Dict[int, str] = {
+    1: "Q1 Optimal CNS (BBB+/P-gp-)",
+    2: "Q2 Paradoxical (BBB+/P-gp+)",
+    3: "Q3 Peripheral (BBB-/P-gp-)",
+    4: "Q4 Restricted (BBB-/P-gp+)",
+}
+
+QUADRANT_IDS = (1, 2, 3, 4)
+
+
+def quadrant_id(bbb_pred: int, pgp_pred: int) -> int:
+    """
+    Integer quadrant ID for a (BBB, P-gp) call, using the same convention as
+    determine_dual_barrier_quadrant above.
+
+    Added so the decision-aware metrics can score quadrant assignments without
+    re-deriving the mapping: the convention lives here and nowhere else.
+    Verified against determine_dual_barrier_quadrant and against the
+    expected_quadrant values in BENCHMARK_DRUGS by scripts/verify_decision_metrics.py.
+    """
+    if int(bbb_pred) == 1 and int(pgp_pred) == 0:
+        return 1
+    if int(bbb_pred) == 1 and int(pgp_pred) == 1:
+        return 2
+    if int(bbb_pred) == 0 and int(pgp_pred) == 0:
+        return 3
+    return 4

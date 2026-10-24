@@ -1,0 +1,336 @@
+{
+  "run_id": "mt_pgpw5_random_encoded",
+  "timestamp": "2026-10-24T16:55:51",
+  "arguments": {
+    "tasks": "bbb,pgp",
+    "task_weights": "pgp=5",
+    "split": "random",
+    "features": "encoded",
+    "epochs": 200,
+    "batch_size": 64,
+    "lr": 0.0005,
+    "weight_decay": 0.0005,
+    "hidden": 256,
+    "dropout": 0.3,
+    "layers": 3,
+    "patience": 20,
+    "clip_grad": 2.0,
+    "seed": 42,
+    "test_size": 0.15,
+    "val_size": 0.15,
+    "bootstraps": 1000,
+    "residual": false,
+    "amp": false,
+    "no_cache": false,
+    "tag": "mt_pgpw5",
+    "quiet": true
+  },
+  "tasks": [
+    "bbb",
+    "pgp"
+  ],
+  "active_tasks": [
+    "bbb",
+    "pgp"
+  ],
+  "task_weights": {
+    "bbb": 1.0,
+    "pgp": 5.0
+  },
+  "device": {
+    "device": "cuda:0",
+    "torch_version": "2.11.0+cu128",
+    "cuda_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+    "gpu_total_memory_gb": 6.0,
+    "gpu_capability": "8.9",
+    "gpu_multiprocessors": 20,
+    "cuda_runtime": "12.8",
+    "cudnn_version": 91900
+  },
+  "backend": {
+    "tf32_enabled": true,
+    "cudnn_benchmark": true
+  },
+  "corpus": {
+    "bbb_source": {
+      "path": "data\\B3DB_classification.tsv",
+      "raw_rows": 7807,
+      "invalid_or_unlabelled": 2,
+      "conflicting_structures_dropped": 0,
+      "unique_structures": 7805,
+      "positive": 4956,
+      "negative": 2849
+    },
+    "pgp_source": {
+      "path": "data\\pgp_broccatelli.tab",
+      "raw_rows": 1219,
+      "invalid_or_unlabelled": 0,
+      "conflicting_structures_dropped": 0,
+      "unique_structures": 1212,
+      "positive": 647,
+      "negative": 565
+    },
+    "corpus_size": 8801,
+    "bbb_labelled": 7805,
+    "pgp_labelled": 1212,
+    "dual_labelled": 216,
+    "bbb_only": 7589,
+    "pgp_only": 996,
+    "single_label_fraction": 0.9755,
+    "logbb_available": 1058,
+    "dual_label_contingency": {
+      "bbb_pos_pgp_pos": 45,
+      "bbb_pos_pgp_neg": 95,
+      "bbb_neg_pgp_pos": 19,
+      "bbb_neg_pgp_neg": 57
+    }
+  },
+  "label_independence": {
+    "n": 216,
+    "table": {
+      "bbb+_pgp+": 45,
+      "bbb+_pgp-": 95,
+      "bbb-_pgp+": 19,
+      "bbb-_pgp-": 57
+    },
+    "chi2": 0.8871,
+    "p_chi2": 0.3463,
+    "odds_ratio": 1.4211,
+    "odds_ratio_ci95": [
+      0.7577,
+      2.665
+    ],
+    "cramers_v": 0.0641,
+    "p_pgp_given_bbb_pos": 0.3214,
+    "p_pgp_given_bbb_neg": 0.25,
+    "interpretation": "BBB label is not a usable proxy for efflux status; any residual association is bounded as weak"
+  },
+  "graphs": {
+    "featurization": {
+      "mode": "encoded",
+      "num_atom_features": 66,
+      "num_bond_features": 14,
+      "atom_blocks": {
+        "element_onehot": 23,
+        "degree_onehot": 7,
+        "formal_charge_onehot": 6,
+        "num_hs_onehot": 6,
+        "hybridization_onehot": 7,
+        "chirality_onehot": 5,
+        "min_ring_size_onehot": 6,
+        "binary_flags": 3,
+        "bounded_continuous": 3
+      },
+      "bond_blocks": {
+        "bond_type_onehot": 5,
+        "stereo_onehot": 7,
+        "binary_flags": 2
+      },
+      "encoding": "one-hot categorical + bounded continuous"
+    },
+    "graphs_built": 8801,
+    "featurization_failures": 0,
+    "num_atom_features": 66,
+    "num_bond_features": 14,
+    "mean_nodes": 27.06,
+    "mean_edges": 58.64
+  },
+  "split_report": {
+    "mode": "random",
+    "sizes": {
+      "train": 6160,
+      "val": 1320,
+      "test": 1321
+    },
+    "dual_labelled_total": 216,
+    "dual_labelled_per_partition": {
+      "train": 151,
+      "val": 32,
+      "test": 33
+    },
+    "per_task_counts": {
+      "train": {
+        "bbb": {
+          "labelled": 5463,
+          "positive": 3469,
+          "negative": 1994
+        },
+        "pgp": {
+          "labelled": 848,
+          "positive": 452,
+          "negative": 396
+        }
+      },
+      "val": {
+        "bbb": {
+          "labelled": 1170,
+          "positive": 743,
+          "negative": 427
+        },
+        "pgp": {
+          "labelled": 182,
+          "positive": 98,
+          "negative": 84
+        }
+      },
+      "test": {
+        "bbb": {
+          "labelled": 1172,
+          "positive": 744,
+          "negative": 428
+        },
+        "pgp": {
+          "labelled": 182,
+          "positive": 97,
+          "negative": 85
+        }
+      }
+    },
+    "scaffold_overlap_train_test": null
+  },
+  "architecture": {
+    "tasks": [
+      "bbb",
+      "pgp"
+    ],
+    "num_atom_features": 66,
+    "num_bond_features": 14,
+    "hidden_channels": 256,
+    "num_layers": 3,
+    "num_classes": 2,
+    "dropout": 0.3,
+    "residual": false,
+    "trainable_parameters": 372898,
+    "head_parameters": {
+      "bbb": 8290,
+      "pgp": 8290
+    }
+  },
+  "best_epoch": 18,
+  "best_val_score": 0.88342,
+  "epochs_run": 38,
+  "test_metrics": {
+    "bbb": {
+      "n": 1172,
+      "Accuracy": 0.8387372013651877,
+      "Balanced_Accuracy": 0.8000452215857703,
+      "Precision": 0.8268551236749117,
+      "Recall_Sensitivity": 0.9435483870967742,
+      "Specificity": 0.6565420560747663,
+      "F1_Score": 0.8813559322033898,
+      "MCC": 0.6466510042835665,
+      "Brier_Score": 0.11389094750290149,
+      "ROC_AUC": 0.9086272736408401,
+      "PR_AUC": 0.9403812137782926,
+      "TP": 702,
+      "FP": 147,
+      "TN": 281,
+      "FN": 42,
+      "Accuracy_CI95": [
+        0.8166,
+        0.8601
+      ],
+      "Balanced_Accuracy_CI95": [
+        0.7753,
+        0.8223
+      ],
+      "Precision_CI95": [
+        0.8,
+        0.8516
+      ],
+      "Recall_Sensitivity_CI95": [
+        0.9256,
+        0.96
+      ],
+      "Specificity_CI95": [
+        0.6125,
+        0.6987
+      ],
+      "F1_Score_CI95": [
+        0.8644,
+        0.8983
+      ],
+      "ROC_AUC_CI95": [
+        0.8903,
+        0.9257
+      ],
+      "PR_AUC_CI95": [
+        0.9246,
+        0.9544
+      ],
+      "MCC_CI95": [
+        0.601,
+        0.6884
+      ],
+      "Brier_Score_CI95": [
+        0.1022,
+        0.1249
+      ],
+      "n_bootstraps": 1000
+    },
+    "pgp": {
+      "n": 182,
+      "Accuracy": 0.8791208791208791,
+      "Balanced_Accuracy": 0.8800485142510612,
+      "Precision": 0.9032258064516129,
+      "Recall_Sensitivity": 0.865979381443299,
+      "Specificity": 0.8941176470588236,
+      "F1_Score": 0.8842105263157894,
+      "MCC": 0.758626286713485,
+      "Brier_Score": 0.10029621484689835,
+      "ROC_AUC": 0.9298969072164949,
+      "PR_AUC": 0.9028009712712151,
+      "TP": 84,
+      "FP": 9,
+      "TN": 76,
+      "FN": 13,
+      "Accuracy_CI95": [
+        0.8297,
+        0.9286
+      ],
+      "Balanced_Accuracy_CI95": [
+        0.8291,
+        0.9283
+      ],
+      "Precision_CI95": [
+        0.8411,
+        0.9612
+      ],
+      "Recall_Sensitivity_CI95": [
+        0.7921,
+        0.9333
+      ],
+      "Specificity_CI95": [
+        0.8235,
+        0.9579
+      ],
+      "F1_Score_CI95": [
+        0.83,
+        0.9307
+      ],
+      "ROC_AUC_CI95": [
+        0.8828,
+        0.9666
+      ],
+      "PR_AUC_CI95": [
+        0.8186,
+        0.9705
+      ],
+      "MCC_CI95": [
+        0.6576,
+        0.8562
+      ],
+      "Brier_Score_CI95": [
+        0.0635,
+        0.1437
+      ],
+      "n_bootstraps": 1000
+    }
+  },
+  "elapsed_seconds": 108.5,
+  "cuda_memory": {
+    "peak_allocated_gb": 0.065,
+    "peak_reserved_gb": 0.098
+  }
+}

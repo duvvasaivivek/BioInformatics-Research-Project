@@ -1,0 +1,389 @@
+{
+  "run_id": "single_bbb_kfold5_encoded",
+  "timestamp": "2026-10-24T17:55:52",
+  "arguments": {
+    "tasks": "bbb",
+    "task_weights": "",
+    "folds": 5,
+    "val_fraction": 0.15,
+    "features": "encoded",
+    "epochs": 200,
+    "batch_size": 64,
+    "lr": 0.0005,
+    "hidden": 256,
+    "dropout": 0.3,
+    "layers": 3,
+    "patience": 20,
+    "seed": 42,
+    "bootstraps": 1000,
+    "amp": false,
+    "tag": "single_bbb"
+  },
+  "tasks": [
+    "bbb"
+  ],
+  "active_tasks": [
+    "bbb"
+  ],
+  "task_weights": {
+    "bbb": 1.0
+  },
+  "device": {
+    "device": "cuda:0",
+    "torch_version": "2.11.0+cu128",
+    "cuda_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+    "gpu_total_memory_gb": 6.0,
+    "gpu_capability": "8.9",
+    "gpu_multiprocessors": 20,
+    "cuda_runtime": "12.8",
+    "cudnn_version": 91900
+  },
+  "backend": {
+    "tf32_enabled": true,
+    "cudnn_benchmark": true
+  },
+  "corpus": {
+    "bbb_source": {
+      "path": "data\\B3DB_classification.tsv",
+      "raw_rows": 7807,
+      "invalid_or_unlabelled": 2,
+      "conflicting_structures_dropped": 0,
+      "unique_structures": 7805,
+      "positive": 4956,
+      "negative": 2849
+    },
+    "pgp_source": {
+      "path": "data\\pgp_broccatelli.tab",
+      "raw_rows": 1219,
+      "invalid_or_unlabelled": 0,
+      "conflicting_structures_dropped": 0,
+      "unique_structures": 1212,
+      "positive": 647,
+      "negative": 565
+    },
+    "corpus_size": 8801,
+    "bbb_labelled": 7805,
+    "pgp_labelled": 1212,
+    "dual_labelled": 216,
+    "bbb_only": 7589,
+    "pgp_only": 996,
+    "single_label_fraction": 0.9755,
+    "logbb_available": 1058,
+    "dual_label_contingency": {
+      "bbb_pos_pgp_pos": 45,
+      "bbb_pos_pgp_neg": 95,
+      "bbb_neg_pgp_pos": 19,
+      "bbb_neg_pgp_neg": 57
+    }
+  },
+  "label_independence": {
+    "n": 216,
+    "table": {
+      "bbb+_pgp+": 45,
+      "bbb+_pgp-": 95,
+      "bbb-_pgp+": 19,
+      "bbb-_pgp-": 57
+    },
+    "chi2": 0.8871,
+    "p_chi2": 0.3463,
+    "odds_ratio": 1.4211,
+    "odds_ratio_ci95": [
+      0.7577,
+      2.665
+    ],
+    "cramers_v": 0.0641,
+    "p_pgp_given_bbb_pos": 0.3214,
+    "p_pgp_given_bbb_neg": 0.25,
+    "interpretation": "BBB label is not a usable proxy for efflux status; any residual association is bounded as weak"
+  },
+  "graphs": {
+    "featurization": {
+      "mode": "encoded",
+      "num_atom_features": 66,
+      "num_bond_features": 14,
+      "atom_blocks": {
+        "element_onehot": 23,
+        "degree_onehot": 7,
+        "formal_charge_onehot": 6,
+        "num_hs_onehot": 6,
+        "hybridization_onehot": 7,
+        "chirality_onehot": 5,
+        "min_ring_size_onehot": 6,
+        "binary_flags": 3,
+        "bounded_continuous": 3
+      },
+      "bond_blocks": {
+        "bond_type_onehot": 5,
+        "stereo_onehot": 7,
+        "binary_flags": 2
+      },
+      "encoding": "one-hot categorical + bounded continuous"
+    },
+    "graphs_built": 8801,
+    "featurization_failures": 0,
+    "num_atom_features": 66,
+    "num_bond_features": 14,
+    "mean_nodes": 27.06,
+    "mean_edges": 58.64
+  },
+  "train_config": {
+    "tasks": [
+      "bbb"
+    ],
+    "task_weights": {
+      "bbb": 1.0
+    },
+    "epochs": 200,
+    "batch_size": 64,
+    "lr": 0.0005,
+    "weight_decay": 0.0005,
+    "hidden": 256,
+    "dropout": 0.3,
+    "layers": 3,
+    "patience": 20,
+    "clip_grad": 2.0,
+    "seed": 42,
+    "residual": false,
+    "amp": false
+  },
+  "oof_integrity": {
+    "molecules_scored": 7805,
+    "unique": true,
+    "dual_labelled_total": 216,
+    "dual_labelled_with_both_predictions": 0,
+    "train_test_leaks": 0
+  },
+  "folds": [
+    {
+      "fold": 1,
+      "train_molecules": 5306,
+      "val_molecules": 1056,
+      "test_molecules": 1761,
+      "best_epoch": 38,
+      "best_val_score": 0.90788,
+      "epochs_run": 58,
+      "metrics": {
+        "bbb": {
+          "n": 1563,
+          "Accuracy": 0.8746001279590531,
+          "Balanced_Accuracy": 0.8607026086096832,
+          "Precision": 0.8925049309664694,
+          "Recall_Sensitivity": 0.9122983870967742,
+          "Specificity": 0.809106830122592,
+          "F1_Score": 0.9022931206380858,
+          "MCC": 0.7276927017921221,
+          "Brier_Score": 0.09254443457626889,
+          "ROC_AUC": 0.9401199084797468,
+          "PR_AUC": 0.9567899370584364,
+          "TP": 905,
+          "FP": 109,
+          "TN": 462,
+          "FN": 87
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "train_molecules": 5307,
+      "val_molecules": 1057,
+      "test_molecules": 1760,
+      "best_epoch": 46,
+      "best_val_score": 0.90774,
+      "epochs_run": 66,
+      "metrics": {
+        "bbb": {
+          "n": 1561,
+          "Accuracy": 0.8763613068545804,
+          "Balanced_Accuracy": 0.8661037052773204,
+          "Precision": 0.9014084507042254,
+          "Recall_Sensitivity": 0.9041372351160444,
+          "Specificity": 0.8280701754385965,
+          "F1_Score": 0.9027707808564231,
+          "MCC": 0.7330332145061448,
+          "Brier_Score": 0.09450139012107542,
+          "ROC_AUC": 0.9420096659408359,
+          "PR_AUC": 0.9615745500805579,
+          "TP": 896,
+          "FP": 98,
+          "TN": 472,
+          "FN": 95
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "train_molecules": 5308,
+      "val_molecules": 1057,
+      "test_molecules": 1760,
+      "best_epoch": 65,
+      "best_val_score": 0.91477,
+      "epochs_run": 85,
+      "metrics": {
+        "bbb": {
+          "n": 1560,
+          "Accuracy": 0.8576923076923076,
+          "Balanced_Accuracy": 0.8498241644040654,
+          "Precision": 0.895169578622816,
+          "Recall_Sensitivity": 0.8789101917255298,
+          "Specificity": 0.820738137082601,
+          "F1_Score": 0.8869653767820774,
+          "MCC": 0.6951800345998158,
+          "Brier_Score": 0.10445903093516802,
+          "ROC_AUC": 0.9305604571193465,
+          "PR_AUC": 0.9501369661946142,
+          "TP": 871,
+          "FP": 102,
+          "TN": 467,
+          "FN": 120
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "train_molecules": 5308,
+      "val_molecules": 1057,
+      "test_molecules": 1760,
+      "best_epoch": 42,
+      "best_val_score": 0.90279,
+      "epochs_run": 62,
+      "metrics": {
+        "bbb": {
+          "n": 1560,
+          "Accuracy": 0.8711538461538462,
+          "Balanced_Accuracy": 0.8667808164517565,
+          "Precision": 0.9114583333333334,
+          "Recall_Sensitivity": 0.8829465186680121,
+          "Specificity": 0.8506151142355008,
+          "F1_Score": 0.8969759097898513,
+          "MCC": 0.7258022786054307,
+          "Brier_Score": 0.0919888632444908,
+          "ROC_AUC": 0.9459591508107236,
+          "PR_AUC": 0.965516266389528,
+          "TP": 875,
+          "FP": 85,
+          "TN": 484,
+          "FN": 116
+        }
+      }
+    },
+    {
+      "fold": 5,
+      "train_molecules": 5307,
+      "val_molecules": 1057,
+      "test_molecules": 1760,
+      "best_epoch": 30,
+      "best_val_score": 0.91548,
+      "epochs_run": 50,
+      "metrics": {
+        "bbb": {
+          "n": 1561,
+          "Accuracy": 0.8712363869314542,
+          "Balanced_Accuracy": 0.8534963796979835,
+          "Precision": 0.8827519379844961,
+          "Recall_Sensitivity": 0.9192734611503531,
+          "Specificity": 0.787719298245614,
+          "F1_Score": 0.9006426099851705,
+          "MCC": 0.7191533973565086,
+          "Brier_Score": 0.09876129573823272,
+          "ROC_AUC": 0.9347779135022217,
+          "PR_AUC": 0.9572448887880338,
+          "TP": 911,
+          "FP": 121,
+          "TN": 449,
+          "FN": 80
+        }
+      }
+    }
+  ],
+  "fold_summary": {
+    "bbb": {
+      "n_folds": 5,
+      "Accuracy_mean": 0.8702,
+      "Accuracy_std": 0.0066,
+      "Balanced_Accuracy_mean": 0.8594,
+      "Balanced_Accuracy_std": 0.0067,
+      "Precision_mean": 0.8967,
+      "Precision_std": 0.0095,
+      "Recall_Sensitivity_mean": 0.8995,
+      "Recall_Sensitivity_std": 0.016,
+      "Specificity_mean": 0.8192,
+      "Specificity_std": 0.0208,
+      "F1_Score_mean": 0.8979,
+      "F1_Score_std": 0.0058,
+      "ROC_AUC_mean": 0.9387,
+      "ROC_AUC_std": 0.0054,
+      "PR_AUC_mean": 0.9583,
+      "PR_AUC_std": 0.0052,
+      "MCC_mean": 0.7202,
+      "MCC_std": 0.0133,
+      "Brier_Score_mean": 0.0965,
+      "Brier_Score_std": 0.0047
+    }
+  },
+  "pooled_oof_metrics": {
+    "bbb": {
+      "n": 7805,
+      "Accuracy": 0.870211402946829,
+      "Balanced_Accuracy": 0.8593752788668043,
+      "Precision": 0.896440780213151,
+      "Recall_Sensitivity": 0.8995157384987893,
+      "Specificity": 0.8192348192348192,
+      "F1_Score": 0.8979756269513546,
+      "MCC": 0.7196713503452982,
+      "Brier_Score": 0.09644954757070547,
+      "ROC_AUC": 0.9378644744867506,
+      "PR_AUC": 0.9571493483940996,
+      "TP": 4458,
+      "FP": 515,
+      "TN": 2334,
+      "FN": 498,
+      "Accuracy_CI95": [
+        0.8621,
+        0.8775
+      ],
+      "Balanced_Accuracy_CI95": [
+        0.8505,
+        0.8677
+      ],
+      "Precision_CI95": [
+        0.8882,
+        0.9045
+      ],
+      "Recall_Sensitivity_CI95": [
+        0.8905,
+        0.9077
+      ],
+      "Specificity_CI95": [
+        0.805,
+        0.8333
+      ],
+      "F1_Score_CI95": [
+        0.8914,
+        0.9042
+      ],
+      "ROC_AUC_CI95": [
+        0.9323,
+        0.9433
+      ],
+      "PR_AUC_CI95": [
+        0.9511,
+        0.9626
+      ],
+      "MCC_CI95": [
+        0.703,
+        0.736
+      ],
+      "Brier_Score_CI95": [
+        0.0912,
+        0.1019
+      ],
+      "n_bootstraps": 1000
+    }
+  },
+  "elapsed_seconds": 771.0,
+  "cuda_memory": {
+    "peak_allocated_gb": 0.066,
+    "peak_reserved_gb": 0.094
+  }
+}

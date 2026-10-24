@@ -1,0 +1,5 @@
+task,experiment,metric,mean,sd,min,max,n_seeds
+bbb,multitask,ROC_AUC,0.931275,0.010161,0.916315,0.944343,5
+bbb,single_bbb,ROC_AUC,0.940713,0.006805,0.929467,0.946156,5
+pgp,multitask,ROC_AUC,0.903311,0.029516,0.873378,0.946392,5
+pgp,single_pgp,ROC_AUC,0.906028,0.033341,0.870103,0.944451,5

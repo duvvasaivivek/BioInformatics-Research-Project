@@ -1,0 +1,9 @@
+task,metric,n_seeds,multitask_mean,single_mean,mean_delta,delta_CI95_low,delta_CI95_high,sd_of_differences,mde,abs_delta_below_mde,paired_t,paired_p,prob_multitask_beats_single,exceeds_pab_threshold_0.75,verdict
+bbb,ROC_AUC,5,0.931275,0.940713,-0.009438,-0.023368,0.004492,0.011219,0.018651,True,-1.8811,0.1331,0.2,True,no effect detected; study underpowered for an effect this small
+bbb,MCC,5,0.684207,0.736082,-0.051874,-0.078755,-0.024994,0.021649,0.035991,False,-5.358,0.0059,0.04,True,multi-task worse
+bbb,F1_Score,5,0.880039,0.902502,-0.022464,-0.03521,-0.009717,0.010266,0.017066,False,-4.8931,0.0081,0.0,True,multi-task worse
+bbb,Balanced_Accuracy,5,0.846171,0.869252,-0.023081,-0.036876,-0.009285,0.011111,0.018471,False,-4.6451,0.0097,0.08,True,multi-task worse
+pgp,ROC_AUC,5,0.903311,0.906028,-0.002717,-0.034793,0.02936,0.025833,0.042947,True,-0.2352,0.8256,0.54,False,no effect detected; study underpowered for an effect this small
+pgp,MCC,5,0.668352,0.687785,-0.019433,-0.128682,0.089816,0.087986,0.146274,True,-0.4939,0.6473,0.36,False,no effect detected; study underpowered for an effect this small
+pgp,F1_Score,5,0.843281,0.85832,-0.015039,-0.076266,0.046188,0.049311,0.081978,True,-0.682,0.5327,0.44,False,no effect detected; study underpowered for an effect this small
+pgp,Balanced_Accuracy,5,0.830188,0.839478,-0.00929,-0.066106,0.047525,0.045757,0.076071,True,-0.454,0.6734,0.36,False,no effect detected; study underpowered for an effect this small

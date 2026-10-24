@@ -1,0 +1,2 @@
+Task,Evaluation,N,Accuracy,Accuracy_CI95,Balanced_Accuracy,Balanced_Accuracy_CI95,Precision,Precision_CI95,Recall_Sensitivity,Recall_Sensitivity_CI95,Specificity,Specificity_CI95,F1_Score,F1_Score_CI95,ROC_AUC,ROC_AUC_CI95,PR_AUC,PR_AUC_CI95,MCC,MCC_CI95,Brier_Score,Brier_Score_CI95,TP,FP,TN,FN
+pgp,single_pgp_random_encoded,182,0.8736,0.8242 - 0.9176,0.8727,0.8206 - 0.9187,0.8776,0.8037 - 0.9394,0.8866,0.8200 - 0.9487,0.8588,0.7826 - 0.9294,0.8821,0.8298 - 0.9268,0.939,0.8964 - 0.9728,0.9145,0.8320 - 0.9786,0.746,0.6430 - 0.8368,0.0934,0.0610 - 0.1299,86,12,73,11
