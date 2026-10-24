@@ -58,7 +58,7 @@ def run_global_analysis():
     )
 
     bbb_model = xgb.XGBClassifier()
-    bbb_model.load_model(os.path.join(MODELS_DIR, "bbb_xgboost_optuna_best.json"))
+    bbb_model.load_model(os.path.join(MODELS_DIR, "bbb_xgboost.json"))
 
     # 2. Load P-gp Model & Data
     print("[2/5] Loading P-gp dataset and 3D shape model...")
@@ -74,7 +74,7 @@ def run_global_analysis():
     )
 
     pgp_model = xgb.XGBClassifier()
-    pgp_model.load_model(os.path.join(MODELS_DIR, "pgp_xgboost_model.json"))
+    pgp_model.load_model(os.path.join(MODELS_DIR, "pgp_xgboost.json"))
 
     # Initialize Explainer
     explainer = DualBarrierShapExplainer(bbb_model, pgp_model)

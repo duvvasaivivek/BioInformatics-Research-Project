@@ -34,11 +34,15 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SCRIPT_DIR)
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DOCKING_DIR = os.path.join(DATA_DIR, "docking")
+# Per-ligand inputs and output poses are regenerated on every run; they are kept
+# in a subfolder so that docking/ itself holds only the receptor source files.
+POSES_DIR = os.path.join(DOCKING_DIR, "poses")
 RESULTS_DIR = os.path.join(BASE_DIR, "results")
 FIGURES_DIR = os.path.join(BASE_DIR, "figures")
 BIN_DIR = os.path.join(BASE_DIR, "bin")
 
 os.makedirs(DOCKING_DIR, exist_ok=True)
+os.makedirs(POSES_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 os.makedirs(FIGURES_DIR, exist_ok=True)
 os.makedirs(BIN_DIR, exist_ok=True)
@@ -453,9 +457,9 @@ def compute_ml_probabilities() -> Dict[str, Any]:
 
     models_dir = os.path.join(BASE_DIR, "models")
     bbb_model = xgb.XGBClassifier()
-    bbb_model.load_model(os.path.join(models_dir, "bbb_xgboost_optuna_best.json"))
+    bbb_model.load_model(os.path.join(models_dir, "bbb_xgboost.json"))
     pgp_model = xgb.XGBClassifier()
-    pgp_model.load_model(os.path.join(models_dir, "pgp_xgboost_model.json"))
+    pgp_model.load_model(os.path.join(models_dir, "pgp_xgboost.json"))
 
     bbb_means, bbb_stds = load_scaler_metadata(
         os.path.join(models_dir, "bbb_scaler_metadata.json"))
@@ -522,8 +526,8 @@ def run_docking_study():
         name = comp['name']
         smiles = comp['smiles']
         quad = comp['quadrant']
-        lig_pdbqt = os.path.join(DOCKING_DIR, f"{name.lower().replace(' ', '_')}.pdbqt")
-        out_pdbqt = os.path.join(DOCKING_DIR, f"{name.lower().replace(' ', '_')}_docked.pdbqt")
+        lig_pdbqt = os.path.join(POSES_DIR, f"{name.lower().replace(' ', '_')}.pdbqt")
+        out_pdbqt = os.path.join(POSES_DIR, f"{name.lower().replace(' ', '_')}_docked.pdbqt")
 
         # 1. Prepare Ligand
         prep_ok = prepare_ligand_pdbqt(smiles, lig_pdbqt)

@@ -166,7 +166,7 @@ def evaluate_bbb_model():
         X_test_scaled[name] = (X_test_scaled[name] - means[i]) / (stds[i] if stds[i] != 0 else 1.0)
 
     model = xgb.XGBClassifier()
-    model.load_model(os.path.join(MODELS_DIR, "bbb_xgboost_optuna_best.json"))
+    model.load_model(os.path.join(MODELS_DIR, "bbb_xgboost.json"))
 
     preds = model.predict(X_test_scaled)
     probs = model.predict_proba(X_test_scaled)[:, 1]
@@ -241,7 +241,7 @@ def evaluate_pgp_model():
         X_test_scaled[name] = (X_test_scaled[name] - means[i]) / (stds[i] if stds[i] != 0 else 1.0)
 
     model = xgb.XGBClassifier()
-    model.load_model(os.path.join(MODELS_DIR, "pgp_xgboost_model.json"))
+    model.load_model(os.path.join(MODELS_DIR, "pgp_xgboost.json"))
 
     preds = model.predict(X_test_scaled)
     probs = model.predict_proba(X_test_scaled)[:, 1]

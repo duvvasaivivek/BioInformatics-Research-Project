@@ -44,7 +44,7 @@ from explainability import (
 def models_and_scalers():
     """Fixture to load models, scalers, and explainability components."""
     # 1. BBB Model
-    bbb_model_path = os.path.join(MODELS_DIR, "bbb_xgboost_optuna_best.json")
+    bbb_model_path = os.path.join(MODELS_DIR, "bbb_xgboost.json")
     bbb_model = xgb.XGBClassifier()
     bbb_model.load_model(bbb_model_path)
 
@@ -55,7 +55,7 @@ def models_and_scalers():
     )
 
     # 2. P-gp Model
-    pgp_model_path = os.path.join(MODELS_DIR, "pgp_xgboost_model.json")
+    pgp_model_path = os.path.join(MODELS_DIR, "pgp_xgboost.json")
     pgp_model = xgb.XGBClassifier()
     pgp_model.load_model(pgp_model_path)
 

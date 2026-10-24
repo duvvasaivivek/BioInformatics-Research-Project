@@ -6,7 +6,7 @@ already covers, what was built, and what was found. Kept separate from `README.m
 
 Numbers quoted here were correct when written. `README.md` and
 `RESEARCH_PAPER_MANUSCRIPT.md` are the current source of truth, and
-`B3DB Based Model/scripts/verify_doc_consistency.py` enforces that they match the
+`Novelty Upgrade/scripts/verify_doc_consistency.py` enforces that they match the
 artifacts on disk.
 
 ## Contents
@@ -289,7 +289,7 @@ call sites through it so the invariant lives in one place.
 *Also in that script:* the BBB split is `test_size=0.2` unstratified, while its own comment claims
 it matches the training split (0.15, stratified).
 
-**A2. Docking ML probabilities are hard-coded literals.** *(RESOLVED 2026-10-24: all 23 literals replaced with live inference; quadrants derived from the predictions. This exposed that six benchmark SMILES had the wrong molecular skeleton, now resolved from the curated library, and that AutoDock Vina was never seeded - fixed with VINA_SEED = 42. Re-docked: Welch t = -3.7933, p = 1.60e-03; Spearman rho = -0.6117, p = 2.49e-03.)*
+**A2. Docking ML probabilities are hard-coded literals.** *(RESOLVED 2026-10-24: all 23 literals replaced with live inference; quadrants derived from the predictions. This exposed that six benchmark SMILES had the wrong molecular skeleton, now resolved from the curated library, and that AutoDock Vina was never seeded - fixed with VINA_SEED = 42. Re-docked: Welch t = -3.7933, p = 1.60e-03; Spearman rho = -0.5733, p = 5.28e-03.)*
 
 **A3. Two legacy evaluation scripts feed unscaled features to scaled boosters.** *(RESOLVED 2026-10-24: both scripts and their two tracked figures deleted.)*
 `BBB/bbb_model_evaluation.py` and `Pgp/pgp_model_evaluation.py` both pass raw `X` to a model trained
@@ -308,7 +308,7 @@ and regenerate.
 | P-gp ROC-AUC | 0.9593 [0.9320-0.9822] | **0.9587 [0.9330-0.9806]** |
 
 The abstract carries stale numbers from an earlier run, preserved in
-`B3DB Based Model/docs/SCIENTIFIC_DOCUMENTATION.md`. Quote only values that trace to a current
+`Novelty Upgrade/docs/SCIENTIFIC_DOCUMENTATION.md`. Quote only values that trace to a current
 artifact.
 
 **B5. All six rows of Table 3 disagree with the saved CSV.** Manuscript vs
@@ -704,11 +704,11 @@ the run:
   untouched.** Two files had been created there (`Initial Model/gnn/__init__.py`,
   `Initial Model/gnn/device.py`); both were deleted and `git diff HEAD -- "Initial Model/"`
   confirmed empty. No file in that directory was modified at any point.
-- **All work went into `B3DB Based Model/`**, the project's own novel section.
+- **All work went into `Novelty Upgrade/`**, the project's own novel section.
 
 #### Folder rename to "Novel Section": not done
 
-Offered as optional. I kept the name, because `B3DB Based Model` is referenced **74 times
+Offered as optional. I kept the name, because `Novelty Upgrade` is referenced **74 times
 across 6 files**, including `RESEARCH_PAPER_MANUSCRIPT.md`, `README.md`,
 `BLOCK_DIAGRAM.md`, Part 1,
 `DATASET_AND_FILE_PROVENANCE_CATALOG.md` and `docs/SCIENTIFIC_DOCUMENTATION.md`. Renaming
@@ -720,7 +720,7 @@ decision is reversible and costs nothing to defer.
 
 ### 2. What was built
 
-A new `gnn/` package inside `B3DB Based Model/`, plus three scripts. Nothing pre-existing
+A new `gnn/` package inside `Novelty Upgrade/`, plus three scripts. Nothing pre-existing
 was modified.
 
 | File | Lines | Purpose |
@@ -993,13 +993,13 @@ unfixed.** This run did not touch them.
 
 ### 10. Artifacts produced
 
-- **12 new source files** under `B3DB Based Model/gnn/` and `B3DB Based Model/scripts/`.
-- **39 result files** in `B3DB Based Model/results/` — per run: a report JSON (full
+- **12 new source files** under `Novelty Upgrade/gnn/` and `Novelty Upgrade/scripts/`.
+- **39 result files** in `Novelty Upgrade/results/` — per run: a report JSON (full
   provenance: arguments, device, corpus stats, independence statistics, split report,
   architecture, metrics), a metrics CSV, an epoch-by-epoch history CSV, and a per-molecule
   test-prediction CSV. Plus `gnn_experiment_comparison.csv` and `gnn_multitask_delta.csv`.
-- **9 checkpoints** in `B3DB Based Model/models/`, each ~1.5 MB and self-describing.
-- **1 graph cache** at `B3DB Based Model/data/graph_cache/` (122 MB).
+- **9 checkpoints** in `Novelty Upgrade/models/`, each ~1.5 MB and self-describing.
+- **1 graph cache** at `Novelty Upgrade/data/graph_cache/` (122 MB).
 
 #### One repo-hygiene decision left to you
 
@@ -1009,7 +1009,7 @@ should stay ignored. The checkpoints total ~13.5 MB and arguably should not. If 
 them tracked, add after the `*.pt` line:
 
 ```
-!B3DB Based Model/models/gnn_*.pt
+!Novelty Upgrade/models/gnn_*.pt
 ```
 
 I have not changed `.gitignore` — what belongs in version control is your call.
@@ -1052,7 +1052,7 @@ but needs to be measured rather than assumed.
 ### 12. Reproducing this run
 
 ```bash
-cd "B3DB Based Model"
+cd "Novelty Upgrade"
 python scripts/verify_multitask_gnn.py                                   # 29 checks
 python scripts/train_multitask_gnn.py --tasks bbb      --split random    --tag single_bbb
 python scripts/train_multitask_gnn.py --tasks pgp      --split random    --tag single_pgp
@@ -1315,7 +1315,7 @@ is worth checking rather than trusting.
 
 ### 9. Artifacts added this session
 
-- **7 source files** (6 new, 1 modified) under `B3DB Based Model/gnn/` and `scripts/`.
+- **7 source files** (6 new, 1 modified) under `Novelty Upgrade/gnn/` and `scripts/`.
 - **3 OOF prediction files** covering every labelled molecule, with both axes for all 216
   dual-labelled ones.
 - **3 K-fold report JSONs** with full provenance.
@@ -1354,7 +1354,7 @@ into a manuscript.
 ### 11. Reproducing this session
 
 ```bash
-cd "B3DB Based Model"
+cd "Novelty Upgrade"
 python scripts/verify_decision_metrics.py                                    # 31 checks
 python scripts/verify_multitask_gnn.py                                       # 29 checks
 python scripts/run_kfold_multitask.py --tasks bbb     --folds 5 --tag single_bbb

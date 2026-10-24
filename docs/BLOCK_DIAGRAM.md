@@ -101,7 +101,7 @@ BioInformatics Project/
 |   +-- train_gnn.py                      A7-A9  CV harness + model + eval
 |   +-- predict.py                        A10    single-SMILES inference CLI
 |
-+-- B3DB Based Model/                     <-- PARADIGM B (deployed dual-barrier engine)
++-- Novelty Upgrade/                     <-- PARADIGM B (deployed dual-barrier engine)
 |   +-- core/
 |   |   +-- features.py                   B3     shared feature kernel
 |   |   +-- decision_matrix.py            B8     four-quadrant logic + benchmarks
@@ -902,7 +902,7 @@ continuous input and every downstream tree split.
 
 ### 3.2 Stage B1 · BBB preprocessing
 
-Source: `B3DB Based Model/BBB/bbb_data_preprocessing.py`
+Source: `Novelty Upgrade/training/bbb_data_preprocessing.py`
 
 | Block | Operation | IN | OUT | LOSS / OBJECTIVE |
 |---|---|---|---|---|
@@ -923,7 +923,7 @@ Source: `B3DB Based Model/BBB/bbb_data_preprocessing.py`
 
 ### 3.3 Stage B2 · P-gp preprocessing
 
-Source: `B3DB Based Model/Pgp/pgp_data_preprocessing.py`
+Source: `Novelty Upgrade/training/pgp_data_preprocessing.py`
 
 | Block | Operation | IN | OUT | LOSS / OBJECTIVE |
 |---|---|---|---|---|
@@ -948,7 +948,7 @@ Source: `B3DB Based Model/Pgp/pgp_data_preprocessing.py`
 
 ### 4.1 Stage B4 · BBB model — nested Optuna + XGBoost
 
-Source: `B3DB Based Model/BBB/bbb_model_training.py`
+Source: `Novelty Upgrade/training/bbb_model_training.py`
 
 ```text
    (db) processed_b3db_data_advanced.csv   [7,805 x 2,056]   RAW descriptors
@@ -1019,7 +1019,7 @@ Source: `B3DB Based Model/BBB/bbb_model_training.py`
 +---------------------+------------------------+   OF X_test
                       v
 +----------------------------------------------+
-| B4.7  (db) bbb_xgboost_optuna_best.json      |
+| B4.7  (db) bbb_xgboost.json      |
 |   494 trees * 2,054 features                 |
 |   best_iteration = 443  (443 + 50 + 1 = 494) |
 +----------------------------------------------+
@@ -1047,7 +1047,7 @@ which is exactly why run_validation.py (D1) re-derives this same 15% split.
 | **B4.5** | Final refit with `best_params` overridden: `n_estimators=2000`, `early_stopping_rounds=50`, `eval_set=[(train),(val)]`, `verbose=100` | train + val | deployed booster | see B4.5a |
 | **B4.5a** | **⬡ FINAL TRAINING LOSS** — identical functional form to B4.4b | — | trees | **weighted binary cross-entropy + Ω** |
 | **B4.6** | Test-set scoring: accuracy, balanced accuracy, precision, recall, F1, ROC-AUC | `X_test` | 6 scalars | none — measurement |
-| **B4.7** | `save_model(bbb_xgboost_optuna_best.json)` | booster | ⬓ **494 trees, 2,054 features, `best_iteration=443`, `base_score=0.5`** | none — I/O |
+| **B4.7** | `save_model(bbb_xgboost.json)` | booster | ⬓ **494 trees, 2,054 features, `best_iteration=443`, `base_score=0.5`** | none — I/O |
 
 #### B4.4 · Optuna search space, exactly as coded
 
@@ -1080,7 +1080,7 @@ which is exactly why run_validation.py (D1) re-derives this same 15% split.
 
 ### 4.2 Stage B5 · P-gp model — single fixed-hyperparameter fit
 
-Source: `B3DB Based Model/Pgp/pgp_model_training.py`
+Source: `Novelty Upgrade/training/pgp_model_training.py`
 
 | Block | Operation | IN | OUT | LOSS / OBJECTIVE |
 |---|---|---|---|---|
@@ -1092,7 +1092,7 @@ Source: `B3DB Based Model/Pgp/pgp_model_training.py`
 | **B5.4c** | `scale_pos = (len(y_train) - sum(y_train)) / sum(y_train)` | labels | scalar | feeds B5.5 |
 | **B5.5** | **⬡ TRAINING LOSS** — `XGBClassifier(n_estimators=300, learning_rate=0.05, max_depth=5, subsample=0.8, colsample_bytree=0.8, scale_pos_weight, eval_metric='logloss', tree_method='hist', random_state=42)` fitted with `eval_set=[(train),(test)]`, `verbose=50` | train | 300 trees | **weighted binary cross-entropy** (no `gamma`/`alpha`/`lambda` overrides ⇒ XGBoost defaults `γ=0, α=0, λ=1`) |
 | **B5.6** | Test metrics: accuracy, balanced accuracy, precision, recall, F1, ROC-AUC | test | 6 scalars | none — measurement |
-| **B5.7** | `save_model(pgp_xgboost_model.json)` | booster | ⬓ **300 trees, 2,060 features, `base_score=0.5`** | none — I/O |
+| **B5.7** | `save_model(pgp_xgboost.json)` | booster | ⬓ **300 trees, 2,060 features, `base_score=0.5`** | none — I/O |
 
 > **Asymmetry between the two models — annotate it.** BBB gets 50 Optuna trials + early stopping and
 > converges to 494 trees (stopping at iteration 443 of a 2,000 budget). P-gp gets **no tuning and no
@@ -1210,7 +1210,7 @@ XGBoost expands this to second order with the exact gradient/Hessian pair:
 
 ### 5.1 Stage B9 + B8 · Inference orchestration and the four-quadrant matrix
 
-Source: `B3DB Based Model/inference.py`, `core/decision_matrix.py`
+Source: `Novelty Upgrade/inference.py`, `core/decision_matrix.py`
 
 ```text
 +--------------------------------------------------------------+
@@ -1220,8 +1220,8 @@ Source: `B3DB Based Model/inference.py`, `core/decision_matrix.py`
 +---------------------------+----------------------------------+
                             v
 +--------------------------------------------------------------+
-| B9.2  load bbb_xgboost_optuna_best.json                      |
-| B9.3  load pgp_xgboost_model.json                            |
+| B9.2  load bbb_xgboost.json                      |
+| B9.3  load pgp_xgboost.json                            |
 | B9.4  load_scaler_metadata x2                                |
 | B9.5  init C-layer: SHAP, Mapper, SharedProps, Domain, CF    |
 +---------------------------+----------------------------------+
@@ -2384,7 +2384,7 @@ PARADIGM B -- BBB
      |
      +--> (db) processed_b3db_data_advanced.csv
      |        |
-     |        +--> (db)  bbb_xgboost_optuna_best.json ----+
+     |        +--> (db)  bbb_xgboost.json ----+
      |        +--> (raw) bbb_scaler_metadata.json --------+
      |                                                    |
      +--> applicability-domain reference fingerprints ----+
@@ -2394,7 +2394,7 @@ PARADIGM B -- P-gp                                        |
      |                                                    |
      +--> (db) processed_pgp_data.csv                     |
      |        |                                           |
-     |        +--> (db)  pgp_xgboost_model.json ----------+
+     |        +--> (db)  pgp_xgboost.json ----------+
      |        +--> (raw) pgp_scaler_metadata.json --------+
      |                                                    |
      +--> applicability-domain reference fingerprints ----+
@@ -2425,28 +2425,32 @@ SCREEN
 
 
 DOCKING
-  (raw) 6QEX.pdb --> (raw) pgp_chain_a.pdbqt --> (db) cryoem_pgp_docking_validation.csv
+  (raw) 6QEX.pdb --> (raw) pgp_chain_a.pdbqt --+
+  (db) bbb_xgboost.json -----------------------+--> (db) cryoem_pgp_docking_validation.csv
+  (db) pgp_xgboost.json -----------------------+
 
-     ***  NO inbound edge from pgp_xgboost_model.json  ***
 
+ONE STALENESS HAZARD -- a case where the real dependency is not expressed in code
 
-TWO STALENESS HAZARDS -- cases where the real dependency is not expressed in code
-
-  1. The docking CSV does not depend on the P-gp model, because D5's ML
-     probabilities are hard-coded literals. Retraining P-gp will NOT
-     invalidate the reported correlation, even though it should.
-
-  2. repurposing_features_cache.pkl (gitignored) sits between the FDA CSV
+  1. repurposing_features_cache.pkl (gitignored) sits between the FDA CSV
      and the screen output and is read unconditionally, so it will serve
      stale features after any change to B3 or to the input CSV.
+
+  (RESOLVED) The docking CSV formerly carried no inbound edge from the P-gp
+     model, because D5's ML probabilities were hard-coded literals. D5 now
+     calls compute_ml_probabilities(), which loads both boosters, so
+     retraining either model does invalidate the reported correlation.
 ```
 
-> **Note the two staleness hazards visible in this DAG.** (1) `cryoem_pgp_docking_validation.csv` has
-> **no inbound edge from `pgp_xgboost_model.json`**, because D5's ML probabilities are hard-coded
-> (§6.11) — retraining P-gp will not invalidate the docking correlation, even though it should.
-> (2) `repurposing_features_cache.pkl` (not shown, it is gitignored) sits between `FDA` and `SCR`
-> and is read unconditionally, so it will serve stale features after any change to B3 or the input
-> CSV. Both are cases where the real dependency is not expressed in code.
+> **Note the staleness hazard visible in this DAG.** `repurposing_features_cache.pkl` (not shown,
+> it is gitignored) sits between `FDA` and `SCR` and is read unconditionally, so it will serve stale
+> features after any change to B3 or the input CSV — a case where the real dependency is not
+> expressed in code.
+>
+> A second hazard has since been **resolved**: `cryoem_pgp_docking_validation.csv` formerly had no
+> inbound edge from the P-gp booster, because D5's ML probabilities were hard-coded literals
+> (§6.11). D5 now calls `compute_ml_probabilities()`, which loads both boosters, so the edge is
+> real and retraining either model does invalidate the reported correlation.
 
 ---
 
@@ -2484,11 +2488,11 @@ python train_gnn.py               # A7-A9  > best_bbb_gnn_model_fold_1..10.pt
 python predict.py                 # A10    interactive REPL
 
 # -- Paradigm B: preprocessing and training ---------------------------------
-cd "../B3DB Based Model"
-python BBB/bbb_data_preprocessing.py   # B1  > processed_b3db_data_advanced.csv
-python Pgp/pgp_data_preprocessing.py   # B2  > processed_pgp_data.csv
-python BBB/bbb_model_training.py       # B4  > bbb_xgboost_optuna_best.json + scaler
-python Pgp/pgp_model_training.py       # B5  > pgp_xgboost_model.json + scaler
+cd "../Novelty Upgrade"
+python training/bbb_data_preprocessing.py   # B1  > processed_b3db_data_advanced.csv
+python training/pgp_data_preprocessing.py   # B2  > processed_pgp_data.csv
+python training/bbb_model_training.py       # B4  > bbb_xgboost.json + scaler
+python training/pgp_model_training.py       # B5  > pgp_xgboost.json + scaler
 
 # -- Paradigm B: inference --------------------------------------------------
 python inference.py --test-benchmark

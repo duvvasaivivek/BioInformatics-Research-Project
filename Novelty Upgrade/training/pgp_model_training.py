@@ -29,7 +29,7 @@ from core.features import PGP_DESCRIPTOR_NAMES
 DATA_PATH = os.path.join(BASE_DIR, "data", "processed_pgp_data.csv")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 SCALER_METADATA_PATH = os.path.join(MODELS_DIR, "pgp_scaler_metadata.json")
-MODEL_SAVE_PATH = os.path.join(MODELS_DIR, "pgp_xgboost_model.json")
+MODEL_SAVE_PATH = os.path.join(MODELS_DIR, "pgp_xgboost.json")
 
 
 def train_pgp_model():

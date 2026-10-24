@@ -34,7 +34,7 @@ from core.features import BBB_DESCRIPTOR_NAMES
 DATA_PATH = os.path.join(BASE_DIR, "data", "processed_b3db_data_advanced.csv")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 SCALER_METADATA_PATH = os.path.join(MODELS_DIR, "bbb_scaler_metadata.json")
-MODEL_SAVE_PATH = os.path.join(MODELS_DIR, "bbb_xgboost_optuna_best.json")
+MODEL_SAVE_PATH = os.path.join(MODELS_DIR, "bbb_xgboost.json")
 
 
 def get_optimal_device() -> str:

@@ -6,7 +6,7 @@ exhaustive block-by-block specification with I/O shapes and loss functions see
 publishable see [`RESEARCH_LOG.md`](RESEARCH_LOG.md).
 
 This document merges the former `ARCHITECTURE_DEEP_DIVE.md` and
-`B3DB Based Model/docs/SCIENTIFIC_DOCUMENTATION.md`.
+`Novelty Upgrade/docs/SCIENTIFIC_DOCUMENTATION.md`.
 
 ## Contents
 - [The biological problem](#section-1-the-core-biological-paradox--taxonomy)
@@ -387,7 +387,7 @@ OR 1.42 [0.76, 2.67], p = 0.35). Near-independent labels are complementary rathe
 than redundant supervision, which is the textbook precondition for multi-task
 learning to help the smaller task.
 
-**Architecture** (`B3DB Based Model/gnn/`):
+**Architecture** (`Novelty Upgrade/gnn/`):
 
 ```
 SMILES -> RDKit graph (x[V,66], edge_index[2,2E], edge_attr[2E,14])
@@ -528,7 +528,7 @@ The engine generates chemically valid analogs to flip predictions using establis
 The codebase is organized into modular packages:
 
 ```
-B3DB Based Model/
+Novelty Upgrade/
 ├── core/                           # Shared feature engineering & domain logic
 │   ├── features.py                 # 2D, Morgan FP, and 3D ETKDG feature extractors
 │   └── decision_matrix.py          # 4-quadrant logic & clinical benchmark definitions

@@ -272,7 +272,7 @@ def main():
     print(f"{Colors.CYAN}{Colors.BOLD}{'='*72}{Colors.ENDC}")
 
     # Load Trained Models & Scalers
-    bbb_model_path = os.path.join(MODELS_DIR, "bbb_xgboost_optuna_best.json")
+    bbb_model_path = os.path.join(MODELS_DIR, "bbb_xgboost.json")
     bbb_model = xgb.XGBClassifier()
     bbb_model.load_model(bbb_model_path)
 
@@ -282,7 +282,7 @@ def main():
         os.path.join(MODELS_DIR, "bbb_scaler_metadata.json"), default_bbb_means, default_bbb_stds
     )
 
-    pgp_model_path = os.path.join(MODELS_DIR, "pgp_xgboost_model.json")
+    pgp_model_path = os.path.join(MODELS_DIR, "pgp_xgboost.json")
     pgp_model = xgb.XGBClassifier()
     pgp_model.load_model(pgp_model_path)
 

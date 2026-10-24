@@ -269,6 +269,34 @@ def verify_docking_count() -> None:
               f'{abs(float(df[df.quadrant == "Q2"].delta_g_bind_kcal_mol.mean())):.2f}' in man,
               'Q2 mean binding energy')
 
+    # Every doc quoting the docking inferential statistics must quote the SEEDED
+    # ones. The first re-dock predated VINA_SEED and reported rho = -0.6117; that
+    # pair survived in RESEARCH_LOG.md long after the numbers it described were
+    # superseded, so it is now asserted against the CSV rather than trusted.
+    from scipy import stats as _st
+    d = df.dropna(subset=['delta_g_bind_kcal_mol', 'prob_pgp_ml'])
+    rho, p_rho = _st.spearmanr(d.prob_pgp_ml, d.delta_g_bind_kcal_mol)
+    q2 = d[d.quadrant == 'Q2'].delta_g_bind_kcal_mol
+    q1 = d[d.quadrant == 'Q1'].delta_g_bind_kcal_mol
+    t_stat, p_t = _st.ttest_ind(q2, q1, equal_var=False)
+    print(f'      recomputed: Spearman rho = {rho:.4f} (p = {p_rho:.3e}), '
+          f'Welch t = {t_stat:.4f} (p = {p_t:.3e})')
+
+    for doc in ('README.md', 'RESEARCH_PAPER_MANUSCRIPT.md', 'docs/RESEARCH_LOG.md'):
+        text = read_doc(doc)
+        if not text:
+            continue
+        # Prose uses the typographic minus (U+2212); the CSV and f-strings use ASCII.
+        text = text.replace('−', '-')
+        if 'Spearman' in text:
+            check(f'{doc} quotes the seeded Spearman rho',
+                  f'{rho:.4f}' in text, f'rho = {rho:.4f}')
+            check(f'{doc} does not quote the pre-seed Spearman rho',
+                  '0.6117' not in text, 'superseded by VINA_SEED = 42')
+        if 'Welch' in text:
+            check(f'{doc} quotes the recomputed Welch t',
+                  f'{t_stat:.4f}' in text, f't = {t_stat:.4f}')
+
     # The ML probabilities must come from the models, not from literals.
     script = os.path.join(BASE_DIR, 'scripts', 'run_cryoem_docking_validation.py')
     with open(script, 'r', encoding='utf-8') as f:

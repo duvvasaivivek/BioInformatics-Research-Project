@@ -281,7 +281,7 @@ A high score ($S_{\text{CNS}} \to 1.0$) denotes strong passive membrane permeabi
 
 Figure 3 illustrates the global distribution of the 2,405 approved therapeutics mapped across the dual-barrier probability space ($P(\text{BBB}^+)$ vs. $P(\text{P-gp}^+)$):
 
-![Figure 3: Dual-Barrier Profiling of 2,400+ FDA-Approved Drugs](B3DB%20Based%20Model/figures/repurposing_pharmacopeia_landscape.png)
+![Figure 3: Dual-Barrier Profiling of 2,400+ FDA-Approved Drugs](Novelty%20Upgrade/figures/repurposing_pharmacopeia_landscape.png)
 
 Across the entire pharmacopeia, the dual-barrier classification yields:
 - **Quadrant 1 (Optimal CNS Permeation, $\text{BBB}^+ / \text{P-gp}^-$):** $710\text{ drugs } (29.5\%)$. These molecules easily partition into brain endothelial membranes without being recognized by ABCB1 efflux machinery.
@@ -335,7 +335,7 @@ Table 6 details the top marketed neuropsychiatric agents exhibiting high suscept
 
 Figure 4 illustrates the dual-barrier quadrant breakdown across major therapeutic disease classes:
 
-![Figure 4: Disease Area Dual-Barrier Distribution](B3DB%20Based%20Model/figures/repurposing_disease_area_distribution.png)
+![Figure 4: Disease Area Dual-Barrier Distribution](Novelty%20Upgrade/figures/repurposing_disease_area_distribution.png)
 
 While oncology and cardiology drugs are predominantly constrained by peripheral or multi-barrier restriction (Quadrants 3 and 4), neuropsychiatric drugs exhibit a bifurcated distribution: successful agents cluster in Quadrant 1, whereas treatment-resistant and second-line agents consistently slip into the paradoxical Quadrant 2.
 
@@ -395,7 +395,7 @@ All ligands were 3D embedded with RDKit ETKDGv3, energy-minimized using the MMFF
 
 As illustrated in Figure 5, the binding free energy distribution clearly differentiates Quadrant 2 substrates from Quadrant 1 evaders:
 
-![Figure 5: Cryo-EM P-glycoprotein Translocation Cavity Binding Energy Distribution](B3DB%20Based%20Model/figures/cryoem_docking_energy_distribution.png)
+![Figure 5: Cryo-EM P-glycoprotein Translocation Cavity Binding Energy Distribution](Novelty%20Upgrade/figures/cryoem_docking_energy_distribution.png)
 
 1. **High-Affinity Translocation Binding in Quadrant 2:**
    The mean binding free energy for Quadrant 2 therapeutics is **$-8.84 \pm 0.89 \text{ kcal/mol}$** ($n=9$), corresponding to high nanomolar to low micromolar dissociation constants ($K_d$). In particular, the atypical antipsychotic **Lurasidone** ($-10.20 \text{ kcal/mol}$, $K_d = 33.4 \text{ nM}$) and antidepressant **Vilazodone** ($-9.95 \text{ kcal/mol}$, $K_d = 50.6 \text{ nM}$) exhibit the tightest cavity affinities in the set, both below the co-crystallized ligand Paclitaxel ($-8.88 \text{ kcal/mol}$), which the model places in Quadrant 4 rather than Quadrant 2.
@@ -417,7 +417,7 @@ Analysis of the docked poses within $3.8 \text{ \AA}$ revealed the exact biophys
 
 Figure 6 depicts the correlation between the machine learning predicted probability of active efflux $P(\text{P-gp}^+)$ and the physical binding free energy $\Delta G_{\text{bind}}$:
 
-![Figure 6: Correlation between Machine Learning Efflux Probability and Cryo-EM Docking Energy](B3DB%20Based%20Model/figures/cryoem_docking_vs_ml_correlation.png)
+![Figure 6: Correlation between Machine Learning Efflux Probability and Cryo-EM Docking Energy](Novelty%20Upgrade/figures/cryoem_docking_vs_ml_correlation.png)
 
 A strong, statistically significant negative Spearman rank correlation is observed:
 $$\rho = -0.5733 \quad (p = 5.28\times10^{-3})$$
@@ -470,16 +470,16 @@ While this dual-barrier computational system represents a significant advance ov
 ## 9. Reproducibility & Data Availability
 
 All code, trained model artifacts, scaler parameters, benchmarking scripts, virtual screening pipelines, docking protocols, and test suites are fully accessible in this Git repository:
-- **Broad Hub Repurposing Curation:** `python "B3DB Based Model/scripts/prepare_repurposing_library.py"`.
-- **Dual-Barrier Pharmacopeia Screen:** `python "B3DB Based Model/scripts/run_repurposing_screen.py"`.
-- **Cryo-EM Structural Biology Docking Validation:** `python "B3DB Based Model/scripts/run_cryoem_docking_validation.py"`.
-- **Validation Protocol with 95% Bootstrap CI:** `python "B3DB Based Model/scripts/run_validation.py"`.
-- **Incremental Feature Ablation Study:** `python "B3DB Based Model/scripts/run_ablation_study.py"`.
-- **Global SHAP & Figures Generation:** `python "B3DB Based Model/scripts/run_explainability_analysis.py"`.
-- **Automated Test Suite:** `python "B3DB Based Model/tests/test_explainability.py"` (8/8 tests passed).
-- **Interactive Multi-Section Inference:** `python "B3DB Based Model/inference.py" --smiles <SMILES> --explain`.
+- **Broad Hub Repurposing Curation:** `python "Novelty Upgrade/scripts/prepare_repurposing_library.py"`.
+- **Dual-Barrier Pharmacopeia Screen:** `python "Novelty Upgrade/scripts/run_repurposing_screen.py"`.
+- **Cryo-EM Structural Biology Docking Validation:** `python "Novelty Upgrade/scripts/run_cryoem_docking_validation.py"`.
+- **Validation Protocol with 95% Bootstrap CI:** `python "Novelty Upgrade/scripts/run_validation.py"`.
+- **Incremental Feature Ablation Study:** `python "Novelty Upgrade/scripts/run_ablation_study.py"`.
+- **Global SHAP & Figures Generation:** `python "Novelty Upgrade/scripts/run_explainability_analysis.py"`.
+- **Automated Test Suite:** `python "Novelty Upgrade/tests/test_explainability.py"` (8/8 tests passed).
+- **Interactive Multi-Section Inference:** `python "Novelty Upgrade/inference.py" --smiles <SMILES> --explain`.
 
-All resulting datasets are stored under `B3DB Based Model/results/`:
+All resulting datasets are stored under `Novelty Upgrade/results/`:
 - `fda_repurposing_dual_barrier_screen.csv`: Comprehensive 2,405-drug dual-barrier screening profiles.
 - `top_cns_repurposing_candidates.csv`: Ranked non-CNS leads for neuro-oncology and neuroinflammation.
 - `cns_drugs_efflux_resistance_profiles.csv`: Marketed neuropsychiatric drugs vulnerable to active P-gp clearance.

@@ -116,10 +116,10 @@ def run_screen():
     # 1. Load trained models and scalers
     print("\nLoading models and training scaler metadata...")
     bbb_model = xgb.XGBClassifier()
-    bbb_model.load_model(os.path.join(MODELS_DIR, "bbb_xgboost_optuna_best.json"))
+    bbb_model.load_model(os.path.join(MODELS_DIR, "bbb_xgboost.json"))
 
     pgp_model = xgb.XGBClassifier()
-    pgp_model.load_model(os.path.join(MODELS_DIR, "pgp_xgboost_model.json"))
+    pgp_model.load_model(os.path.join(MODELS_DIR, "pgp_xgboost.json"))
 
     bbb_means, bbb_stds = load_scaler_metadata(os.path.join(MODELS_DIR, "bbb_scaler_metadata.json"))
     pgp_means, pgp_stds = load_scaler_metadata(os.path.join(MODELS_DIR, "pgp_scaler_metadata.json"))
