@@ -1,13 +1,26 @@
-# COMPREHENSIVE ARCHITECTURAL BLUEPRINT & REVIEW GUIDE
-## Dual-System Central Nervous System (CNS) Drug Permeation & Efflux Engine
+# Architecture
 
-> **Document Type:** Systems, Bioinformatics & Deep Learning Architecture Guide  
-> **Target Audience:** AI-ML Engineer / Deep Learning Specialist / Architecture Reviewer  
-> **Accompanying Document:** LaTeX Compilable File: [`ARCHITECTURE_DEEP_DIVE.tex`](file:///c:/Users/saivi/Downloads/BioInformatics%20Project/ARCHITECTURE_DEEP_DIVE.tex)  
-> **Core Focus:** Clean, intuitive architecture, exact dimensions, bioinformatics reasoning, and hand-drawing blueprints without overwhelming mathematical clutter.
+How the system works. For how to run it see [`../README.md`](../README.md); for the
+exhaustive block-by-block specification with I/O shapes and loss functions see
+[`BLOCK_DIAGRAM.md`](BLOCK_DIAGRAM.md); for why it was built this way and what is
+publishable see [`RESEARCH_LOG.md`](RESEARCH_LOG.md).
+
+This document merges the former `ARCHITECTURE_DEEP_DIVE.md` and
+`B3DB Based Model/docs/SCIENTIFIC_DOCUMENTATION.md`.
+
+## Contents
+- [The biological problem](#section-1-the-core-biological-paradox--taxonomy)
+- [Why two paradigms](#section-2-the-bioinformatics-root-cause--why-we-upgraded-from-paradigm-1-to-paradigm-2)
+- [Paradigm A — graph neural networks](#section-3-paradigm-1--deep-graph-isomorphism-network-initial-model)
+- [Paradigm B — the dual-barrier ensemble](#section-4-paradigm-2--b3db-dual-barrier-ensemble-engine)
+- [Explainability and biophysical validation](#section-5-explainability-domain-auditing--biophysical-validation)
+- [Multi-task GNN](#multi-task-gnn-dual-barrier-from-one-encoder)
+- [Validation protocol and performance](#3-leakage-resistant-validation-protocol--empirical-performance)
+- [Cross-task shared properties](#6-cross-task-shared-properties--divergence-analysis)
+- [Decision matrix, applicability domain, counterfactuals](#7-four-quadrant-decision-matrix-applicability-domain--counterfactuals)
+- [Codebase layout](#8-codebase-architecture--future-upgrade-guide)
 
 ---
-
 # SECTION 1: THE CORE BIOLOGICAL PARADOX & TAXONOMY
 
 > 💡 **Layman Intuition (In Plain English): The Castle Fortress & The Bouncer**  
@@ -46,6 +59,8 @@
                P(BBB+), P(BBB-)                            ├─ Reaction SMARTS Counterfactual Engine
                                                            └─ Cryo-EM 6QEX Vina Biophysical Docking
 ```
+
+---
 
 ---
 
@@ -118,6 +133,8 @@ $$S_{\text{CNS}} = P(\text{BBB}^+) \times (1 - P(\text{P-gp}^+)) \in [0.0, 1.0]$
 | **Explainability Depth** | Heuristic attention weights | **Exact TreeSHAP Log-Odds Margin** | Direct thermodynamic energy mapping |
 | **Biophysical Validation** | None | **Cryo-EM PDB 6QEX Docking ($p=0.0035$)** | Statistically validated physical binding |
 | **Translational Clinical Yield** | 0 repurposing leads | **273 FDA Repurposing CNS Leads** | Screened across 2,406 approved drugs |
+
+---
 
 ---
 
@@ -232,6 +249,8 @@ GRAPH INPUT: x [N_nodes, 9] | edge_index [2, N_edges] | edge_attr [N_edges, 7]
 
 ---
 
+---
+
 # SECTION 4: PARADIGM 2 — B3DB DUAL-BARRIER ENSEMBLE ENGINE
 
 ```
@@ -308,6 +327,8 @@ GRAPH INPUT: x [N_nodes, 9] | edge_index [2, N_edges] | edge_attr [N_edges, 7]
 
 ---
 
+---
+
 # SECTION 5: EXPLAINABILITY, DOMAIN AUDITING & BIOPHYSICAL VALIDATION
 
 ### 5.1 Exact TreeSHAP in Log-Odds Margin Space
@@ -353,111 +374,194 @@ Tests 8 organic chemistry bioisostere transformations to guide lead optimization
   - Statistical significance: Two-tailed $p = 0.0035$ ($t = -4.10$), confirming that the machine learning models learned authentic biophysics.
 
 ---
-
-# SECTION 6: STEP-BY-STEP BLUEPRINT FOR HAND-DRAWING THE ARCHITECTURE
-
-## Diagram 1: The Deep Graph Isomorphism Network (`BBB_GNN`)
-1. **Left Box (Input Graph):**
-   - Label: `SMILES String`
-   - Arrow $\to$ Box: `Graph Generator G = (V, E)`
-   - Node matrix: $\mathbf{X} \in \mathbb{R}^{|V| \times 9}$ (9 atom features)
-   - Edge matrix: $\mathbf{E}_{\text{attr}} \in \mathbb{R}^{2|E| \times 7}$ (7 bond features)
-2. **Center Stack (3 Convolutional Stages):**
-   - Draw 3 sequential boxes for `conv1`, `conv2`, and `conv3`:
-     - Inside each: `Internal MLP (Linear -> ReLU -> Linear) -> BatchNorm1d(256) -> ReLU -> Dropout(0.30)`
-     - Label output arrows: `[N_nodes, 256]`
-3. **Right Block (Pooling & Readout):**
-   - Arrow $\to$ `Global Mean Pooling` ($\mathbf{h}_G = \frac{1}{|V|} \sum \mathbf{x}_v$).
-   - Output shape: `[Batch_Size, 256]`.
-   - Connect to Classifier MLP: `Linear(256 -> 32) -> ReLU -> Dropout(0.30) -> Linear(32 -> 2)`.
-   - End with `Softmax`: $[P(\text{BBB}^-), P(\text{BBB}^+)]$.
-4. **Bottom Loop (Training Dynamics):**
-   - Arrow from logits to `Weighted Cross-Entropy Loss` ($w_c = \frac{N}{2 \cdot N_c}$).
-   - Optimizer note: `AdamW (lr=0.0005, weight_decay=0.0005, clip_norm=2.0)`.
-   - Scheduler note: `ReduceLROnPlateau (factor=0.5, patience=8)`.
-
 ---
 
-## Diagram 2: The B3DB Dual-Barrier Multi-Modal Engine
-1. **Top Featurization Tree:**
-   - Input: `Input Molecule SMILES`
-   - Split into 3 branches:
-     - Branch 1: `Morgan Fingerprints (Radius=2, Bits=2048)` $\to \mathbf{x}_{\text{FP}} \in \{0, 1\}^{2048}$
-     - Branch 2: `2D Physicochemical (6 dims)` $\to$ `StandardScaler` $\to \mathbf{z}_{\text{2D}} \in \mathbb{R}^6$
-     - Branch 3: `3D ETKDGv3 Conformer (6 dims)` $\to$ `StandardScaler` $\to \mathbf{z}_{\text{3D}} \in \mathbb{R}^6$
-2. **Center Concatenation & Forest Models:**
-   - Concatenate Branch 1 + Branch 2 $\to \mathbf{x}_{\text{BBB}} \in \mathbb{R}^{\mathbf{2054}} \to \text{XGBoost } \mathcal{M}_{\text{BBB}} \to P(\text{BBB}^+)$.
-   - Concatenate Branch 1 + Branch 2 + Branch 3 $\to \mathbf{x}_{\text{Pgp}} \in \mathbb{R}^{\mathbf{2060}} \to \text{XGBoost } \mathcal{M}_{\text{Pgp}} \to P(\text{P-gp}^+)$.
-3. **Bottom Left (Explainability Suite):**
-   - `TreeSHAP Margin Decomposition`: $f(x) = \phi_0 + \sum \phi_i$.
-   - `Morgan Substructure Mapper`: active bit $k \to$ localized SMARTS fragment.
-   - `Applicability Domain`: checks $T_{\max} \ge 0.40$ and $D_{\text{leverage}} \le 2.50$.
-   - `Counterfactual Engine`: 8 medicinal chemistry bioisosteres.
-4. **Bottom Right (Decision Matrix & Docking):**
-   - Draw the 4-Quadrant Cartesian graph ($P(\text{BBB})$ vs $P(\text{Pgp})$) showing Q1 (Optimal), Q2 (Paradoxical), Q3 (Peripheral), Q4 (Restricted), and formula $S_{\text{CNS}} = P(\text{BBB}^+) \times (1 - P(\text{P-gp}^+))$.
-   - Connect arrow to `Cryo-EM Docking Box` (PDB 6QEX, AutoDock Vina, Box $24\text{ \AA}^3$, calculating $\Delta G$ and $K_d$).
+# Multi-Task GNN: Dual Barrier From One Encoder
 
----
+A third model family, added after the two above. It learns both barriers from a
+single shared molecular-graph encoder rather than training them separately.
 
-# SECTION 7: CODEBASE GENEALOGY & GIT DELTA ANALYSIS (FROM COMMIT 1145a1e TO HEAD)
+**Motivation.** On the 216 molecules where B3DB and Broccatelli overlap, the BBB
+label and P-gp substrate status are near-independent (Cramér's V = 0.064,
+OR 1.42 [0.76, 2.67], p = 0.35). Near-independent labels are complementary rather
+than redundant supervision, which is the textbook precondition for multi-task
+learning to help the smaller task.
 
-> 💡 **Layman Intuition: From Prototype to Precision Science**  
-> At commit `1145a1e` (October 11, 2026), the project was an early statistical script prototype: it had a hidden data leakage bug where test-set statistics were accidentally peeked at during normalization.  
-> In the subsequent major development sprints, we transformed it into a publication-grade pharmaceutical discovery platform:
-> - **107 files changed, +77,244 lines added, -17,556 lines cleaned up!**
-> - We completely eliminated data leakage using training-only z-score parameters.
-> - We anchored the AI in physical 3D reality using an atomic Cryo-EM microscope structure of human P-gp (PDB: 6QEX).
-> - We screened 2,406 approved FDA drugs, discovering 273 prime candidates ready for brain disease clinical trials!
+**Architecture** (`B3DB Based Model/gnn/`):
 
 ```
-                    COMMIT 1145a1e (Oct 11)                           CURRENT STATE (HEAD)
-               ┌───────────────────────────────┐               ┌─────────────────────────────────┐
-               │ • Monolithic inference script │               │ • Modular core/ & explainability│
-DATA PIPELINE  │ • Data leakage in scaling     │ ────────────> │ • Strict 70/15/15 & 80/20 split │
-               │ • No scaler serialization     │               │ • Scaler metadata JSON exports  │
-               └───────────────────────────────┘               └─────────────────────────────────┘
-
-               ┌───────────────────────────────┐               ┌─────────────────────────────────┐
-BIOPHYSICAL    │ • Pure ML statistical model   │               │ • Cryo-EM 3.5 Å PDB 6QEX docking│
-VALIDATION     │ • No physical protein anchor  │ ────────────> │ • AutoDock Vina v1.2.7 engine   │
-               │ • Unproven binding hypothesis │               │ • Thermodynamic p = 0.0035      │
-               └───────────────────────────────┘               └─────────────────────────────────┘
-
-               ┌───────────────────────────────┐               ┌─────────────────────────────────┐
-TRANSLATIONAL  │ • Toy single-molecule checks  │               │ • Broad Institute 2,406 screen  │
-DISCOVERY      │ • No drug library screening   │ ────────────> │ • 273 Top CNS Lead Discoveries  │
-               │ • No efflux-resistance audit  │               │ • 105 Efflux Liability Profiles │
-               └───────────────────────────────┘               └─────────────────────────────────┘
-
-               ┌───────────────────────────────┐               ┌─────────────────────────────────┐
-SCIENTIFIC     │ • Heuristic feature selection │               │ • 5-Fold Systematic Ablation    │
-RIGOR          │ • No modality ablation study  │ ────────────> │ • TreeSHAP margin-space math    │
-               │ • Early manuscript draft      │               │ • 12 Publication-quality figures│
-               └───────────────────────────────┘               └─────────────────────────────────┘
+SMILES -> RDKit graph (x[V,66], edge_index[2,2E], edge_attr[2E,14])
+             |
+   3x GINEConv + BatchNorm + ReLU + Dropout      <- shared encoder
+             |
+   global_mean_pool  ->  h [B, 256]              <- heads branch here
+             |
+      +------+------+
+      |             |
+  head A        head B
+  BBB +/-       P-gp substrate
 ```
+
+Heads branch from the 256-dim pooled vector rather than the 32-unit readout, so
+neither task is forced through the other's bottleneck. 372,898 parameters with two
+heads against 364,608 with one.
+
+**Masked loss.** Only ~216 of ~8,800 molecules carry both labels, so roughly 97.5%
+have exactly one. Each head's loss is computed over only its labelled molecules and
+normalised by that head's own count, so the 7,805-molecule BBB task cannot swamp the
+1,212-molecule P-gp task. A head with no labelled molecules in a batch receives
+exactly zero gradient, which is asserted in the verification suite.
+
+**Splits are molecule-level, never task-level.** A dual-labelled molecule carries
+both labels into the same partition; the alternative would contaminate every
+multi-task number. `gnn/splits.py` asserts this before training.
+
+**Result: it does not work, and that is the finding.** Multi-task training helps
+neither task on either split protocol. Upweighting the minority task does not rescue
+it and progressively damages the other. Full numbers, the statistical power analysis,
+and the decision-aware metric suite built to evaluate it are in
+[`RESEARCH_LOG.md`](RESEARCH_LOG.md).
+
+**Entry points:** `scripts/train_multitask_gnn.py`, `scripts/run_kfold_multitask.py`,
+`scripts/run_seed_variance.py`, `scripts/run_metric_analysis.py`, verified by
+`scripts/verify_multitask_gnn.py` (29 checks) and
+`scripts/verify_decision_metrics.py` (31 checks).
+
 
 ---
 
-# SECTION 8: MASTER ARCHITECTURAL REVIEW CHEAT-SHEET
+## 3. Leakage-Resistant Validation Protocol & Empirical Performance
 
-| Architectural Block | Exact Tensor / Parameter | Layman Summary / Purpose |
-|:---|:---|:---|
-| **GNN Atom Features** | $\mathbf{X} \in \mathbb{R}^{|V| \times 9}$ | 9 atomic traits (identity, degree, charge, hydrogens, aromaticity, rings, valences, orbitals). |
-| **GNN Bond Features** | $\mathbf{E}_{\text{attr}} \in \mathbb{R}^{2|E| \times 7}$ | 7 bond traits (single, double, triple, aromatic, conjugated, ring). |
-| **GNN Hidden Width** | $256$ channels | Information capacity of each atom's summary vector. |
-| **GNN Convolution Stack** | 3x `GINEConv` layers | 3 rounds of gossip passing information across neighbors. |
-| **GNN Normalization** | `BatchNorm1d(256)` | Normalizes neuron activations to prevent vanishing gradients. |
-| **GNN Regularization** | `Dropout(p=0.30)` | Randomly mutes 30% of neurons during training to prevent memorization. |
-| **GNN Graph Pooling** | `global_mean_pool` | Averages all atom vectors into a single 256-number vector for the whole molecule. |
-| **GNN Readout MLP** | $\text{Linear}(256 \to 32) \to \text{Linear}(32 \to 2)$ | Final two-stage judge outputting BBB- vs BBB+ raw scores. |
-| **GNN Loss Function** | Weighted Cross-Entropy | Penalizes errors on minority classes more severely. |
-| **GNN Optimizer** | $\text{AdamW}(\eta=5\cdot 10^{-4}, \lambda=5\cdot 10^{-4})$ | Gradient descent with momentum and weight decay. |
-| **Morgan Fingerprint** | $2,048$ bits (radius $= 2$) | Binary barcode detecting presence/absence of sub-fragments. |
-| **2D Physicochemical** | $6$ continuous variables | Weight, greasiness, polar area, sticky H-bonds, floppiness. |
-| **3D Conformer Geometry** | $6$ continuous variables | 3D physical body shape (sphere vs rod vs pancake). |
-| **XGBoost BBB Input** | $\mathbf{x}_{\text{BBB}} \in \mathbb{R}^{\mathbf{2,054}}$ | 2048 Morgan bits + 6 2D descriptors. |
-| **XGBoost P-gp Input** | $\mathbf{x}_{\text{Pgp}} \in \mathbb{R}^{\mathbf{2,060}}$ | 2048 Morgan bits + 6 2D descriptors + 6 3D shape descriptors. |
-| **TreeSHAP Space** | Log-Odds Margin ($f(\mathbf{x}) = \phi_0 + \sum \phi_i$) | Fairly divides credit/blame among features in raw points. |
-| **Applicability Domain** | Tanimoto $\ge 0.40$, Leverage $\le 2.50$ | Humility check ensuring the molecule is not completely alien. |
-| **Decision Index** | $S_{\text{CNS}} = P(\text{BBB}^+) \cdot (1 - P(\text{P-gp}^+))$ | Composite score: high permeability AND low pump extrusion. |
-| **Cryo-EM Docking** | PDB 6QEX, Box $24\text{ \AA}^3$, AutoDock Vina | Physical 3D simulation of pump binding chamber. |
+### Methodological Safeguards Against Optimistic Bias
+1. **Strict Partition Isolation:** Held-out test sets (20%) are isolated prior to any descriptor standardization or hyperparameter tuning. Zero test instances are exposed to the model during training.
+2. **Standardization Isolation:** Continuous descriptor normalization ($z_j = (x_j - \mu_j) / \sigma_j$) fits scaler parameters exclusively on training distributions and serializes them to `models/*_scaler_metadata.json`.
+3. **Statistical Resampling:** 1,000 bootstrap resamplings on test sets determine empirical 95% Confidence Intervals (2.5th to 97.5th percentiles).
+4. **Scaffold Diversity Analysis:** Murcko scaffold decomposition analyzes molecular diversity across the benchmark spaces.
+
+### Test Set Benchmark Performance (95% Bootstrap Confidence Intervals)
+
+| Evaluation Metric | BBB Permeability ($\mathcal{M}_{\text{BBB}}$) | P-gp Efflux Substrate ($\mathcal{M}_{\text{Pgp}}$) |
+|---|:---:|:---:|
+| **Benchmark Dataset** | Curated B3DB ($N = 7,805$) | Broccatelli TDC ($N = 1,205$) |
+| **Test Set Size ($N_{\text{test}}$)** | $1,171$ molecules | $241$ molecules |
+| **Accuracy** | **0.8856** [0.8659 - 0.9035] | **0.9295** [0.8963 - 0.9585] |
+| **Balanced Accuracy** | **0.8775** [0.8564 - 0.8974] | **0.9287** [0.8953 - 0.9572] |
+| **Precision** | **0.9122** [0.8901 - 0.9319] | **0.9313** [0.8828 - 0.9697] |
+| **Recall / Sensitivity** | **0.9073** [0.8846 - 0.9269] | **0.9385** [0.8976 - 0.9773] |
+| **Specificity** | **0.8478** [0.8125 - 0.8820] | **0.9189** [0.8644 - 0.9636] |
+| **F1-Score** | **0.9097** [0.8923 - 0.9237] | **0.9349** [0.9023 - 0.9621] |
+| **ROC-AUC** | **0.9522** [0.9410 - 0.9629] | **0.9587** [0.9330 - 0.9806] |
+| **PR-AUC (Average Precision)**| **0.9724** [0.9651 - 0.9791] | **0.9685** [0.9488 - 0.9846] |
+| **Matthews Corr Coeff (MCC)**| **0.7535** [0.7126 - 0.7924] | **0.8580** [0.7920 - 0.9164] |
+| **Brier Score (Calibration)**| **0.0847** [0.0738 - 0.0958] | **0.0679** [0.0473 - 0.0925] |
+
+### Scaffold Diversity
+* **B3DB Unique Murcko Scaffolds:** $2,129$ unique cores across $7,805$ compounds (Diversity ratio: $0.273$).
+* **Broccatelli Unique Murcko Scaffolds:** $670$ unique cores across $1,205$ compounds (Diversity ratio: $0.556$).
+* **Overlapping Scaffolds:** $288$ common chemotypes between datasets.
+
+---
+
+---
+
+## 6. Cross-Task Shared Properties & Divergence Analysis
+
+### Quantitative Cross-Task Comparison
+
+| Property | BBB Mean \|SHAP\| | P-gp Mean \|SHAP\| | Task Category | Biophysical Interpretation |
+|---|:---:|:---:|:---:|---|
+| **TPSA ($\text{\AA}^2$)** | **1.1825** | 0.1434 | Desolvation Filter | Primary barrier for passive BBB crossing due to desolvation penalty; negligible impact on P-gp efflux. |
+| **MolLogP** | 0.3992 | **1.3949** | **Antagonistic (Divergent)** | High lipophilicity favors passive entry ($\text{BBB}^+$), but simultaneously acts as the strongest recruiter for active P-gp efflux ($\text{P-gp}^+$). |
+| **MolWt (Da)** | 0.5366 | 0.5783 | Compound Barrier Burden | High size retards passive membrane diffusion while expanding interaction contacts inside the P-gp cavity. |
+| **HDonors (HBD)** | 0.2711 | 0.0911 | Seelig Efflux Trigger | Increasing donors creates aqueous clusters retarding permeation while activating Seelig recognition patterns. |
+| **HAcceptors (HBA)**| 0.1198 | 0.0708 | Efflux Trigger | Hydrogen bonding acceptors increase polarity and activate P-gp ATPase. |
+| **RotBonds** | 0.1113 | 0.0387 | Induced-Fit Risk | Flexibility allows molecules to adopt induced-fit conformations inside P-gp transmembrane helices. |
+
+### Spearman Rank Correlation
+$$\rho = 0.7714 \quad (p = 0.0724)$$
+The ranking shifts fundamentally:
+* **BBB:** $\text{TPSA} > \text{MolWt} > \text{LogP} > \text{HDonors} > \text{RotBonds} > \text{HAcceptors}$
+* **P-gp:** $\text{LogP} > \text{MolWt} > R_g > NPR_2 > \text{TPSA} > \text{HDonors}$
+
+### The Golden CNS Window
+To evade active efflux while achieving high passive permeation:
+* $\text{LogP} \in [1.5, 3.0]$
+* $\text{TPSA} < 70 - 90 \text{ \AA}^2$
+* $\text{MW} < 380 - 400 \text{ Da}$
+* $\text{HDonors} \le 1$
+* $R_g < 3.8 \text{ \AA}$ (Compact spherical envelope)
+
+---
+
+---
+
+## 7. Four-Quadrant Decision Matrix, Applicability Domain & Counterfactuals
+
+### The 4-Quadrant Categorization
+1. **Quadrant 1: $\text{BBB}^+ / \text{P-gp}^-$ [Optimal CNS Candidate]**  
+   Favorable passive membrane partition; evades ABCB1 efflux. High, sustained brain exposure (e.g., Levetiracetam, Caffeine, Diazepam).
+2. **Quadrant 2: $\text{BBB}^+ / \text{P-gp}^+$ [Paradoxical Drug / High Efflux Risk]**  
+   Partitions into endothelial membranes but is cleared by P-gp back into capillary blood. Negligible brain exposure despite high lipophilicity (e.g., Loperamide).
+3. **Quadrant 3: $\text{BBB}^- / \text{P-gp}^-$ [Peripheral Low-Permeation Agent]**  
+   Fails passive permeability due to high polarity or size; evades P-gp. Strictly peripheral (e.g., Penicillin G).
+4. **Quadrant 4: $\text{BBB}^- / \text{P-gp}^+$ [Restricted Effluxed Peripheral Compound]**  
+   Doubly blocked: poor passive permeation compounded by active efflux.
+
+### Applicability Domain & Uncertainty
+* **Tanimoto Structural Similarity:** Max Morgan similarity against training benchmarks ($T_{\max} \ge 0.40$ indicates inside chemical domain).
+* **Descriptor Leverage Distance:** Normalized Euclidean distance to training centroids.
+* **Dual-Barrier Uncertainty Score:**
+  $$U_{\text{dual}} = 1 - 2 \cdot \left| P(\text{BBB}^+) - 0.5 \right| \cdot \left| P(\text{P-gp}^+) - 0.5 \right|$$
+
+### Reaction-Based Molecular Counterfactuals
+The engine generates chemically valid analogs to flip predictions using established medicinal chemistry transformations:
+* N-methylation of primary/secondary amines (reduces HBD count).
+* Fluorination and bioisosteric replacement.
+* Ether dealkylation to modulate excessive lipophilicity.
+
+---
+
+---
+
+## 8. Codebase Architecture & Future Upgrade Guide
+
+The codebase is organized into modular packages:
+
+```
+B3DB Based Model/
+├── core/                           # Shared feature engineering & domain logic
+│   ├── features.py                 # 2D, Morgan FP, and 3D ETKDG feature extractors
+│   └── decision_matrix.py          # 4-quadrant logic & clinical benchmark definitions
+├── explainability/                 # Explainability & structural deconvolution
+│   ├── shap_explainer.py           # TreeSHAP in log-odds margin space
+│   ├── substructure_mapper.py      # Morgan bit-to-subgraph mapper
+│   ├── shared_properties.py        # Cross-task descriptor divergence
+│   ├── applicability_domain.py     # Tanimoto & leverage domain estimator
+│   ├── counterfactual.py           # Reaction-based analog search
+│   └── report_generator.py         # Standalone HTML, CSV, JSON export
+├── pipelines/                      # Data preprocessing, training & validation workflows
+│   ├── bbb_pipeline.py             # BBB feature extraction, training & evaluation
+│   ├── pgp_pipeline.py             # P-gp 3D conformer feature extraction & training
+│   ├── validation.py               # 1000-bootstrap validation runner
+│   ├── ablation.py                 # 5-fold feature ablation study runner
+│   └── global_xai.py               # Global TreeSHAP distributions & correlation plots
+├── data/                           # Curated small-molecule datasets
+├── models/                         # Serialized XGBoost models & scaler metadata
+├── figures/                        # High-resolution publication plots
+├── results/                        # Validation metrics & evaluation tables
+├── tests/                          # Automated regression test suite
+└── inference.py                    # Top-level CLI prediction interface
+```
+
+### How to Extend the Framework
+
+#### Adding a New Transporter (e.g., BCRP / ABCG2)
+1. Add raw dataset to `data/bcrp_benchmark.tab`.
+2. Extract features using `core.features.calculate_2d_descriptors` and `calculate_3d_descriptors`.
+3. Add a model training pipeline in `pipelines/bcrp_pipeline.py`.
+4. Extend `inference.py` to support multi-transporter triage.
+
+#### Adding New Descriptors (e.g., Quantum Mechanical DFT or MACCS Keys)
+1. Implement the descriptor extraction in `core/features.py`.
+2. Update feature column ordering in `prepare_dataframe`.
+3. Re-run `pipelines/bbb_pipeline.py` and `pipelines/pgp_pipeline.py` to retrain models and update scaler metadata.

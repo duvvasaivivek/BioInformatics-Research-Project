@@ -53,6 +53,29 @@ def section(title: str) -> None:
 
 # ---------------------------------------------------------------------------
 
+EXPECTED_DOCS = (
+    ('README.md',),
+    ('RESEARCH_PAPER_MANUSCRIPT.md',),
+    ('docs', 'ARCHITECTURE.md'),
+    ('docs', 'BLOCK_DIAGRAM.md'),
+    ('docs', 'RESEARCH_LOG.md'),
+)
+
+
+def verify_doc_set_present() -> None:
+    """
+    The consolidated documentation set must exist.
+
+    Most checks below read a document and skip when it is empty. That makes a
+    deleted file reduce the check count rather than fail, so the set is asserted
+    explicitly first.
+    """
+    section('0. Documentation set')
+    for parts in EXPECTED_DOCS:
+        rel = '/'.join(parts)
+        check(f'{rel} exists and is non-empty', bool(read_doc(*parts).strip()), rel)
+
+
 def verify_validation_metrics() -> None:
     section('1. Quoted metrics match results/validation_metrics_summary.csv')
     csv = os.path.join(RESULTS_DIR, 'validation_metrics_summary.csv')
@@ -83,14 +106,10 @@ def verify_validation_metrics() -> None:
     docs = {
         'README.md': read_doc('README.md'),
         'RESEARCH_PAPER_MANUSCRIPT.md': read_doc('RESEARCH_PAPER_MANUSCRIPT.md'),
-        'ARCHITECTURE_DEEP_DIVE.md': read_doc('ARCHITECTURE_DEEP_DIVE.md'),
-        'ARCHITECTURE_DEEP_DIVE.tex': read_doc('ARCHITECTURE_DEEP_DIVE.tex'),
-        'docs/SCIENTIFIC_DOCUMENTATION.md': read_doc('B3DB Based Model', 'docs',
-                                                     'SCIENTIFIC_DOCUMENTATION.md'),
+        'docs/ARCHITECTURE.md': read_doc('docs', 'ARCHITECTURE.md'),
     }
     # Audit documents legitimately quote the old values while describing the defect.
-    AUDIT_DOCS = ('NOVELTY_ASSESSMENT.md', 'MULTITASK_GNN_RUN_LOG.md',
-                  'PUBLICATION_STRATEGY.md', 'ARCHITECTURE_FLOW_BLOCK_DIAGRAM.md')
+    AUDIT_DOCS = ('docs/RESEARCH_LOG.md', 'docs/BLOCK_DIAGRAM.md')
     for name, text in docs.items():
         if not text:
             continue
@@ -117,7 +136,7 @@ def verify_shap_table() -> None:
     df = pd.read_csv(csv).set_index('Property')
 
     man = read_doc('RESEARCH_PAPER_MANUSCRIPT.md')
-    sci = read_doc('B3DB Based Model', 'docs', 'SCIENTIFIC_DOCUMENTATION.md')
+    sci = read_doc('docs', 'ARCHITECTURE.md')
 
     missing: List[str] = []
     for prop in df.index:
@@ -154,9 +173,9 @@ def verify_shap_table() -> None:
 
 def verify_parameter_census() -> None:
     section('3. GNN parameter census is self-consistent')
-    text = read_doc('ARCHITECTURE_DEEP_DIVE.md')
+    text = read_doc('docs', 'ARCHITECTURE.md')
     if not text:
-        check('ARCHITECTURE_DEEP_DIVE.md present', False, 'missing')
+        check('docs/ARCHITECTURE.md present', False, 'missing')
         return
 
     VERIFIED_TOTAL = 345514
@@ -210,10 +229,10 @@ def verify_dataset_counts() -> None:
     if os.path.exists(legacy):
         src = pd.read_csv(legacy, usecols=['Source']).Source.value_counts().to_dict()
         print(f'      legacy corpus: {src}')
-        prov = read_doc('DATASET_AND_FILE_PROVENANCE_CATALOG.md')
+        prov = read_doc('README.md')
         if prov:
             want = f"Adenot ({src.get('Adenot', 0):,}) & Li ({src.get('Li', 0):,})"
-            check('provenance catalog quotes the measured Adenot/Li split',
+            check('README quotes the measured Adenot/Li split',
                   want in prov, want)
 
 
@@ -339,8 +358,8 @@ def verify_benchmark_structures() -> None:
 def verify_deleted_files_absent() -> None:
     section('6. No doc presents a deleted file as live')
     gone = ['bbb_model_evaluation.py', 'pgp_model_evaluation.py']
-    for rel in ('DATASET_AND_FILE_PROVENANCE_CATALOG.md', 'README.md'):
-        text = read_doc(rel)
+    for rel in ('README.md', 'docs/ARCHITECTURE.md'):
+        text = read_doc(*rel.split('/'))
         if not text:
             continue
         hits = [g for g in gone if g in text]
@@ -353,6 +372,7 @@ def main() -> int:
     print('DOCUMENTATION CONSISTENCY CHECKER')
     print('=' * 78)
 
+    verify_doc_set_present()
     verify_validation_metrics()
     verify_shap_table()
     verify_parameter_census()
