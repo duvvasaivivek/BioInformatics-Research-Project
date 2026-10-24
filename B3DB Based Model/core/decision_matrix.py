@@ -27,7 +27,12 @@ BENCHMARK_DRUGS: Dict[str, Dict[str, Any]] = {
         "notes": "Refractory antiepileptic drug that evades P-gp efflux entirely (Löscher & Potschka 2005)."
     },
     "Loperamide (Imodium)": {
-        "smiles": "CN(C)C(=O)CC(c1ccccc1)(c2ccccc2)CCN3CCC(CC3)(c4ccc(cc4)Cl)O",
+        # Corrected 2026-10-24. The previous literal was C30H35ClN2O2 (MW 491.08,
+        # 35 heavy atoms) - one CH2 too many, and absent from all 9,320 curated
+        # structures in B3DB and the Broad library. Loperamide is C29H33ClN2O2,
+        # MW 477.05, InChIKey RDOIQAHITMMDAJ. Structure taken from the Broad
+        # Drug Repurposing Hub curation shipped in data/repurposing/.
+        "smiles": "CN(C)C(=O)C(CCN1CCC(O)(c2ccc(Cl)cc2)CC1)(c1ccccc1)c1ccccc1",
         "ground_truth": "BBB+ / P-gp+ (Paradoxical Drug / High Efflux Risk)",
         "expected_quadrant": 2,
         "notes": "Classic paradoxical drug: readily crosses membranes (BBB+) but is actively extruded by luminal P-gp."
@@ -45,7 +50,13 @@ BENCHMARK_DRUGS: Dict[str, Dict[str, Any]] = {
         "notes": "Lipophilic benzodiazepine sedative that rapidly distributes into brain tissue."
     },
     "Penicillin G": {
-        "smiles": "CC1(C(N2C(S1)C(C2=O)NC(=O)CC3=CC=CC=C3)C(=O)O)C",
+        # Stereochemistry added 2026-10-24. The previous literal had the correct
+        # constitution (C16H18N2O4S) but all three stereocentres unassigned, which
+        # matches how B3DB stores it but is not a dockable structure: the penam
+        # bicycle's 3D shape is entirely determined by the (2S,5R,6R) configuration.
+        # Penicillin G is absent from the Broad library, so the docking study falls
+        # back to this entry. InChIKey JGSARLDLIJGVTE-MBNYWOFBSA-N.
+        "smiles": "CC1(C)S[C@@H]2[C@H](NC(=O)Cc3ccccc3)C(=O)N2[C@H]1C(=O)O",
         "ground_truth": "BBB- / P-gp- (Peripheral Low-Permeation Agent)",
         "expected_quadrant": 3,
         "notes": "Peripheral antibiotic; poor transcellular BBB penetration due to ionization and high desolvation penalty."

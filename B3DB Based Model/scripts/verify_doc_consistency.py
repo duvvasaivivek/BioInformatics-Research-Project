@@ -27,6 +27,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO_DIR = os.path.dirname(BASE_DIR)
 RESULTS_DIR = os.path.join(BASE_DIR, 'results')
 
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 _results: List[Tuple[str, bool, str]] = []
 
 
@@ -263,6 +266,76 @@ def verify_docking_count() -> None:
           'AutoDock Vina is stochastic without an explicit seed')
 
 
+def verify_benchmark_structures() -> None:
+    """
+    The five clinical reference drugs must be chemically correct, and the
+    manuscript's statement of their training-set membership must match the data.
+
+    One of them (Loperamide) was C30H35ClN2O2 - one CH2 too many - which made it
+    look absent from both training sets and produced a false claim of blind
+    validation. Formula and mass are checked against pharmacopeia reference
+    values so the same class of error cannot recur silently.
+    """
+    section('7. Clinical benchmark structures and training-set membership')
+    from rdkit import Chem, RDLogger
+    from rdkit.Chem import Descriptors, rdMolDescriptors, inchi
+    RDLogger.DisableLog('rdApp.*')
+    from core.decision_matrix import BENCHMARK_DRUGS
+
+    reference = {
+        'Levetiracetam': ('C8H14N2O2', 170.21),
+        'Loperamide': ('C29H33ClN2O2', 477.04),
+        'Caffeine': ('C8H10N4O2', 194.19),
+        'Diazepam': ('C16H13ClN2O', 284.74),
+        'Penicillin G': ('C16H18N2O4S', 334.39),
+    }
+
+    def keyset(path, col):
+        frame = pd.read_csv(path, sep='\t')
+        keys = set()
+        for smi in frame[col]:
+            mol = Chem.MolFromSmiles(str(smi))
+            if mol:
+                keys.add(inchi.MolToInchiKey(mol))
+        return keys
+
+    b3db = keyset(os.path.join(BASE_DIR, 'data', 'B3DB_classification.tsv'), 'SMILES')
+    brocc = keyset(os.path.join(BASE_DIR, 'data', 'pgp_broccatelli.tab'), 'Drug')
+    man = read_doc('RESEARCH_PAPER_MANUSCRIPT.md')
+
+    for label, meta in BENCHMARK_DRUGS.items():
+        short = label.split('(')[0].strip()
+        mol = Chem.MolFromSmiles(meta['smiles'])
+        if mol is None:
+            check(f'{short} parses', False, 'RDKit rejected the SMILES')
+            continue
+        formula = rdMolDescriptors.CalcMolFormula(mol)
+        mass = Descriptors.MolWt(mol)
+        ref_f, ref_m = reference.get(short, (None, None))
+        ok = formula == ref_f and abs(mass - ref_m) < 0.6
+        check(f'{short} matches the reference formula and mass', ok,
+              f'{formula} / {mass:.2f} vs {ref_f} / {ref_m:.2f}')
+
+        if man:
+            key = inchi.MolToInchiKey(mol)
+            in_b3, in_br = key in b3db, key in brocc
+            row = f'| {short} | {"yes" if in_b3 else "no"} | {"yes" if in_br else "no"} |'
+            # Emphasis markers are presentational; compare the cells, not the styling.
+            flat = man.replace('**', '')
+            check(f'{short} membership row matches the data', row in flat, row.strip())
+
+    if man:
+        # The assertive original form must be gone. The phrase may still appear
+        # inside the correction note, where it is quoted to say it was wrong.
+        check('no false claim of blind validation for Loperamide',
+              'Verified **100% ABSENT**' not in man,
+              'Loperamide is present in both training sets')
+        check('the withdrawn claim is recorded rather than quietly deleted',
+              'Correction.' in man and 'withdrawn' in man)
+        check('benchmarks are described as recall checks',
+              'recall checks, not blind validation' in man)
+
+
 def verify_deleted_files_absent() -> None:
     section('6. No doc presents a deleted file as live')
     gone = ['bbb_model_evaluation.py', 'pgp_model_evaluation.py']
@@ -285,6 +358,7 @@ def main() -> int:
     verify_parameter_census()
     verify_dataset_counts()
     verify_docking_count()
+    verify_benchmark_structures()
     verify_deleted_files_absent()
 
     passed = sum(1 for _, ok, _ in _results if ok)

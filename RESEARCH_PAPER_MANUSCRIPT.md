@@ -16,7 +16,7 @@ To overcome this fundamental clinical limitation, we present a unified **Dual-Ba
 4. A dedicated **Shared Molecular Properties Analysis** module revealing that shared properties exert biologically divergent influences across the two barriers (e.g., Lipophilicity promotes passive BBB entry with Mean $|\text{SHAP}| = 0.3992$, but is the strongest driver of P-gp efflux recruitment with Mean $|\text{SHAP}| = 1.4074$, yielding a cross-task Spearman rank correlation of $\rho = 0.7714$);
 5. A four-quadrant pharmacological decision matrix coupled with applicability domain estimation, prediction uncertainty metrics, and chemically valid reaction-based counterfactual search;
 6. **Systematic Virtual Screening of the FDA-Approved Pharmacopeia ($N=2,405$ drugs)** from the Broad Institute Drug Repurposing Hub, which uncovers **273 non-CNS approved drugs residing in Quadrant 1 ($\text{BBB}^+ / \text{P-gp}^-$)** with high repurposing potential for neuro-oncology (Thalidomide, Topotecan, Aminoglutethimide), neuroinflammation (Betamethasone, Triamcinolone), and CNS infections (Linezolid); and reveals that **105 marketed neuropsychiatric therapeutics reside in Quadrant 2 ($\text{BBB}^+ / \text{P-gp}^+$)**, providing a structural molecular rationale for clinical treatment resistance in refractory schizophrenia and depression;
-7. **Orthogonal Biophysical Validation via Cryo-EM Molecular Docking (PDB: 6QEX)**: Systematic docking into the 3.5 \AA inward-facing human P-glycoprotein translocation cavity reveals that ML-predicted efflux-vulnerable drugs (Quadrant 2) bind deeply with high negative free energy ($\text{Mean } \Delta G_{\text{bind}} = -8.84 \pm 0.89\text{ kcal/mol}$, nanomolar $K_d$) driven by extensive aromatic contact networks (Trp232, Phe303, Tyr307, Phe343, Gln725, Phe728, Phe983), whereas efflux evaders (Quadrant 1) exhibit significantly weaker affinities ($\text{Mean } \Delta G_{\text{bind}} = -6.91 \pm 1.30\text{ kcal/mol}$; Welch's $t = -3.79$, $p = 0.00160$), yielding a strong cross-modality rank correlation ($\rho = -0.6117$, $p = 0.00249$).
+7. **Orthogonal Biophysical Validation via Cryo-EM Molecular Docking (PDB: 6QEX)**: Systematic docking into the 3.5 \AA inward-facing human P-glycoprotein translocation cavity reveals that ML-predicted efflux-vulnerable drugs (Quadrant 2) bind deeply with high negative free energy ($\text{Mean } \Delta G_{\text{bind}} = -8.84 \pm 0.89\text{ kcal/mol}$, nanomolar $K_d$) driven by extensive aromatic contact networks (Trp232, Phe303, Tyr307, Phe343, Gln725, Phe728, Phe983), whereas efflux evaders (Quadrant 1) exhibit significantly weaker affinities ($\text{Mean } \Delta G_{\text{bind}} = -6.91 \pm 1.30\text{ kcal/mol}$; Welch's $t = -3.79$, $p = 0.00160$), yielding a strong cross-modality rank correlation ($\rho = -0.5733$, $p = 0.00528$).
 
 Tested against classic clinical benchmarks (Levetiracetam, Loperamide, Caffeine, Diazepam, Penicillin G) and validated across the entire approved pharmacopeia and Cryo-EM structural cavity, our model autonomously identifies the "golden window" of CNS drug design and resolves paradoxical drug classifications. All datasets, models, reproduction scripts, and validation suites are made available for open scientific reproduction.
 
@@ -211,16 +211,40 @@ We evaluated our dual-barrier pipeline against classical clinical benchmark drug
 | Compound | Canonical SMILES | BBB Status ($P(\text{BBB}^+)$) | P-gp Status ($P(\text{P-gp}^+)$) | Dual-Barrier Quadrant Classification | Clinical Pharmacological Alignment |
 |---|---|:---:|:---:|---|---|
 | **Levetiracetam (Keppra)** | `CC[C@@H](C(=O)N)N1CCCC1=O` | **BBB+ (97.5%)** | **Non-Sub (2.1%)** | **Quadrant 1 [Optimal CNS Agent]** | Refractory antiepileptic drug that completely evades P-gp efflux (Löscher p. 92); retains therapeutic efficacy in drug-resistant epilepsy models. |
-| **Loperamide (Imodium)** | `CN(C)C(=O)CC(c1ccccc1)...` | **BBB+ (89.5%)** | **Substrate (98.8%)** | **Quadrant 2 [Paradoxical Drug]** | High lipid solubility ($\log P = 5.48$) enables membrane entry, but violent P-gp extrusion eliminates brain exposure. Confirmed paradoxical profile. |
+| **Loperamide (Imodium)** | `CN(C)C(=O)C(CCN1CCC(O)...` | **BBB+ (93.7%)** | **Substrate (98.5%)** | **Quadrant 2 [Paradoxical Drug]** | High lipid solubility ($\log P = 5.09$) enables membrane entry, but violent P-gp extrusion eliminates brain exposure. Confirmed paradoxical profile. |
 | **Caffeine** | `CN1C=NC2=C1C(=O)N(C(=O)N2C)C` | **BBB+ (88.0%)** | **Non-Sub (6.8%)** | **Quadrant 1 [Optimal CNS Agent]** | Classic CNS stimulant with unhindered brain penetration. |
 | **Diazepam (Valium)** | `CN1C(=O)CN=C(c2ccccc2)...` | **BBB+ (99.4%)** | **Non-Sub (6.2%)** | **Quadrant 1 [Optimal CNS Agent]** | High lipophilicity sedative; readily crosses BBB and evades active clearance. |
 | **Penicillin G** | `CC1(C(N2C(S1)C(C2=O)...` | **BBB- (1.3%)** | **Non-Sub (3.4%)** | **Quadrant 3 [Peripheral Agent]** | Peripheral antibiotic; high polar surface area and negative charge preclude passive crossing. Action confined to periphery. |
 
-#### Rigorous Audit of Clinical Benchmark Blind Validation Status:
-To verify that the clinical benchmark evaluation does not suffer from dataset leakage, we performed canonical SMILES exact matching against both training databases:
-1. **Loperamide (Paradoxical Archetype):** Verified **100% ABSENT** from both the B3DB classification dataset ($N=7,805$) and the Broccatelli P-gp dataset ($N=1,205$). Its classification into Quadrant 2 ($89.5\%$ BBB+ and $98.8\%$ P-gp+) represents a genuine out-of-sample zero-shot prediction.
-2. **P-gp Efflux Evaders:** **None** of the five clinical reference drugs exist in the Broccatelli P-gp training dataset. Every P-gp classification in Table 4 is therefore a true out-of-distribution blind validation.
-3. **B3DB Representation:** Levetiracetam, Caffeine, Diazepam, and Penicillin G are present in the general B3DB compilation (as expected for widely characterized FDA-approved compounds), while Loperamide is completely excluded.
+#### Training-Set Membership of the Clinical Benchmarks:
+Membership was determined by full InChIKey match against both training databases
+(InChIKey rather than SMILES string equality, so that differences in spelling,
+tautomer or salt form cannot produce a false negative):
+
+| Compound | In B3DB ($N=7,805$) | In Broccatelli ($N=1,212$) |
+|---|:---:|:---:|
+| Levetiracetam | yes | no |
+| Loperamide | **yes** | **yes** |
+| Caffeine | yes | yes |
+| Diazepam | yes | yes |
+| Penicillin G | yes | no |
+
+**These are therefore recall checks, not blind validation.** All five compounds are
+present in the BBB training set, and three of the five (Loperamide, Caffeine,
+Diazepam) are additionally present in the P-gp training set. Only Levetiracetam
+and Penicillin G are unseen by the P-gp model. Table 4 demonstrates that the models reproduce
+the established pharmacology of well-characterised reference drugs; it does not
+demonstrate out-of-sample generalisation, and the scaffold-split results in
+Section 4.1 remain the only evidence for that.
+
+> **Correction.** An earlier version of this manuscript stated that Loperamide was
+> "100% ABSENT" from both databases and that its Quadrant 2 assignment was a
+> "genuine out-of-sample zero-shot prediction". That was an artifact of a
+> structural error: the Loperamide SMILES then in use was $C_{30}H_{35}ClN_2O_2$
+> (MW 491.08) rather than the correct $C_{29}H_{33}ClN_2O_2$ (MW 477.05) - one
+> CH$_2$ too many - and that incorrect structure is indeed absent from both
+> databases. With the correct structure (InChIKey RDOIQAHITMMDAJ) Loperamide is
+> present in both. The claim of blind validation has been withdrawn.
 
 #### Detailed Mechanistic Case Studies:
 
@@ -234,12 +258,12 @@ To verify that the clinical benchmark evaluation does not suffer from dataset le
 - **Verdict:** Highly compact spatial profile and lack of multiple H-bonding pairs prevent P-gp engagement, resulting in an optimal CNS profile.
 
 ##### Case 2: Loperamide — The Paradoxical Drug (Quadrant 2)
-- **Model Output:** $P(\text{BBB}^+) = 89.5\%$ (TreeSHAP Margin: $+2.6488$), $P(\text{P-gp}^+) = 98.8\%$ (TreeSHAP Margin: $+2.2734$).
+- **Model Output:** $P(\text{BBB}^+) = 93.7\%$ (TreeSHAP margin $+2.6929$), $P(\text{P-gp}^+) = 98.5\%$ (TreeSHAP margin $+4.2183$). Each margin satisfies $P = 1/(1+e^{-f})$ against its stated probability.
 - **Key SHAP Attributions:**
-  - High Lipophilicity ($\log P = 5.48$): $\phi_{\log P} = +0.2387$ (BBB), $\phi_{\log P} = +2.0399$ (P-gp).
-  - High Molecular Weight ($\text{MW} = 491.08 \text{ Da}$): $\phi_{\text{MW}} = -0.8883$ (BBB), $\phi_{\text{MW}} = +0.4057$ (P-gp).
-  - Large Radius of Gyration ($R_g = 5.17 \text{ \AA}$): $\phi_{R_g} = +0.7021$ (P-gp).
-- **Verdict:** While lipophilicity enables membrane crossing, large spatial bulk ($R_g = 5.17 \text{ \AA}$) and high lipophilicity trigger violent P-gp extrusion ($98.8\%$), correctly identifying Loperamide as a paradoxical drug.
+  - High Lipophilicity ($\log P = 5.09$): $\phi_{\log P} = +0.2074$ (BBB), $\phi_{\log P} = +2.2500$ (P-gp).
+  - High Molecular Weight ($\text{MW} = 477.05 \text{ Da}$): $\phi_{\text{MW}} = -0.5645$ (BBB), $\phi_{\text{MW}} = +0.3867$ (P-gp).
+  - Large Radius of Gyration ($R_g = 5.07 \text{ \AA}$): $\phi_{R_g} = +0.4227$ (P-gp).
+- **Verdict:** While lipophilicity enables membrane crossing, large spatial bulk ($R_g = 5.07 \text{ \AA}$) and high lipophilicity trigger violent P-gp extrusion ($98.5\%$), correctly identifying Loperamide as a paradoxical drug. Note that Loperamide is present in both training sets, so this is a recall check rather than a blind prediction.
 
 ##### Case 3: Counterfactual Optimization of Loperamide
 Using `MolecularCounterfactualEngine` with structural similarity constraint ($T \ge 0.50$), candidate analogs were systematically generated:
@@ -364,7 +388,7 @@ All ligands were 3D embedded with RDKit ETKDGv3, energy-minimized using the MMFF
 | **Levetiracetam** | **Q1** | P-gp Evader Antiepileptic | **0.017** | **-5.59** | **80.4 $\mu$M** | 10 | PHE303, TYR307, LEU724, GLN725, GLN838, VAL991 |
 | **Caffeine** | **Q1** | CNS Stimulant Evader | **0.060** | **-5.55** | **85.9 $\mu$M** | 8 | LEU65, GLN195, GLN946, TYR950 |
 |---|---|---|---|---|---|---|---|
-| **Penicillin G** | **Q3** | Peripheral Beta-Lactam | **0.034** | **-8.33** | **778.2 nM** | 11 | TRP232, PHE303, ILE306, ILE340, PHE343, GLN347 |
+| **Penicillin G** | **Q3** | Peripheral Beta-Lactam | **0.020** | **-8.96** | **269.2 nM** | 9 | TRP232, PHE303, ILE306, TYR307, PHE343, LEU724, GLN725, GLN990 |
 | **Metformin** | **Q3** | Peripheral Biguanide | **0.015** | **-4.94** | **240.1 $\mu$M** | 9 | LEU65, GLN195, GLN946, TYR950 |
 
 ### 6.2 Thermodynamic Separation Between Efflux-Vulnerable (Q2) and Evading (Q1) Therapeutics
@@ -381,7 +405,7 @@ As illustrated in Figure 5, the binding free energy distribution clearly differe
    A Welch's unequal variances two-sample t-test confirms that Quadrant 2 therapeutics bind significantly more tightly to the P-gp cavity than Quadrant 1 therapeutics (**$t = -3.7933, p = 1.597e-03$**). A non-parametric Mann-Whitney U test similarly verifies this difference (**$U = 11.0, p = 3.117e-03$**).
 
 4. **Docking energy alone does not classify substrates.**
-   The group separation is significant, but it does not transfer to the individual compound. 4 Quadrant 1 evaders (Thalidomide -8.23, Topotecan -8.68, Linezolid -7.62, Betamethasone -8.71 kcal/mol) bind at least as tightly as the weakest Quadrant 2 substrates, and the peripheral control **Penicillin G** reaches **-8.33 kcal/mol** despite a predicted efflux probability of 0.034. Rigid-receptor $\Delta G$ is therefore a population-level signal, not a per-molecule discriminator. This is consistent with reports that P-gp docking cannot separate substrates from non-substrates, and it is precisely why a ligand-topology model adds information the structure alone does not provide.
+   The group separation is significant, but it does not transfer to the individual compound. 4 Quadrant 1 evaders (Thalidomide -8.23, Topotecan -8.68, Linezolid -7.62, Betamethasone -8.71 kcal/mol) bind at least as tightly as the weakest Quadrant 2 substrates, and the peripheral control **Penicillin G** reaches **-8.96 kcal/mol** despite a predicted efflux probability of 0.020, binding more tightly than six of the nine Quadrant 2 substrates. Rigid-receptor $\Delta G$ is therefore a population-level signal, not a per-molecule discriminator. This is consistent with reports that P-gp docking cannot separate substrates from non-substrates, and it is precisely why a ligand-topology model adds information the structure alone does not provide.
 
 ### 6.3 Transmembrane Helical Contact Residues
 
@@ -396,7 +420,7 @@ Figure 6 depicts the correlation between the machine learning predicted probabil
 ![Figure 6: Correlation between Machine Learning Efflux Probability and Cryo-EM Docking Energy](B3DB%20Based%20Model/figures/cryoem_docking_vs_ml_correlation.png)
 
 A strong, statistically significant negative Spearman rank correlation is observed:
-$$\rho = -0.6117 \quad (p = 2.486e-03)$$
+$$\rho = -0.5733 \quad (p = 5.28\times10^{-3})$$
 Because more negative $\Delta G_{\text{bind}}$ reflects higher thermodynamic stability, this inverse relationship demonstrates that **our machine learning model trained on binary phenotypic cell assays captures authentic physical binding thermodynamics in the human ABCB1 cryo-EM cavity**.
 
 ---
@@ -467,7 +491,7 @@ All resulting datasets are stored under `B3DB Based Model/results/`:
 
 We have established a scientifically rigorous, explainable machine learning architecture for dual-barrier CNS drug screening. By coupling Bayesian-optimized gradient boosted trees with 3D conformer geometry, TreeSHAP margin attributions, and Morgan substructure deconvolution, our framework successfully decouples passive membrane permeability from active P-gp efflux. 
 
-Applying this framework to the entire FDA-approved pharmacopeia ($N=2,405$ drugs) demonstrated immediate translational impact: discovering 273 non-CNS approved drugs suitable for neuro-oncology, neuroinflammation, and meningeal infection repurposing, while simultaneously revealing that 105 marketed neuropsychiatric therapeutics suffer from latent P-gp efflux vulnerability. Furthermore, in silico molecular docking into the Cryo-EM structure of human P-glycoprotein (PDB: 6QEX) provided orthogonal structural biology confirmation: proving that machine learning predictions correlate tightly with physical binding free energies ($\rho = -0.6117, p = 0.00249$) and specific transmembrane helical contacts. The model autonomously reproduces historical pharmacological principles, resolves the clinical dilemma of paradoxical drugs, and provides an actionable computational tool for modern rational neurotherapeutic design.
+Applying this framework to the entire FDA-approved pharmacopeia ($N=2,405$ drugs) demonstrated immediate translational impact: discovering 273 non-CNS approved drugs suitable for neuro-oncology, neuroinflammation, and meningeal infection repurposing, while simultaneously revealing that 105 marketed neuropsychiatric therapeutics suffer from latent P-gp efflux vulnerability. Furthermore, in silico molecular docking into the Cryo-EM structure of human P-glycoprotein (PDB: 6QEX) provided orthogonal structural biology confirmation: proving that machine learning predictions correlate tightly with physical binding free energies ($\rho = -0.5733, p = 0.00528$) and specific transmembrane helical contacts. The model autonomously reproduces historical pharmacological principles, resolves the clinical dilemma of paradoxical drugs, and provides an actionable computational tool for modern rational neurotherapeutic design.
 
 ---
 
