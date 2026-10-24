@@ -34,13 +34,11 @@ BioInformatics Project/
 ├── B3DB Based Model/                              [PARADIGM 2: Dual-Barrier Multi-Modal Engine]
 │   ├── BBB/                                       [Door 1: Passive Permeation XGBoost Pipeline]
 │   │   ├── bbb_data_preprocessing.py              [Featurizes B3DB_classification.tsv -> processed_b3db_data_advanced.csv]
-│   │   ├── bbb_model_training.py                  [Optuna 50 trials tuning & trains bbb_xgboost_optuna_best.json]
-│   │   └── bbb_model_evaluation.py                [Evaluates Door 1 model on test set & plots ROC curve]
+│   │   └── bbb_model_training.py                  [Optuna 50 trials tuning & trains bbb_xgboost_optuna_best.json]
 │   │
 │   ├── Pgp/                                       [Door 2: Active P-gp Efflux XGBoost Pipeline]
 │   │   ├── pgp_data_preprocessing.py              [Featurizes pgp_broccatelli.tab with 3D shapes -> processed_pgp_data.csv]
-│   │   ├── pgp_model_training.py                  [Trains pgp_xgboost_model.json for active efflux liability]
-│   │   └── pgp_model_evaluation.py                [Evaluates Door 2 model on test set & plots ROC curve]
+│   │   └── pgp_model_training.py                  [Trains pgp_xgboost_model.json for active efflux liability]
 │   │
 │   ├── core/                                      [Shared Foundations]
 │   │   ├── features.py                            [Central featurizer: 2048-bit Morgan FP + 6 2D + 6 3D conformer shapes]
@@ -107,7 +105,7 @@ BioInformatics Project/
 | **`6QEX.pdb` & `pgp_chain_a.pdbqt`** | `B3DB Based Model/data/docking/` | 1 structure | Cryo-EM 3.6 Å structure of human P-gp | `scripts/run_cryoem_docking_validation.py` | Rigid receptor grid for AutoDock Vina |
 | **22 Ligand `.pdbqt` files** | `B3DB Based Model/data/docking/` | 22 drugs | 3D conformers of clinical benchmark drugs | `scripts/run_cryoem_docking_validation.py` | `results/cryoem_pgp_docking_validation.csv` (Docking vs ML correlation $r = -0.732$) |
 | **`raw_adenot_li.xls`** *(Legacy)* | `Initial Model/Dataset/` | 2 sheets | Raw Zhao 2006 literature Excel tables | `Initial Model/clean_raw_data.py` | Generates `cleaned_bbb_dataset.csv` |
-| **`cleaned_bbb_dataset.csv`** *(Legacy)* | `Initial Model/Dataset/` | 1,890 | SMILES from Adenot (1,593) & Li (415) | `Initial Model/graph_generation.py` | `Initial Model/graphs/graph_XXXX.pt` (1,890 graph tensors) |
+| **`cleaned_bbb_dataset.csv`** *(Legacy)* | `Initial Model/Dataset/` | 1,890 | SMILES from Adenot (1,621) & Li (269) | `Initial Model/graph_generation.py` | `Initial Model/graphs/graph_XXXX.pt` (1,890 graph tensors) |
 
 ---
 

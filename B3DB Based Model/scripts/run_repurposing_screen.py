@@ -15,12 +15,11 @@ import json
 import warnings
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, Optional
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm import tqdm
 import xgboost as xgb
 from rdkit import Chem
-from rdkit.Chem import Descriptors, Descriptors3D
 from rdkit import RDLogger
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -42,7 +41,7 @@ from core.features import (
     calculate_morgan_fingerprint,
     load_scaler_metadata
 )
-from core.decision_matrix import determine_dual_barrier_quadrant, Colors
+from core.decision_matrix import determine_dual_barrier_quadrant
 from explainability.applicability_domain import ApplicabilityDomainEstimator
 
 DATA_DIR = os.path.join(BASE_DIR, "data")

@@ -18,7 +18,7 @@ import subprocess
 import urllib.request
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Tuple
 from scipy import stats
 import matplotlib.pyplot as plt
 import seaborn as sns

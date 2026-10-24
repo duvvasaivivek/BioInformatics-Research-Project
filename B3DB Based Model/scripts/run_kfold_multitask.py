@@ -27,7 +27,6 @@ from typing import Dict, List, Any
 
 import numpy as np
 import pandas as pd
-import torch
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

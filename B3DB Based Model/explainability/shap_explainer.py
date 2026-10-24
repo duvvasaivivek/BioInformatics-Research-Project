@@ -6,7 +6,7 @@ aligns them with positive/negative prediction outcomes, and isolates top support
 
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Optional
 from rdkit import Chem
 
 try:

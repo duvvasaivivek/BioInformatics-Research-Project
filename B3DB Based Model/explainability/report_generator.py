@@ -9,7 +9,7 @@ import json
 import csv
 import datetime
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 
 class ScientificReportGenerator:

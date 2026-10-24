@@ -108,11 +108,9 @@ BioInformatics Project/
 |   +-- BBB/
 |   |   +-- bbb_data_preprocessing.py     B1     B3DB > feature matrix
 |   |   +-- bbb_model_training.py         B4     Optuna + XGBoost (deployed)
-|   |   +-- bbb_model_evaluation.py       B6*    LEGACY plot script (see sec 7.1)
 |   +-- Pgp/
 |   |   +-- pgp_data_preprocessing.py     B2     Broccatelli > 3D feature matrix
 |   |   +-- pgp_model_training.py         B5     XGBoost (deployed)
-|   |   +-- pgp_model_evaluation.py       B7*    LEGACY plot script (see sec 7.1)
 |   +-- explainability/
 |   |   +-- shap_explainer.py             C1     TreeSHAP margin decomposition
 |   |   +-- substructure_mapper.py        C2     Morgan bit > fragment SMILES
@@ -2460,7 +2458,7 @@ Ordered by scientific impact per unit of effort.
 |---|---|---|---|
 | 1 | Apply scaler metadata in `run_explainability_analysis.py` and fix the BBB split to `0.15` stratified; regenerate the shared-properties table and figures | The six continuous-descriptor SHAP values currently quoted are computed off-manifold (§6.9) | low |
 | 2 | Compute `prob_pgp_ml` live in `run_cryoem_docking_validation.py`; log the Topotecan failure | Makes the headline orthogonal-validation correlation reproducible (§6.11) | low |
-| 3 | Delete or rewrite `bbb_model_evaluation.py` and `pgp_model_evaluation.py`; regenerate their tracked figures from D1 | They report invalid metrics on unscaled inputs (§7.1) | low |
+| 3 | RESOLVED 2026-10-24: both scripts and their two tracked figures were deleted. Originally: delete or rewrite `bbb_model_evaluation.py` and `pgp_model_evaluation.py`; regenerate their tracked figures from D1 | They report invalid metrics on unscaled inputs (§7.1) | low |
 | 4 | Export `has_3d` in the screen output and exclude or flag `has_3d == False` rows | Zero-filled 3D vectors are scored ~4–8σ off-manifold (§6.10) | low |
 | 5 | Add `core.features.load_processed_dataset(path, is_pgp)` returning scaled features; route all consumers through it | Makes the scaling invariant explicit instead of implicit (§7.2) | medium |
 | 6 | Refactor `counterfactual._evaluate_candidate` to call `extract_features_*` + `prepare_dataframe` | Removes the only duplicated copy of the feature kernel (§6.5) | medium |

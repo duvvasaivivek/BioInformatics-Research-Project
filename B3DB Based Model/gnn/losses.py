@@ -11,7 +11,7 @@ swamp the 1,212-molecule P-gp task purely by weight of numbers. Per-task inverse
 frequency class weights are preserved from the reference implementation.
 """
 
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch

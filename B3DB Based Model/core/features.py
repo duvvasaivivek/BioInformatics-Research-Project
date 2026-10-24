@@ -9,7 +9,7 @@ import json
 import warnings
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Tuple, Optional
 from rdkit import Chem
 from rdkit.Chem import AllChem, Descriptors, Descriptors3D, rdFingerprintGenerator
 from rdkit import RDLogger

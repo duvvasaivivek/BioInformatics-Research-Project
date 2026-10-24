@@ -56,7 +56,7 @@ This active extrusion creates **"paradoxical drugs"**:
 timeline
     title Chronological Project Workflow & Scientific Discoveries
     Phase 1 : Rigorous Benchmark Curation : Curate B3DB (7,805 drugs) & Broccatelli TDC (1,205 drugs) : Enforce Bemis-Murcko zero-scaffold leakage partition : Compute 1,000-sample bootstrap 95% confidence intervals
-    Phase 2 : Multi-Modal Modeling & 3D Conformation : 2048-bit Morgan circular fingerprints + 2D physicochemical descriptors : RDKit ETKDGv3 3D conformer embedding (6 shape descriptors: Rg, Asphericity, NPR1, NPR2) : Optuna Bayesian TPE optimization (BBB AUC: 0.9544, P-gp AUC: 0.9593)
+    Phase 2 : Multi-Modal Modeling & 3D Conformation : 2048-bit Morgan circular fingerprints + 2D physicochemical descriptors : RDKit ETKDGv3 3D conformer embedding (6 shape descriptors: Rg, Asphericity, NPR1, NPR2) : Optuna Bayesian TPE optimization (BBB AUC: 0.9522, P-gp AUC: 0.9587)
     Phase 3 : Explainability & Biophysical Laws : Exact TreeSHAP attributions in log-odds margin space : Morgan bit-to-substructure deconvolution to functional groups : Quantify shared properties divergence (LogP vs. TPSA, rho = 0.7714) : Reaction-based counterfactual analog generation
     Phase 4 : Pharmacopeia-Scale Virtual Screening : Curate 2,405 FDA-approved drugs from Broad Repurposing Hub : Discover 273 non-CNS approved drugs in Q1 for neuro-oncology & neuroinflammation : Uncover 105 marketed neuropsychiatric drugs in Q2 explaining clinical pharmacoresistance
     Phase 5 : Cryo-EM Structural Biology Validation : Reconstruct 3.5 Å human P-glycoprotein in lipid nanodiscs (PDB: 6QEX) : In silico docking of 22 drugs into the central translocation chamber : Prove thermodynamic separation (Q2: -8.94 kcal/mol vs Q1: -6.83 kcal/mol, p = 0.0035) : Identify TM4/5/6/12 aromatic gating network (Phe303, Tyr307, Phe343, Gln725, Phe728)
@@ -76,8 +76,8 @@ flowchart TD
     end
 
     subgraph S2["2. Dual-Barrier Ensemble Classifiers"]
-        B1 & B2 --> C1["BBB Permeability Model (M_BBB)<br/>Optuna Bayesian XGBoost<br/>ROC-AUC: 0.9544 | Accuracy: 0.8962"]
-        B1 & B2 & B4 --> C2["P-gp Efflux Substrate Model (M_Pgp)<br/>3D Conformer-Augmented XGBoost<br/>ROC-AUC: 0.9593 | Accuracy: 0.9295"]
+        B1 & B2 --> C1["BBB Permeability Model (M_BBB)<br/>Optuna Bayesian XGBoost<br/>ROC-AUC: 0.9522 | Accuracy: 0.8856"]
+        B1 & B2 & B4 --> C2["P-gp Efflux Substrate Model (M_Pgp)<br/>3D Conformer-Augmented XGBoost<br/>ROC-AUC: 0.9587 | Accuracy: 0.9295"]
     end
 
     subgraph S3["3. Explainable AI & Mechanistic Engine"]

@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from typing import Dict, Any, List, Optional
 from rdkit import Chem
-from rdkit.Chem import AllChem, DataStructs, rdFingerprintGenerator
+from rdkit.Chem import DataStructs, rdFingerprintGenerator
 
 _MORGAN_GEN = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 

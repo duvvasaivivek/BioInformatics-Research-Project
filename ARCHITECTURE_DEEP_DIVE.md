@@ -110,11 +110,11 @@ $$S_{\text{CNS}} = P(\text{BBB}^+) \times (1 - P(\text{P-gp}^+)) \in [0.0, 1.0]$
 | **Efflux Modeling** | **Zero awareness** (Blind to P-gp) | **Full Decoupled ABCB1 Model** | Solves the Loperamide paradox |
 | **Feature Representation** | 9 node dims, 7 edge dims | **2,054 dims (BBB) / 2,060 dims (P-gp)** | Extended circular + 2D specs + 3D physics |
 | **3D Conformer Geometry** | None (Flat 2D graph) | **RDKit ETKDGv3 Conformer Engine** | Spatial bulk, asphericity, gyration radius |
-| **BBB Test Accuracy** | $82.4\%$ | **$89.62\%$** | **$+7.22\%$ absolute gain** |
-| **BBB Test ROC-AUC** | $0.884$ | **$0.9544$** | **$+0.0704$ discriminative power** |
-| **BBB Test PR-AUC** | $0.912$ | **$0.9664$** | **$+0.0544$ precision-recall gain** |
+| **BBB Test Accuracy** | $82.4\%$ | **$88.56\%$** | **$+6.16\%$ absolute gain** |
+| **BBB Test ROC-AUC** | $0.884$ | **$0.9522$** | **$+0.0682$ discriminative power** |
+| **BBB Test PR-AUC** | $0.912$ | **$0.9724$** | **$+0.0604$ precision-recall gain** |
 | **P-gp Test Accuracy** | N/A (Not modeled) | **$92.95\%$** | First-in-class multi-modal efflux model |
-| **P-gp Test ROC-AUC** | N/A (Not modeled) | **$0.9593$** | High discriminative accuracy |
+| **P-gp Test ROC-AUC** | N/A (Not modeled) | **$0.9587$** | High discriminative accuracy |
 | **Explainability Depth** | Heuristic attention weights | **Exact TreeSHAP Log-Odds Margin** | Direct thermodynamic energy mapping |
 | **Biophysical Validation** | None | **Cryo-EM PDB 6QEX Docking ($p=0.0035$)** | Statistically validated physical binding |
 | **Translational Clinical Yield** | 0 repurposing leads | **273 FDA Repurposing CNS Leads** | Screened across 2,406 approved drugs |
@@ -214,14 +214,14 @@ GRAPH INPUT: x [N_nodes, 9] | edge_index [2, N_edges] | edge_attr [N_edges, 7]
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Complete Parameter Census (344,023 Total Parameters)
+### Complete Parameter Census (345,514 Total Parameters)
 - `conv1` Internal MLP: $\text{Linear}(9 \to 256) \to \text{ReLU} \to \text{Linear}(256 \to 256)$ $\implies 68,352$ params
 - `conv2` Internal MLP: $\text{Linear}(256 \to 256) \to \text{ReLU} \to \text{Linear}(256 \to 256)$ $\implies 131,584$ params
 - `conv3` Internal MLP: $\text{Linear}(256 \to 256) \to \text{ReLU} \to \text{Linear}(256 \to 256)$ $\implies 131,584$ params
 - Batch Normalization (`bn1, bn2, bn3`): $3 \times 512 = 1,536$ params
-- Edge Projection Matrices: $63 + 1,792 + 1,792 = 3,647$ params
+- Edge Projection Matrices (GINEConv `edge_dim`, bias included): $72 + 2,048 + 2,048 = 4,168$ params
 - Classifier Head: $\text{Linear}(256 \to 32) \implies 8,224$ params; $\text{Linear}(32 \to 2) \implies 66$ params
-- **Total:** **$344,023$ trainable parameters**
+- **Total:** **$345,514$ trainable parameters** (verified by instantiating the module and summing `requires_grad` tensors)
 
 ### Training Settings
 - **Weighted Cross-Entropy Loss:** Penalizes errors on minority classes with inverse class weights: $w_c = \frac{N}{2 \cdot N_c}$.

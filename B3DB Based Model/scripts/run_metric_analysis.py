@@ -27,7 +27,6 @@ import json
 import argparse
 from typing import Dict, List, Any, Optional, Tuple
 
-import numpy as np
 import pandas as pd
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,7 +34,7 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from gnn.decision_metrics import (
-    full_decision_report, flatten_decision_report, assign_quadrants, DEFAULT_LAMBDAS,
+    full_decision_report, flatten_decision_report, DEFAULT_LAMBDAS,
 )
 from gnn.metrics import classification_metrics
 

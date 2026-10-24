@@ -165,10 +165,10 @@ GNN heatmaps highlight atoms with colors, but cannot quantify whether an atom pr
 \textbf{Feature Representation} & 9 node dims, 7 edge dims & \textbf{2,054 dims (BBB) / 2,060 dims (P-gp)} & Extended circular + 2D specs + 3D physics. \\
 \textbf{3D Conformer Geometry} & None (Flat 2D graph) & \textbf{RDKit ETKDGv3 3D conformers} & Spatial volume, asphericity, gyration radius. \\
 \textbf{BBB Test Accuracy} & $82.4\%$ & \textbf{$89.62\%$} & \textbf{$+7.22\%$ absolute gain}. \\
-\textbf{BBB Test ROC-AUC} & $0.884$ & \textbf{$0.9544$} & \textbf{$+0.0704$ discriminative power}. \\
+\textbf{BBB Test ROC-AUC} & $0.884$ & \textbf{$0.9522$} & \textbf{$+0.0682$ discriminative power}. \\
 \textbf{BBB Test PR-AUC} & $0.912$ & \textbf{$0.9664$} & \textbf{$+0.0544$ precision-recall gain}. \\
 \textbf{P-gp Test Accuracy} & N/A (Not modeled) & \textbf{$92.95\%$} & First-in-class multi-modal efflux model. \\
-\textbf{P-gp Test ROC-AUC} & N/A (Not modeled) & \textbf{$0.9593$} & High discriminative accuracy. \\
+\textbf{P-gp Test ROC-AUC} & N/A (Not modeled) & \textbf{$0.9587$} & High discriminative accuracy. \\
 \textbf{Explainability Space} & Heuristic attention weights & \textbf{Exact TreeSHAP Log-Odds Margin} & Direct thermodynamic energy mapping. \\
 \textbf{Biophysical Validation} & None & \textbf{Cryo-EM PDB 6QEX Docking ($p=0.0035$)} & Statistically validated physical binding. \\
 \textbf{Clinical Lead Discovery} & 0 repurposing leads & \textbf{273 FDA Repurposing CNS Leads} & Screened across 2,406 approved drugs. \\
@@ -246,7 +246,7 @@ At each layer $k \in \{1, 2, 3\}$, atom $i$ aggregates messages from neighbors $
 \end{equation}
 followed by $\text{BatchNorm1d}(256) \to \text{ReLU} \to \text{Dropout}(p=0.30)$.
 
-\textbf{Parameter Census Summary (344,023 Total Parameters):}
+\textbf{Parameter Census Summary (345,514 Total Parameters):}
 \begin{itemize}[leftmargin=*]
     \item \texttt{conv1} Internal MLP: $\text{Linear}(9 \to 256) \to \text{ReLU} \to \text{Linear}(256 \to 256) \implies 68,352$ params.
     \item \texttt{conv2} Internal MLP: $\text{Linear}(256 \to 256) \to \text{ReLU} \to \text{Linear}(256 \to 256) \implies 131,584$ params.

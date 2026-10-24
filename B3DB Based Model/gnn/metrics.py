@@ -10,7 +10,7 @@ pulls in xgboost, matplotlib and seaborn at import time and runs filesystem setu
 at module scope.
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 import numpy as np
 from sklearn.metrics import (

@@ -10,13 +10,12 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, List
+from typing import Dict, List
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, roc_auc_score, average_precision_score, matthews_corrcoef
 import xgboost as xgb
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:

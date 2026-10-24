@@ -28,7 +28,7 @@ Honest limits, which belong in any write-up that uses these:
 
 import os
 import sys
-from typing import Dict, List, Any, Optional, Sequence, Tuple
+from typing import Dict, List, Any, Optional, Sequence
 
 import numpy as np
 from sklearn.metrics import (

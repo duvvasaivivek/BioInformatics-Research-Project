@@ -28,10 +28,31 @@ HEADLINE_METRICS = ['ROC_AUC', 'PR_AUC', 'MCC', 'F1_Score', 'Balanced_Accuracy',
 
 
 def load_reports() -> List[Dict[str, Any]]:
+    """
+    Loads the per-run training reports from results/.
+
+    The glob `gnn_*_report.json` also matches reports with other schemas written
+    by sibling scripts (the decision-metric and seed-variance reports), so each
+    candidate is checked for the training-report shape rather than assumed. A
+    filename glob is not a schema.
+    """
     reports = []
     for path in sorted(glob.glob(os.path.join(RESULTS_DIR, 'gnn_*_report.json'))):
         with open(path, 'r', encoding='utf-8') as f:
-            reports.append(json.load(f))
+            try:
+                payload = json.load(f)
+            except json.JSONDecodeError:
+                print(f'[WARN] skipping unreadable {os.path.basename(path)}')
+                continue
+        if not isinstance(payload, dict):
+            continue
+        # Require exactly what build_table consumes: the run arguments and a
+        # single-split test_metrics block. This deliberately excludes the K-fold
+        # reports, which carry pooled out-of-fold metrics under a different key
+        # and belong in run_metric_analysis.py, not in this single-split table.
+        if 'arguments' not in payload or 'test_metrics' not in payload:
+            continue
+        reports.append(payload)
     return reports
 
 

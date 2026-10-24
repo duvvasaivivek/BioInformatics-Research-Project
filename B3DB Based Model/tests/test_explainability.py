@@ -13,8 +13,6 @@ except ImportError:
     pytest = None
     def fixture_decorator(fn):
         return fn
-import pandas as pd
-import numpy as np
 import xgboost as xgb
 from rdkit import Chem
 

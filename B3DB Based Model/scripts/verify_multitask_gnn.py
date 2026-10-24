@@ -35,7 +35,7 @@ if BASE_DIR not in sys.path:
 from gnn.device import get_device, describe_device
 from gnn.featurizer import feature_dims, smiles_to_data, FEATURE_MODES
 from gnn.data_assembly import build_corpus, label_independence
-from gnn.dataset import build_graph_dataset, subset_by_corpus_index, make_loader
+from gnn.dataset import build_graph_dataset, make_loader
 from gnn.splits import make_splits, assert_split_integrity
 from gnn.model import MultiTaskGNN
 from gnn.losses import MaskedMultiTaskLoss, compute_class_weights

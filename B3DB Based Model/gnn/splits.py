@@ -15,7 +15,7 @@ number would be contaminated. assert_split_integrity enforces this and should be
 called before any training run.
 """
 
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Any
 
 import numpy as np
 import pandas as pd

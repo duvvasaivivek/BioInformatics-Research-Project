@@ -10,10 +10,10 @@
 Over 95% of prospective central nervous system (CNS) drug candidates fail in clinical development due to inadequate therapeutic brain concentrations. Historically, computational quantitative structure-activity relationship (QSAR) models have treated the blood-brain barrier (BBB) primarily as a passive lipophilic partition membrane. This simplistic paradigm produces dangerous false positives: highly lipophilic molecules readily partition into brain capillary endothelial membranes, only to be violently cleared back into the capillary lumen by active ATP-binding cassette (ABC) efflux pumps, predominantly **P-glycoprotein (P-gp / ABCB1)**. This mechanism creates "paradoxical drugs" (e.g., Loperamide) that possess strong passive membrane affinity but negligible CNS efficacy. 
 
 To overcome this fundamental clinical limitation, we present a unified **Dual-Barrier Explainable Machine Learning Framework** that simultaneously evaluates passive transcellular BBB permeation and active P-gp transporter recognition. Our framework comprises:
-1. An Optuna Bayesian-tuned gradient-boosted ensemble trained on the curated B3DB benchmark ($\sim 7,805$ compounds), achieving **$0.9544$ ROC-AUC [95% CI: $0.9449 - 0.9644$]** and **$0.8962$ Accuracy [95% CI: $0.8815 - 0.9116$]**;
-2. A 3D conformation-augmented P-gp classifier combining 2048-bit Morgan fingerprints, 2D descriptors, and six stereochemical shape descriptors ($R_g$, Asphericity, Eccentricity, Spherocity, $NPR_1, NPR_2$) generated via RDKit ETKDGv3 embedding, achieving **$0.9593$ ROC-AUC [95% CI: $0.9320 - 0.9822$]**;
+1. An Optuna Bayesian-tuned gradient-boosted ensemble trained on the curated B3DB benchmark ($\sim 7,805$ compounds), achieving **$0.9522$ ROC-AUC [95% CI: $0.9410 - 0.9629$]** and **$0.8856$ Accuracy [95% CI: $0.8659 - 0.9035$]**;
+2. A 3D conformation-augmented P-gp classifier combining 2048-bit Morgan fingerprints, 2D descriptors, and six stereochemical shape descriptors ($R_g$, Asphericity, Eccentricity, Spherocity, $NPR_1, NPR_2$) generated via RDKit ETKDGv3 embedding, achieving **$0.9587$ ROC-AUC [95% CI: $0.9330 - 0.9806$]**;
 3. Mathematically rigorous TreeSHAP explainability in log-odds margin space with automatic Morgan bit-to-substructure deconvolution;
-4. A dedicated **Shared Molecular Properties Analysis** module revealing that shared properties exert biologically divergent influences across the two barriers (e.g., Lipophilicity promotes passive BBB entry with Mean $|\text{SHAP}| = 0.4087$, but is the strongest driver of P-gp efflux recruitment with Mean $|\text{SHAP}| = 1.4074$, yielding a cross-task Spearman rank correlation of $\rho = 0.7714$);
+4. A dedicated **Shared Molecular Properties Analysis** module revealing that shared properties exert biologically divergent influences across the two barriers (e.g., Lipophilicity promotes passive BBB entry with Mean $|\text{SHAP}| = 0.3957$, but is the strongest driver of P-gp efflux recruitment with Mean $|\text{SHAP}| = 1.4074$, yielding a cross-task Spearman rank correlation of $\rho = 0.7714$);
 5. A four-quadrant pharmacological decision matrix coupled with applicability domain estimation, prediction uncertainty metrics, and chemically valid reaction-based counterfactual search;
 6. **Systematic Virtual Screening of the FDA-Approved Pharmacopeia ($N=2,405$ drugs)** from the Broad Institute Drug Repurposing Hub, which uncovers **273 non-CNS approved drugs residing in Quadrant 1 ($\text{BBB}^+ / \text{P-gp}^-$)** with high repurposing potential for neuro-oncology (Thalidomide, Topotecan, Aminoglutethimide), neuroinflammation (Betamethasone, Triamcinolone), and CNS infections (Linezolid); and reveals that **105 marketed neuropsychiatric therapeutics reside in Quadrant 2 ($\text{BBB}^+ / \text{P-gp}^+$)**, providing a structural molecular rationale for clinical treatment resistance in refractory schizophrenia and depression;
 7. **Orthogonal Biophysical Validation via Cryo-EM Molecular Docking (PDB: 6QEX)**: Systematic docking into the 3.5 \AA inward-facing human P-glycoprotein translocation cavity reveals that ML-predicted efflux-vulnerable drugs (Quadrant 2) bind deeply with high negative free energy ($\text{Mean } \Delta G_{\text{bind}} = -8.94 \pm 1.12\text{ kcal/mol}$, nanomolar $K_d$) driven by extensive aromatic contact networks (Trp232, Phe303, Tyr307, Phe343, Gln725, Phe728, Phe983), whereas efflux evaders (Quadrant 1) exhibit significantly weaker affinities ($\text{Mean } \Delta G_{\text{bind}} = -6.83 \pm 1.37\text{ kcal/mol}$; Welch's $t = -3.53$, $p = 0.0035$), yielding a strong cross-modality rank correlation ($\rho = -0.5965$, $p = 0.0043$).
@@ -80,7 +80,7 @@ Because the P-gp translocation cavity is three-dimensional and multisite, molecu
 ### 3.1 Benchmark Datasets & Preprocessing
 Our study employs two curated, experimentally verified benchmarks:
 1. **B3DB Database (Martins et al., 2012):** The largest curated collection of small-molecule blood-brain barrier permeability data, comprising $7,805$ compounds after deduplication and stereochemical standardization. Compounds are annotated into $\text{BBB}^+$ ($N=4,956$, $63.5\%$) and $\text{BBB}^-$ ($N=2,849$, $36.5\%$).
-2. **Broccatelli TDC Dataset (Broccatelli et al., 2011; Therapeutics Data Commons):** An established, experimentally confirmed P-gp substrate dataset comprising $1,205$ unique pharmaceutical compounds ($N=668$ substrates, $55.4\%$; $N=537$ non-substrates, $44.6\%$).
+2. **Broccatelli TDC Dataset (Broccatelli et al., 2011; Therapeutics Data Commons):** An established, experimentally confirmed P-gp substrate dataset comprising $1,205$ unique pharmaceutical compounds ($N=650$ substrates, $53.9\%$; $N=555$ non-substrates, $46.1\%$).
 
 #### Data Cleaning & Quality Control:
 - Canonicalization and salt-stripping were conducted in RDKit.
@@ -183,16 +183,23 @@ Table 3 compares the empirical TreeSHAP attributions across the six shared conti
 
 **Table 3: Cross-Task Quantitative Comparison of Shared Physicochemical Properties**
 
+> **Pending recomputation.** The attributions in this table are reproduced from
+> `results/shared_properties_quantitative_comparison.csv`. That artifact is generated
+> by `scripts/run_explainability_analysis.py`, which applies no scaler before
+> explaining a model trained on z-scored descriptors. The values are therefore
+> **provisional**, and the relative ranking of TPSA against MolLogP in particular may
+> change once the scaling is corrected.
+
 | Molecular Descriptor | BBB Mean \|SHAP\| | P-gp Mean \|SHAP\| | Signed Shift (BBB $\to$ P-gp) | Pharmacological Task Relationship |
 |---|:---:|:---:|:---:|---|
-| **Topological Polar Surface Area (TPSA)** | **1.0775** | 0.1266 | $+0.2503 \to +0.0268$ | **Primary Desolvation Filter (BBB-Specific):** TPSA is the #1 predictor of BBB crossing due to high aqueous desolvation penalty, but exerts minimal influence on P-gp cavity binding. |
-| **Lipophilicity (MolLogP)** | 0.4087 | **1.4074** | $+0.0758 \to +0.1139$ | **Antagonistic (Divergent Driver):** LogP moderately favors passive membrane partition (BBB+), but serves as the #1 recruiter for the P-gp translocation cleft (P-gp+). |
-| **Molecular Weight (MolWt)** | 0.7107 | 0.6292 | $-0.1114 \to +0.0200$ | **Compound Barrier Burden:** Elevated mass simultaneously retards passive transcellular diffusion (BBB-) and provides bulk contact points for P-gp binding (P-gp+). |
-| **Hydrogen Bond Donors (HDonors)** | 0.2962 | 0.0680 | $+0.0257 \to +0.0129$ | **Seelig Efflux Trigger:** H-bond donor pairs trigger P-gp ATPase activation while forming lumen water traps. |
-| **Hydrogen Bond Acceptors (HAcceptors)**| 0.1063 | 0.0479 | $+0.0269 \to -0.0190$ | **Polarity Modifier:** Increases hydration layer strength. |
-| **Rotatable Bonds (RotBonds)** | 0.1653 | 0.0671 | $+0.0023 \to -0.0049$ | **Induced-Fit Plasticity:** High flexibility allows induced-fit cavity accommodation in ABCB1 transmembrane helices. |
+| **Topological Polar Surface Area (TPSA)** | **0.9875** | 0.1266 | $+0.2473 \to +0.0268$ | **Primary Desolvation Filter (BBB-Specific):** TPSA is the #1 predictor of BBB crossing due to high aqueous desolvation penalty, but exerts minimal influence on P-gp cavity binding. |
+| **Lipophilicity (MolLogP)** | 0.3957 | **1.4074** | $+0.0545 \to +0.1139$ | **Antagonistic (Divergent Driver):** LogP moderately favors passive membrane partition (BBB+), but serves as the #1 recruiter for the P-gp translocation cleft (P-gp+). |
+| **Molecular Weight (MolWt)** | 0.6955 | 0.6292 | $-0.0412 \to +0.0200$ | **Compound Barrier Burden:** Elevated mass simultaneously retards passive transcellular diffusion (BBB-) and provides bulk contact points for P-gp binding (P-gp+). |
+| **Hydrogen Bond Donors (HDonors)** | 0.2548 | 0.0680 | $+0.0421 \to +0.0129$ | **Seelig Efflux Trigger:** H-bond donor pairs trigger P-gp ATPase activation while forming lumen water traps. |
+| **Hydrogen Bond Acceptors (HAcceptors)**| 0.1118 | 0.0479 | $+0.0321 \to -0.0190$ | **Polarity Modifier:** Increases hydration layer strength. |
+| **Rotatable Bonds (RotBonds)** | 0.1591 | 0.0671 | $+0.0139 \to -0.0049$ | **Induced-Fit Plasticity:** High flexibility allows induced-fit cavity accommodation in ABCB1 transmembrane helices. |
 
-**Cross-Task Correlation:** The Spearman rank correlation across shared continuous descriptors is $\rho = 0.7714$ ($p = 0.0724$). Although both tasks reward compact hydrophobic molecules, the prioritization is diametrically opposed: **TPSA dominates BBB permeation, whereas LogP dominates P-gp efflux.**
+**Cross-Task Correlation:** The Spearman rank correlation across shared continuous descriptors is $\rho = 0.7714$, but with only six descriptors this is **not statistically significant** ($p = 0.0724$, $n = 6$) and is reported as an observation rather than a result. Although both tasks reward compact hydrophobic molecules, the prioritization is diametrically opposed: **TPSA dominates BBB permeation, whereas LogP dominates P-gp efflux.**
 
 ---
 
@@ -318,9 +325,10 @@ To substantiate our machine learning classifications with physical structural bi
 
 The docking grid box ($24 \times 24 \times 24 \text{ \AA}$) was centered directly on the co-crystallized drug-binding site ($x = 173.33, y = 166.74, z = 161.48$), defined by the coordinates of co-crystallized Paclitaxel (Taxol, `TA1`). 
 
-Twenty-two representative therapeutics spanning the dual-barrier quadrants were evaluated:
+Twenty-one representative therapeutics spanning the dual-barrier quadrants were successfully docked:
 - **Quadrant 2 (Efflux Vulnerable / Paradoxical Drugs):** Loperamide, Flupentixol, Zuclopenthixol, Vilazodone, Haloperidol, Lurasidone, Fluphenazine, Trifluoperazine, Pimavanserin, and Paclitaxel (positive control);
-- **Quadrant 1 (Efflux Evaders / Repurposing Leads):** Levetiracetam, Caffeine, Diazepam, Thalidomide, Aminoglutethimide, Topotecan, Linezolid, Betamethasone, and Milnacipran;
+- **Quadrant 1 (Efflux Evaders / Repurposing Leads):** Levetiracetam, Caffeine, Diazepam, Thalidomide, Aminoglutethimide, Linezolid, Betamethasone, and Milnacipran.
+  A twenty-second compound, Topotecan, was defined in the protocol but is **excluded from all results**: its SMILES string as specified fails RDKit kekulisation, so no conformer and no docked pose were ever generated. All statistics in this section are therefore computed on $n = 21$;
 - **Quadrant 3 (Peripheral Negative Controls):** Penicillin G, Aspirin, and Metformin.
 
 All ligands were 3D embedded with RDKit ETKDGv3, energy-minimized using the MMFF94 forcefield, parameterized with Gasteiger charges via Meeko, and docked into the rigid receptor using AutoDock Vina v1.2.7 (exhaustiveness 8). Table 7 compiles the thermodynamic binding free energies ($\Delta G_{\text{bind}}$), estimated dissociation constants ($K_d$), and specific transmembrane contact residues ($\le 3.8 \text{ \AA}$):

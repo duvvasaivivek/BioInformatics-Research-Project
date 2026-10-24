@@ -9,7 +9,7 @@ import sys
 import argparse
 import datetime
 import warnings
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List
 import pandas as pd
 import numpy as np
 import xgboost as xgb
@@ -30,9 +30,6 @@ if SCRIPT_DIR not in sys.path:
 from core.features import (
     BBB_DESCRIPTOR_NAMES,
     PGP_DESCRIPTOR_NAMES,
-    calculate_2d_descriptors,
-    calculate_3d_descriptors,
-    calculate_morgan_fingerprint,
     extract_features_bbb,
     extract_features_pgp,
     prepare_dataframe,

@@ -7,12 +7,9 @@ and serializes scaler metadata for deterministic inference.
 
 import os
 import sys
-import json
 import pandas as pd
-import numpy as np
 from rdkit import Chem
 from rdkit import RDLogger
-from sklearn.preprocessing import StandardScaler
 
 # Suppress RDKit C++ warnings
 RDLogger.DisableLog('rdApp.*')
@@ -32,7 +29,6 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_PATH = os.path.join(DATA_DIR, "B3DB_classification.tsv")
 OUTPUT_PATH = os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv")
-SCALER_METADATA_PATH = os.path.join(MODELS_DIR, "bbb_scaler_metadata.json")
 
 
 def process_data():

@@ -28,7 +28,7 @@ import json
 import time
 import argparse
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 
 import numpy as np
 import pandas as pd
@@ -51,7 +51,7 @@ from gnn.metrics import classification_metrics, format_metrics_row
 # Training helpers live in gnn/training.py so this runner, the K-fold runner and
 # the seed-variance runner share one implementation instead of three copies.
 from gnn.training import (
-    set_all_seeds, parse_task_weights, move_batch, run_epoch, quick_f1,
+    set_all_seeds, parse_task_weights, run_epoch, quick_f1,
 )
 
 RESULTS_DIR = os.path.join(BASE_DIR, 'results')

@@ -26,7 +26,6 @@ from .featurizer import smiles_to_data, feature_dims, describe_featurization
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE_DIR = os.path.join(BASE_DIR, 'data', 'graph_cache')
 
-TASKS = ('bbb', 'pgp')
 
 # Bumped whenever the stored graph schema changes, so a stale cache is rebuilt
 # rather than silently reused. v2 renamed corpus_index -> corpus_row (see below).

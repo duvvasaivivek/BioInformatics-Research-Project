@@ -135,17 +135,17 @@ Generates global feature beeswarm distributions and cross-task Spearman rank cor
 | Evaluation Metric | BBB Permeability ($\mathcal{M}_{\text{BBB}}$) | P-gp Efflux Substrate ($\mathcal{M}_{\text{Pgp}}$) |
 |---|:---:|:---:|
 | **Benchmark Dataset** | Curated B3DB ($N = 7,805$) | Broccatelli TDC ($N = 1,205$) |
-| **Test Set Size ($N_{\text{test}}$)** | $1,561$ molecules | $241$ molecules |
-| **Accuracy** | **0.8962** [0.8815 - 0.9116] | **0.9336** [0.9004 - 0.9627] |
-| **Balanced Accuracy** | **0.8896** [0.8727 - 0.9066] | **0.9339** [0.9020 - 0.9625] |
-| **Precision** | **0.9229** [0.9060 - 0.9381] | **0.9453** [0.9008 - 0.9778] |
-| **Recall / Sensitivity** | **0.9137** [0.8963 - 0.9309] | **0.9308** [0.8824 - 0.9706] |
-| **Specificity** | **0.8655** [0.8357 - 0.8928] | **0.9369** [0.8868 - 0.9741] |
-| **F1-Score** | **0.9183** [0.9058 - 0.9307] | **0.9380** [0.9061 - 0.9653] |
-| **ROC-AUC** | **0.9544** [0.9449 - 0.9644] | **0.9593** [0.9320 - 0.9822] |
-| **PR-AUC (Average Precision)**| **0.9715** [0.9629 - 0.9789] | **0.9697** [0.9497 - 0.9850] |
-| **Matthews Corr Coeff (MCC)**| **0.7762** [0.7446 - 0.8099] | **0.8667** [0.8013 - 0.9249] |
-| **Brier Score (Calibration)**| **0.0796** [0.0698 - 0.0893] | **0.0666** [0.0464 - 0.0921] |
+| **Test Set Size ($N_{\text{test}}$)** | $1,171$ molecules | $241$ molecules |
+| **Accuracy** | **0.8856** [0.8659 - 0.9035] | **0.9295** [0.8963 - 0.9585] |
+| **Balanced Accuracy** | **0.8775** [0.8564 - 0.8974] | **0.9287** [0.8953 - 0.9572] |
+| **Precision** | **0.9122** [0.8901 - 0.9319] | **0.9313** [0.8828 - 0.9697] |
+| **Recall / Sensitivity** | **0.9073** [0.8846 - 0.9269] | **0.9385** [0.8976 - 0.9773] |
+| **Specificity** | **0.8478** [0.8125 - 0.8820] | **0.9189** [0.8644 - 0.9636] |
+| **F1-Score** | **0.9097** [0.8923 - 0.9237] | **0.9349** [0.9023 - 0.9621] |
+| **ROC-AUC** | **0.9522** [0.9410 - 0.9629] | **0.9587** [0.9330 - 0.9806] |
+| **PR-AUC (Average Precision)**| **0.9724** [0.9651 - 0.9791] | **0.9685** [0.9488 - 0.9846] |
+| **Matthews Corr Coeff (MCC)**| **0.7535** [0.7126 - 0.7924] | **0.8580** [0.7920 - 0.9164] |
+| **Brier Score (Calibration)**| **0.0847** [0.0738 - 0.0958] | **0.0679** [0.0473 - 0.0925] |
 
 ### Scaffold Diversity
 * **B3DB Unique Murcko Scaffolds:** $2,129$ unique cores across $7,805$ compounds (Diversity ratio: $0.273$).
@@ -169,12 +169,18 @@ where $\phi_0 = -0.3121$ represents the background expectation across the B3DB t
 $$P(\text{BBB}^+) = \frac{1}{1 + e^{-f(\mathbf{x})}}$$
 
 ### Empirical Feature Rankings for BBB Permeation
-1. **Topological Polar Surface Area (TPSA):** Mean $|\text{SHAP}| = 1.0775$ (Primary desolvation filter).
-2. **Molecular Weight (MolWt):** Mean $|\text{SHAP}| = 0.7107$ (Steric kinetic diffusion retardant).
-3. **Lipophilicity (MolLogP):** Mean $|\text{SHAP}| = 0.4087$ (Membrane partition driver).
-4. **Hydrogen Bond Donors (HDonors):** Mean $|\text{SHAP}| = 0.2962$.
-5. **Rotatable Bonds (RotBonds):** Mean $|\text{SHAP}| = 0.1653$.
-6. **Hydrogen Bond Acceptors (HAcceptors):** Mean $|\text{SHAP}| = 0.1063$.
+
+> **Caveat.** The attributions below are reproduced from
+> `results/shared_properties_quantitative_comparison.csv`, but
+> `scripts/run_explainability_analysis.py` applies no scaler before explaining a
+> model trained on z-scored descriptors. These values are therefore **provisional
+> and pending recomputation**; the ranking may change once the scaler is applied.
+1. **Topological Polar Surface Area (TPSA):** Mean $|\text{SHAP}| = 0.9875$ (Primary desolvation filter).
+2. **Molecular Weight (MolWt):** Mean $|\text{SHAP}| = 0.6955$ (Steric kinetic diffusion retardant).
+3. **Lipophilicity (MolLogP):** Mean $|\text{SHAP}| = 0.3957$ (Membrane partition driver).
+4. **Hydrogen Bond Donors (HDonors):** Mean $|\text{SHAP}| = 0.2548$.
+5. **Rotatable Bonds (RotBonds):** Mean $|\text{SHAP}| = 0.1591$.
+6. **Hydrogen Bond Acceptors (HAcceptors):** Mean $|\text{SHAP}| = 0.1118$.
 
 ---
 
@@ -207,12 +213,12 @@ Because P-gp's multisite cavity recognizes spatial molecular geometry, 2D finger
 
 | Property | BBB Mean \|SHAP\| | P-gp Mean \|SHAP\| | Task Category | Biophysical Interpretation |
 |---|:---:|:---:|:---:|---|
-| **TPSA ($\text{\AA}^2$)** | **1.0775** | 0.1266 | Desolvation Filter | Primary barrier for passive BBB crossing due to desolvation penalty; negligible impact on P-gp efflux. |
-| **MolLogP** | 0.4087 | **1.4074** | **Antagonistic (Divergent)** | High lipophilicity favors passive entry ($\text{BBB}^+$), but simultaneously acts as the strongest recruiter for active P-gp efflux ($\text{P-gp}^+$). |
-| **MolWt (Da)** | 0.7107 | 0.6292 | Compound Barrier Burden | High size retards passive membrane diffusion while expanding interaction contacts inside the P-gp cavity. |
-| **HDonors (HBD)** | 0.2962 | 0.0680 | Seelig Efflux Trigger | Increasing donors creates aqueous clusters retarding permeation while activating Seelig recognition patterns. |
-| **HAcceptors (HBA)**| 0.1063 | 0.0479 | Efflux Trigger | Hydrogen bonding acceptors increase polarity and activate P-gp ATPase. |
-| **RotBonds** | 0.1653 | 0.0671 | Induced-Fit Risk | Flexibility allows molecules to adopt induced-fit conformations inside P-gp transmembrane helices. |
+| **TPSA ($\text{\AA}^2$)** | **0.9875** | 0.1266 | Desolvation Filter | Primary barrier for passive BBB crossing due to desolvation penalty; negligible impact on P-gp efflux. |
+| **MolLogP** | 0.3957 | **1.4074** | **Antagonistic (Divergent)** | High lipophilicity favors passive entry ($\text{BBB}^+$), but simultaneously acts as the strongest recruiter for active P-gp efflux ($\text{P-gp}^+$). |
+| **MolWt (Da)** | 0.6955 | 0.6292 | Compound Barrier Burden | High size retards passive membrane diffusion while expanding interaction contacts inside the P-gp cavity. |
+| **HDonors (HBD)** | 0.2548 | 0.0680 | Seelig Efflux Trigger | Increasing donors creates aqueous clusters retarding permeation while activating Seelig recognition patterns. |
+| **HAcceptors (HBA)**| 0.1118 | 0.0479 | Efflux Trigger | Hydrogen bonding acceptors increase polarity and activate P-gp ATPase. |
+| **RotBonds** | 0.1591 | 0.0671 | Induced-Fit Risk | Flexibility allows molecules to adopt induced-fit conformations inside P-gp transmembrane helices. |
 
 ### Spearman Rank Correlation
 $$\rho = 0.7714 \quad (p = 0.0724)$$

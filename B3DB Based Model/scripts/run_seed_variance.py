@@ -35,11 +35,10 @@ import time
 import argparse
 from datetime import datetime
 from itertools import product
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any
 
 import numpy as np
 import pandas as pd
-import torch
 from scipy import stats as sps
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

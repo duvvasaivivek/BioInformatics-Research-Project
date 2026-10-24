@@ -31,7 +31,6 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 B3DB_PATH = os.path.join(DATA_DIR, 'B3DB_classification.tsv')
 PGP_PATH = os.path.join(DATA_DIR, 'pgp_broccatelli.tab')
 
-TASKS = ('bbb', 'pgp')
 
 # Semantics, carried forward from the existing preprocessing scripts so the GNN
 # arm and the XGBoost arm cannot disagree about what a label means:

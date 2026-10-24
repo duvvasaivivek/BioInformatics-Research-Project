@@ -271,7 +271,7 @@ it matches the training split (0.15, stratified).
 
 **A2. Docking ML probabilities are hard-coded literals.** See E2 above.
 
-**A3. Two legacy evaluation scripts feed unscaled features to scaled boosters.**
+**A3. Two legacy evaluation scripts feed unscaled features to scaled boosters.** *(RESOLVED 2026-10-24: both scripts and their two tracked figures deleted.)*
 `BBB/bbb_model_evaluation.py` and `Pgp/pgp_model_evaluation.py` both pass raw `X` to a model trained
 on z-scored input, and `bbb_model_evaluation.py` additionally uses an 80/20 *unstratified* split.
 Their metrics are invalid and two figures derived from them are still tracked. Delete both, or fix

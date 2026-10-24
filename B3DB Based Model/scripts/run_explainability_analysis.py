@@ -31,7 +31,7 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 
 # Add explainability package
 sys.path.insert(0, BASE_DIR)
-from explainability import DualBarrierShapExplainer, SharedPropertiesAnalyzer
+from explainability import DualBarrierShapExplainer
 
 
 def run_global_analysis():

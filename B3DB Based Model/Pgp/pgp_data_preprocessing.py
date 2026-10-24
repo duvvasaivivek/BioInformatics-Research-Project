@@ -7,14 +7,11 @@ using core feature extraction routines, and serializes scaler metadata.
 
 import os
 import sys
-import json
 import warnings
 import pandas as pd
-import numpy as np
 from tqdm import tqdm
 from rdkit import Chem
 from rdkit import RDLogger
-from sklearn.preprocessing import StandardScaler
 
 # Suppress RDKit C++ warnings
 RDLogger.DisableLog('rdApp.*')
@@ -35,7 +32,6 @@ from core.features import (
 DATA_PATH = os.path.join(BASE_DIR, "data", "pgp_broccatelli.tab")
 OUTPUT_PATH = os.path.join(BASE_DIR, "data", "processed_pgp_data.csv")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
-METADATA_PATH = os.path.join(MODELS_DIR, "pgp_scaler_metadata.json")
 
 
 def process_pgp_data():
