@@ -53,12 +53,18 @@ def section(title: str) -> None:
 
 # ---------------------------------------------------------------------------
 
+# The documentation set was consolidated to two public documents: README.md is
+# the single technical entry point and RESEARCH_PAPER_MANUSCRIPT.md is the
+# academic write-up. The former ARCHITECTURE.md, BLOCK_DIAGRAM.md and
+# RESEARCH_LOG.md were internal working documents; they are recoverable from
+# git history at 8af9c2f^ and are no longer asserted here.
+#
+# Every other check in this file reads a document and skips when it is absent,
+# so removing a doc reduces the check count rather than failing. Only this
+# presence assertion had to change.
 EXPECTED_DOCS = (
     ('README.md',),
     ('RESEARCH_PAPER_MANUSCRIPT.md',),
-    ('docs', 'ARCHITECTURE.md'),
-    ('docs', 'BLOCK_DIAGRAM.md'),
-    ('docs', 'RESEARCH_LOG.md'),
 )
 
 
@@ -175,7 +181,12 @@ def verify_parameter_census() -> None:
     section('3. GNN parameter census is self-consistent')
     text = read_doc('docs', 'ARCHITECTURE.md')
     if not text:
-        check('docs/ARCHITECTURE.md present', False, 'missing')
+        # ARCHITECTURE.md was retired in the documentation consolidation; the
+        # parameter census it carried now lives nowhere in prose, so there is
+        # nothing to cross-check. Skipping rather than failing, consistent with
+        # every other check in this file. The authoritative count is produced by
+        # gnn/model.py count_parameters() and asserted in verify_multitask_gnn.py.
+        print('      docs/ARCHITECTURE.md absent (retired) - census check skipped')
         return
 
     VERIFIED_TOTAL = 345514

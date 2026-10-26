@@ -73,7 +73,7 @@ If you take one thing from this document, take this section.
 
 ### 2.1 The decision gate was pre-registered
 
-`docs/RESEARCH_LOG.md:1021` quotes the plan as it stood **before** the runs happened:
+The project plan, as it stood (recoverable: `git show 8af9c2f^:docs/RESEARCH_LOG.md` line 1021), **before** the runs happened:
 
 > *"if the P-gp head does not improve, the headline shifts to C2+C3+C4 — the measurement, the
 > evaluation, and the attribution — with multi-task reported as a negative result."*
@@ -112,7 +112,7 @@ transfer, measured, with a dose-response relationship — not a shrug.
 
 ### 2.3 The contribution is three-part, and all three hold
 
-From `docs/RESEARCH_LOG.md:1327`:
+From the build log (`git show 8af9c2f^:docs/RESEARCH_LOG.md`, line 1327):
 
 | | Claim | Status |
 |---|---|---|
@@ -145,7 +145,7 @@ engineering works; one hypothesis tested with it returned a null. Those are diff
 
 **Q: So your main contribution failed?**
 No — the contribution is the measurement, and the measurement is what predicted this outcome.
-We pre-registered both branches before running anything; `RESEARCH_LOG.md:1021` has the gate in
+We pre-registered both branches before running anything; the decision gate is in the build log, commit `8af9c2f^`, and in
 writing. A shared encoder was the architectural hypothesis the measurement implied *would not*
 work, and testing it was the honest thing to do rather than assert it.
 
@@ -844,7 +844,7 @@ from live predictions.
 ### 8.1 Why it was tried, and what was declared in advance
 
 **Start here, every time this topic comes up.** The outcome was pre-registered before any run,
-`docs/RESEARCH_LOG.md:1021`:
+Quoted from the pre-run project plan (`git show 8af9c2f^:docs/RESEARCH_LOG.md`, line 1021):
 
 > *"if the P-gp head does not improve, the headline shifts to C2+C3+C4 — the measurement, the
 > evaluation, and the attribution — with multi-task reported as a negative result."*
@@ -1141,7 +1141,7 @@ into evidence of rigour.
 | 5 | **The scaffold comparison is not apples-to-apples** — `run_validation.py` trains a fresh, *untuned* model for that protocol. | Say so unprompted. The direction and size of the effect are unambiguous, but the magnitude partly conflates protocol with tuning. The fix is to re-tune inside the scaffold protocol; it is listed as future work. |
 | 6 | **"Your scaffold split proves generalisability" — no, your own table shows specificity 0.848 → 0.580.** | Never claim it does. The collapse **is** the finding: out of domain, the BBB model calls almost everything permeant, which is exactly where unmodelled efflux does damage. |
 | 7 | **Only 216 dual-labelled molecules.** Every joint number rests on them. | Stated in the limitations of README, the manuscript and `decision_metrics.py` itself. The OR interval reaches 2.67; Q4 has ~19 molecules. The prevalence claim (32.1%, Clopper-Pearson [24.5, 40.6]) is the robust one because it is a proportion, not a hypothesis test. |
-| 8 | **The multi-task GNN failed. Isn't that a negative result?** | Yes, and it is reported as one — **pre-registered** (`RESEARCH_LOG.md:1021` declares both branches before the runs), with a verified sanity control (weight-0 removes a task; the untrained head sits at 0.5626 = chance), the obvious confound ruled out (upweighting does not rescue and actively damages BBB), and a mechanistic explanation (V = 0.064 means no correlated signal to borrow). A 2025 review proposed this architecture as future work; it is now tested on both standard public benchmarks and found not to deliver. **Had it worked, it would have contradicted the project's own central measurement — see §2 for the full argument and the hostile-follow-up drill.** |
+| 8 | **The multi-task GNN failed. Isn't that a negative result?** | Yes, and it is reported as one — **pre-registered** (the pre-run plan declares both branches; `git show 8af9c2f^:docs/RESEARCH_LOG.md`), with a verified sanity control (weight-0 removes a task; the untrained head sits at 0.5626 = chance), the obvious confound ruled out (upweighting does not rescue and actively damages BBB), and a mechanistic explanation (V = 0.064 means no correlated signal to borrow). A 2025 review proposed this architecture as future work; it is now tested on both standard public benchmarks and found not to deliver. **Had it worked, it would have contradicted the project's own central measurement — see §2 for the full argument and the hostile-follow-up drill.** |
 | 9 | **Five seeds is not many.** | Agreed, and that is why the MDE is reported. Both deltas fall below the MDE, so the conclusion is "no effect detected at this sample size", never "no effect exists". 14 seeds would settle BBB; P-gp would need 712, which is itself the finding. |
 | 10 | **Docking is rigid-receptor at 3.5 Å, exhaustiveness 8 — isn't that weak?** | Yes, and it is reported as weak at the per-molecule level. 3.5 Å does not resolve waters, P-gp's induced fit is unmodelled, and Vina's scoring function is empirical. Penicillin G at −8.96 kcal/mol with 2% predicted efflux is the proof: group separation is significant (p = 1.6e-3), individual discrimination is not. **That is the argument for the ML model, not against it.** |
 | 11 | **`pgp_model_training.py` passes the test set in `eval_set`.** | True, and it is monitoring only — there is **no `early_stopping_rounds`** on that model, so no model selection depends on the test set. It would be cleaner to drop it; flagged. The BBB model, which *does* early-stop, stops on the **validation** split. |
