@@ -19,3 +19,6 @@ graphs/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Private defence brief: kept locally, deliberately not part of the reviewed repo.
+docs/VIVA_PREP.md
