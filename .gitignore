@@ -29,4 +29,4 @@ Novelty Upgrade/data/docking/poses/
 
 # Per-run *_metrics.csv is a flattened view of numbers already in the matching
 # *_report.json, which is what compare_gnn_experiments.py actually reads.
-Novelty Upgrade/results/*_metrics.csv
+Novelty Upgrade/results/gnn_*_encoded_metrics.csv
