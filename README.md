@@ -258,6 +258,8 @@ The graph-neural-network arm needs `torch_geometric` and falls back to CPU witho
 # Predict one molecule, with the full explainability report
 python "Novelty Upgrade/inference.py" --smiles "CN1C=NC2=C1C(=O)N(C(=O)N2C)C" --explain
 
+# A worked output is committed at results/loperamide_report.{csv,html}
+
 # The five clinical reference drugs
 python "Novelty Upgrade/inference.py" --test-benchmark
 ```
