@@ -137,7 +137,7 @@ cd "Novelty Upgrade"
 python scripts/verify_doc_consistency.py    # 57 checks: docs match the artifacts
 python scripts/verify_decision_metrics.py   # 31 checks: metric definitions
 python scripts/verify_multitask_gnn.py      # 29 checks: splits, masking, CUDA
-python tests/test_explainability.py         #  8 checks: four-quadrant contracts
+python -m pytest tests/test_explainability.py   #  8 checks: four-quadrant contracts
 ```
 
 **Run `verify_doc_consistency.py` after anything that changes a saved metric.** It

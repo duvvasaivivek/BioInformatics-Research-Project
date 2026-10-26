@@ -1,4 +1,4 @@
-# Dual-Barrier Explainable Machine Learning for CNS Drug Discovery: Decoupling Passive Blood-Brain Barrier Permeation from Active P-glycoprotein Efflux via 3D Conformational Modeling
+# Dual-Barrier Explainable Machine Learning for CNS Drug Discovery: Decoupling Passive Blood-Brain Barrier Permeation from Active P-glycoprotein Efflux
 
 **Target Venues:** *Journal of Chemical Information and Modeling (ACS)* / *Bioinformatics (Oxford Academic)* / *Computers in Biology and Medicine (Elsevier)*  
 **Date:** October 2026  
@@ -79,7 +79,7 @@ Because the P-gp translocation cavity is three-dimensional and multisite, molecu
 
 ### 3.1 Benchmark Datasets & Preprocessing
 Our study employs two curated, experimentally verified benchmarks:
-1. **B3DB Database (Martins et al., 2012):** The largest curated collection of small-molecule blood-brain barrier permeability data, comprising $7,805$ compounds after deduplication and stereochemical standardization. Compounds are annotated into $\text{BBB}^+$ ($N=4,956$, $63.5\%$) and $\text{BBB}^-$ ($N=2,849$, $36.5\%$).
+1. **B3DB Database (Meng et al., 2021):** The largest curated collection of small-molecule blood-brain barrier permeability data, assembled from 50 published sources and comprising $7,807$ records, of which $7,805$ survive RDKit parsing and are used here after deduplication and stereochemical standardization. Compounds are annotated into $\text{BBB}^+$ ($N=4,956$, $63.5\%$) and $\text{BBB}^-$ ($N=2,849$, $36.5\%$).
 2. **Broccatelli TDC Dataset (Broccatelli et al., 2011; Therapeutics Data Commons):** An established, experimentally confirmed P-gp substrate dataset comprising $1,205$ unique pharmaceutical compounds ($N=650$ substrates, $53.9\%$; $N=555$ non-substrates, $46.1\%$).
 
 #### Data Cleaning & Quality Control:
@@ -476,7 +476,7 @@ All code, trained model artifacts, scaler parameters, benchmarking scripts, virt
 - **Validation Protocol with 95% Bootstrap CI:** `python "Novelty Upgrade/scripts/run_validation.py"`.
 - **Incremental Feature Ablation Study:** `python "Novelty Upgrade/scripts/run_ablation_study.py"`.
 - **Global SHAP & Figures Generation:** `python "Novelty Upgrade/scripts/run_explainability_analysis.py"`.
-- **Automated Test Suite:** `python "Novelty Upgrade/tests/test_explainability.py"` (8/8 tests passed).
+- **Automated Test Suite:** `python -m pytest "Novelty Upgrade/tests/test_explainability.py"` (8/8 tests passed).
 - **Interactive Multi-Section Inference:** `python "Novelty Upgrade/inference.py" --smiles <SMILES> --explain`.
 
 All resulting datasets are stored under `Novelty Upgrade/results/`:
@@ -498,7 +498,7 @@ Applying this framework to the entire FDA-approved pharmacopeia ($N=2,405$ drugs
 ## References
 
 1. **Löscher, W., & Potschka, H.** (2005). Blood-brain barrier active efflux transporters: ATP-binding cassette gene family. *NeuroRx*, 2(1), 86–98. DOI: 10.1602/neurorx.2.1.86.
-2. **Martins, I. F., et al.** (2012). A Bayesian approach to in silico blood-brain barrier penetration modeling. *Journal of Chemical Information and Modeling*, 52(6), 1686–1697. DOI: 10.1021/ci300124c.
+2. **Meng, F., Xi, Y., Huang, J., & Ayers, P. W.** (2021). A curated diverse molecular database of blood-brain barrier permeability with chemical descriptors. *Scientific Data*, 8, 289. DOI: 10.1038/s41597-021-01069-5. *(The B3DB benchmark used in this work.)*
 3. **Broccatelli, F., et al.** (2011). Large-scale classification of P-glycoprotein substrates using 3D molecular descriptors. *Journal of Medicinal Chemistry*, 54(6), 1740–1751. DOI: 10.1021/jm101421d.
 4. **Corsello, S. M., et al.** (2017). The Drug Repurposing Hub: a next-generation drug library and information resource. *Nature Medicine*, 23(4), 405–408. DOI: 10.1038/nm.4306.
 5. **Alam, A., Kowal, J., Broude, E., Roninson, I., & Locher, K. P.** (2019). Structural insight into substrate and inhibitor discrimination by human P-glycoprotein. *Science*, 363(6428), 753–756. DOI: 10.1126/science.aav7112.
@@ -510,5 +510,7 @@ Applying this framework to the entire FDA-approved pharmacopeia ($N=2,405$ drugs
 11. **Volk, H. A., Potschka, H., & Löscher, W.** (2004). Increased expression of the multidrug transporter P-glycoprotein in limbic brain regions after seizures in rats. *Epilepsy Research*, 58(1), 67–79. DOI: 10.1016/j.eplepsyres.2004.01.002.
 12. **Huang, K., et al.** (2021). Therapeutics Data Commons: Machine learning datasets and tasks for drug discovery and development. *Nature Chemical Biology*, 18(9), 1033–1041. DOI: 10.1038/s41589-022-01131-0.
 13. **Moitra, K., et al.** (2011). Role of ABC transporters in the development of multidrug resistance in cancer and psychiatry. *Current Medicinal Chemistry*, 18(19), 2841–2852. DOI: 10.2174/092986711796150497.
+14. **Adenot, M., & Lahana, R.** (2004). Blood-brain barrier permeation models: discriminating between potential CNS and non-CNS drugs including P-glycoprotein substrates. *Journal of Chemical Information and Computer Sciences*, 44(1), 239–248. DOI: 10.1021/ci034205d. *(Prior art for the dual-barrier framing; PDF in `Initial Model/reference_papers/`.)*
+15. **Martins, I. F., et al.** (2012). A Bayesian approach to in silico blood-brain barrier penetration modeling. *Journal of Chemical Information and Modeling*, 52(6), 1686–1697. DOI: 10.1021/ci300124c.
 
 
