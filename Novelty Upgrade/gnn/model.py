@@ -83,6 +83,7 @@ class MultiTaskGNN(torch.nn.Module):
         self.num_atom_features = num_atom_features
         self.num_bond_features = num_bond_features
         self.residual = residual
+        self.readout_dim = readout_dim
 
         self.convs = torch.nn.ModuleList()
         self.norms = torch.nn.ModuleList()
@@ -148,6 +149,7 @@ class MultiTaskGNN(torch.nn.Module):
             'num_classes': self.num_classes,
             'dropout': self.dropout,
             'residual': self.residual,
+            'readout_dim': self.readout_dim,
             'trainable_parameters': self.count_parameters(),
             'head_parameters': {
                 task: sum(p.numel() for p in head.parameters() if p.requires_grad)
@@ -176,6 +178,7 @@ def build_model_from_checkpoint(checkpoint: Dict[str, Any]) -> MultiTaskGNN:
         num_layers=meta['num_layers'],
         num_classes=meta['num_classes'],
         residual=meta.get('residual', False),
+        readout_dim=meta.get('readout_dim', 32),
     )
     model.load_state_dict(checkpoint['model_state_dict'])
     return model

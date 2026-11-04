@@ -1,7 +1,23 @@
 # Dual-Barrier CNS Drug Prediction
 
-**Every number in this document was re-derived from the files in `Novelty Upgrade/results/`
-and is enforced against them by `scripts/verify_doc_consistency.py`.**
+**Results refreshed 4 November 2026.** XGBoost validation, feature ablation,
+global SHAP, GNN single-split experiments, five-fold out-of-fold predictions,
+five-seed comparisons, and decision metrics use the regenerated November artifacts.
+The pharmacopeia screen (20 October) and docking analysis (24 October) have not
+been rerun with the new models; their sections are explicitly historical.
+Clinical benchmark probabilities and local SHAP values were recomputed from the
+current models on 4 November. Table checks verify numerical consistency, not
+scientific validity or clinical efficacy.
+
+Run `venv\Scripts\python -m pytest "Novelty Upgrade/tests"` for regression tests.
+Install test dependencies with `pip install -r requirements-dev.txt`; docking
+dependencies are in `requirements-docking.txt`. `requirements-lock.txt` pins the
+tested environment's dependency versions (Windows, CUDA 12.8 PyTorch build).
+The 3D model remains deployed for compatibility; the 2D ablation is an alternative
+requiring its own validated model, rather than substituting zeros for failed 3D features.
+
+Numerical result tables are generated from their named CSV artifacts and checked
+by `scripts/sync_result_tables.py --check` and `scripts/verify_doc_consistency.py`.
 
 ---
 
@@ -43,10 +59,40 @@ Fisher OR = 1.42 [0.76, 2.67], χ² p = 0.346. *The data are consistent with ind
 the shared variance is negligible; at n = 216 the interval still admits a weak association, so
 the defensible statement is that the BBB label is **not a usable proxy** for efflux status.*
 
-**Consequence, measured.** Per-axis ROC-AUC is ≈ 0.94 on **both** barriers, yet:
+**Consequence, measured.**
 
-| Strategy | Correct quadrant | Paradox leakage |
-|---|---:|---:|
+Five-fold out-of-fold predictions are evaluated on the same 216 dual-labelled
+molecules. A_bbb_only assumes P-gp-negative for every molecule;
+B_composed_two_model combines independent BBB and P-gp predictions;
+C_multitask uses the shared encoder. The BBB-only baseline cannot express Q2,
+so zero paradox recall is a consequence of its definition.
+
+<!-- results:decisions -->
+| Strategy | N | Quadrant accuracy | Accuracy 95% CI | Kappa | Paradox recall | Paradox leakage | Leaked / true Q2 | Regret at lambda=1 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A_bbb_only | 216 | 0.5185 | 0.4444 - 0.5833 | 0.2158 | 0.0000 | 0.9333 | 42 / 45 | 0.40278 |
+| B_composed_two_model | 216 | 0.5741 | 0.5093 - 0.6390 | 0.3651 | 0.5111 | 0.4222 | 19 / 45 | 0.32407 |
+| C_multitask | 216 | 0.5694 | 0.5046 - 0.6343 | 0.3598 | 0.4889 | 0.4444 | 20 / 45 | 0.31944 |
+<!-- /results:decisions -->
+
+BBB-only advances 42 of 45 true Q2 compounds as Q1 (93.3%). Adding the P-gp
+axis reduces this to 19/45 (42.2%) for composed models and 20/45 (44.4%) for
+multitask learning. Quadrant accuracy is 51.9%, 57.4%, and 56.9%, respectively.
+These data support including the efflux axis, without demonstrating superiority
+of the shared encoder over two independent models.
+
+Pooled OOF per-axis AUCs are BBB 0.9339 (single) versus 0.9390 (multi), and
+P-gp 0.9078 versus 0.9006. These use all labelled molecules for each endpoint,
+whereas joint metrics use only the 216 dual-labelled molecules.
+
+The efflux-disparity gap, AUC(non-substrates) minus AUC(substrates), is negative:
+−0.164758 [−0.2698, −0.0668] for BBB-only/composed models and
+−0.106741 [−0.2188, −0.0008] for multitask. Thus this subset does not show
+worse BBB discrimination among substrates. At equal error costs, decision
+regret is 0.40278, 0.32407, and 0.31944. These are computational decision errors,
+not measured clinical outcomes.
+
+---|---:|---:|
 | Single-axis BBB model (the published status quo) | 55.6% | **93.3%** (42 of 45) |
 | Two independent models, composed | 57.9% | 48.9% |
 | Shared-encoder multi-task model | 56.0% | 42.2% |
@@ -61,92 +107,117 @@ an efflux axis roughly halves that. No metric in current use exposes this.
 
 | | |
 |---|---|
-| **Two trained predictors** | BBB permeability and P-gp efflux, Optuna-tuned, leakage-controlled |
+| **Two trained predictors** | BBB permeability (Optuna-tuned) and P-gp efflux (fixed parameters), identity-deduplicated |
 | **Explainability layer** | TreeSHAP in log-odds margin space, Morgan bit → chemical fragment, applicability domain, reaction-SMARTS counterfactuals |
-| **Pharmacopeia screen** | all 2,405 approved small molecules placed in the four-quadrant matrix |
-| **Structural validation** | 22 compounds docked into the cryo-EM structure of human P-gp (PDB 6QEX) |
-| **Multi-task GNN arm** | shared GINEConv encoder, two heads, masked loss — and the null result it produced |
+| **Historical pharmacopeia screen** | October output for 2,405 approved small molecules |
+| **Historical docking analysis** | October output for 22 compounds docked into human P-gp (PDB 6QEX) |
+| **Multi-task GNN arm** | shared GINEConv encoder, two heads, masked loss, paired comparisons and seed variability |
 | **Decision-aware metrics** | five metrics (M1–M5) that score the *joint* dual-barrier decision |
-| **125 automated checks** | four suites asserting that every quoted number matches its source file |
+| **Regression and consistency checks** | model behavior, split integrity, metrics, and result-table synchronization |
 
-9,674 lines of Python across 41 modules. `Initial Model/` holds the base-paper reference
+`Initial Model/` holds the base-paper reference
 implementation and is deliberately unmodified.
 
 ---
 
 ## Results
 
-### Model performance (1,000-resample bootstrap 95% CI)
+### Model performance
 
-| | BBB random | BBB scaffold | P-gp random | P-gp scaffold |
-|---|:---:|:---:|:---:|:---:|
-| ROC-AUC | **0.9522** [0.9410, 0.9629] | 0.9048 [0.8835, 0.9240] | **0.9587** [0.9330, 0.9806] | 0.9631 [0.9359, 0.9846] |
-| Accuracy | 0.8856 | 0.8598 | 0.9295 | 0.8838 |
-| **Specificity** | **0.8478** | **0.5795** | 0.9189 | 0.9800 |
-| MCC | 0.7535 | 0.5718 | 0.8580 | 0.7843 |
-| Brier | 0.0847 | 0.0990 | 0.0679 | 0.0811 |
+Values are estimates with 1,000-resample bootstrap 95% confidence intervals.
+The random test sets contain 1,171 BBB and 240 P-gp molecules after molecular
+deduplication. Scaffold allocation places the largest scaffold clusters into
+training first and has zero train/test scaffold overlap.
 
-Test sets: 1,171 and 241 molecules. A **Bemis-Murcko scaffold split** shares *zero* molecular
-cores with training, so it measures generalisation to genuinely new chemistry. **It is the
-honest number.**
+<!-- results:validation -->
+| Metric | BBB random | BBB scaffold | P-gp random | P-gp scaffold |
+| --- | --- | --- | --- | --- |
+| Accuracy | 0.8958 [0.877 - 0.9129] | 0.6926 [0.6661 - 0.7182] | 0.9083 [0.8708 - 0.9417] | 0.8292 [0.7792 - 0.8792] |
+| Balanced_Accuracy | 0.8896 [0.8691 - 0.9078] | 0.6622 [0.6389 - 0.6859] | 0.9097 [0.8725 - 0.9436] | 0.8233 [0.7702 - 0.8756] |
+| Precision | 0.9226 [0.902 - 0.9413] | 0.6674 [0.6343 - 0.6972] | 0.9350 [0.8898 - 0.9748] | 0.7253 [0.6333 - 0.814] |
+| Recall_Sensitivity | 0.9126 [0.8912 - 0.9319] | 0.9044 [0.8832 - 0.9256] | 0.8915 [0.8333 - 0.9426] | 0.8049 [0.7108 - 0.8873] |
+| Specificity | 0.8665 [0.8311 - 0.8983] | 0.4199 [0.3781 - 0.4617] | 0.9279 [0.8739 - 0.9727] | 0.8418 [0.7826 - 0.8987] |
+| F1_Score | 0.9176 [0.9022 - 0.9313] | 0.7680 [0.7441 - 0.7905] | 0.9127 [0.8745 - 0.9466] | 0.7630 [0.6853 - 0.8296] |
+| ROC_AUC | 0.9563 [0.9452 - 0.9669] | 0.8112 [0.7862 - 0.8338] | 0.9607 [0.9321 - 0.9828] | 0.9001 [0.8559 - 0.9401] |
+| PR_AUC | 0.9740 [0.9661 - 0.9813] | 0.8496 [0.8233 - 0.8741] | 0.9739 [0.9562 - 0.9884] | 0.8328 [0.7439 - 0.9047] |
+| MCC | 0.7761 [0.7362 - 0.8114] | 0.3781 [0.3278 - 0.428] | 0.8173 [0.7417 - 0.8845] | 0.6321 [0.5236 - 0.7353] |
+| Brier_Score | 0.0785 [0.0682 - 0.0893] | 0.1992 [0.1846 - 0.2158] | 0.0691 [0.0467 - 0.0927] | 0.1316 [0.0988 - 0.1664] |
+<!-- /results:validation -->
 
-**The asymmetry is the result:**
+Random-split AUC is 0.9563 for BBB and 0.9607 for P-gp; the scaffold benchmarks
+yield 0.8112 and 0.9001. Specificity falls from 0.8665 to 0.4199 for BBB and
+from 0.9279 to 0.8418 for P-gp. Both endpoints therefore perform worse under
+these scaffold benchmarks; the earlier claim that P-gp performance is preserved
+does not hold for the regenerated results.
 
-| | ROC-AUC random → scaffold | Specificity |
-|---|:---:|:---:|
-| **BBB** | 0.9522 → 0.9048 (**−0.047**) | 0.848 → **0.580** |
-| **P-gp** | 0.9587 → 0.9631 (**+0.004**) | 0.919 → 0.980 |
+The scaffold models are fresh fixed-configuration fits, whereas the BBB random
+model is Optuna-tuned and the P-gp random model uses class weighting. Training
+fractions also differ. These are independent benchmarks, not controlled estimates
+of the causal effect of scaffold splitting. Brier scores are reported as probability
+prediction errors; a low Brier score alone does not establish calibration.
 
-The efflux axis transfers to unseen chemotypes; the permeability axis does not. Out of domain
-the BBB model defaults to calling almost everything permeant — **precisely the region where
-unmodelled efflux does its damage.**
+### Feature ablation
 
-> The scaffold figures come from a fresh, untuned model (300 trees, fixed depth), not the
-> Optuna-tuned one, so magnitude partly conflates protocol with tuning. The direction and size
-> of the effect are unambiguous.
+Five-fold stratified CV uses identical folds across feature subsets and fits
+each scaler within its training fold. Values are mean ± fold standard deviation,
+not confidence intervals.
 
-### Feature ablation (5-fold CV, scaler fitted within each fold)
+<!-- results:ablation -->
+| Task | Configuration | Features | Accuracy | F1 | ROC-AUC |
+| --- | --- | --- | --- | --- | --- |
+| P-gp Substrate | 1. 2D Descriptors Only | 6 | 0.8623 ± 0.0137 | 0.8741 ± 0.0133 | 0.9152 ± 0.0083 |
+| P-gp Substrate | 2. 3D Shape Only | 6 | 0.7797 ± 0.0317 | 0.7983 ± 0.0285 | 0.8428 ± 0.0277 |
+| P-gp Substrate | 3. 2D Descriptors + 3D Shape | 12 | 0.8440 ± 0.0284 | 0.8560 ± 0.0254 | 0.9142 ± 0.0117 |
+| P-gp Substrate | 4. Morgan FP + 2D Descriptors | 2054 | 0.8957 ± 0.0107 | 0.9027 ± 0.0075 | 0.9480 ± 0.0087 |
+| P-gp Substrate | 5. Full Model (Morgan + 2D + 3D Shape) | 2060 | 0.8848 ± 0.0162 | 0.8928 ± 0.0127 | 0.9465 ± 0.0078 |
+| BBB Permeability | 1. 2D Descriptors Only | 6 | 0.8555 ± 0.0113 | 0.8913 ± 0.0081 | 0.9174 ± 0.0081 |
+| BBB Permeability | 2. Morgan Fingerprints Only | 2048 | 0.8588 ± 0.0078 | 0.8936 ± 0.0054 | 0.9393 ± 0.0054 |
+| BBB Permeability | 3. Full Hybrid (Morgan + 2D Descriptors) | 2054 | 0.8738 ± 0.0072 | 0.9041 ± 0.0051 | 0.9467 ± 0.0035 |
+<!-- /results:ablation -->
 
-| Task | Configuration | Features | ROC-AUC |
-|---|---|:---:|:---:|
-| P-gp | 3D shape only | 6 | 0.8425 ± 0.0243 |
-| P-gp | 2D descriptors only | 6 | 0.9185 ± 0.0107 |
-| P-gp | 2D + 3D | 12 | 0.9192 ± 0.0131 |
-| P-gp | **Morgan + 2D** | 2,054 | **0.9509 ± 0.0070** |
-| P-gp | Morgan + 2D + 3D *(deployed)* | 2,060 | 0.9481 ± 0.0076 |
-| BBB | 2D descriptors only | 6 | 0.9174 ± 0.0081 |
-| BBB | Morgan only | 2,048 | 0.9393 ± 0.0054 |
-| BBB | **Morgan + 2D** | 2,054 | **0.9467 ± 0.0035** |
+BBB Morgan + 2D achieves 0.9467 versus 0.9393 for Morgan alone and 0.9174 for
+2D descriptors alone. This is a higher mean score; no paired significance test
+is supplied by the ablation artifact.
 
-Two readings, both reported:
+For P-gp, Morgan + 2D achieves 0.9480 ± 0.0087 versus 0.9465 ± 0.0078 with
+3D features. The added shape descriptors provide no observed mean AUC gain
+in this experiment. Shape alone achieves 0.8428 ± 0.0277. These predictive
+associations do not demonstrate a molecular binding mechanism. The deployed
+3D pipeline is retained for compatibility, with failed conformers rejected.
 
-- **BBB synergy is real** — fingerprints plus descriptors beat either alone.
-- **The 3D conformer descriptors do not earn their place.** 0.9481 with, 0.9509 without. Six
-  geometric variables alone reach 0.8425, so shape genuinely correlates with cavity fit, but
-  2048-bit circular fingerprints already encode it. They are retained for mechanistic
-  interpretability, **not accuracy**, and the ETKDGv3 embedding gate costs 14 of 1,219
-  molecules (1.1%) to buy nothing. This independently replicates a published negative result.
+### What drives each barrier
 
-### What drives each barrier (TreeSHAP, mean |φ|)
+Mean absolute and mean signed TreeSHAP values are in log-odds margin units,
+computed on held-out samples using the preprocessing metadata embedded in the
+current model files. Exact native XGBoost contributions are checked for additivity.
 
-| Descriptor | BBB | P-gp | Relationship |
-|---|:---:|:---:|---|
-| **TPSA** | **1.1825** | 0.1434 | Desolvation filter — BBB-specific |
-| **MolLogP** | 0.3992 | **1.3949** | **Antagonistic** |
-| MolWt | 0.5366 | 0.5783 | Compound barrier burden |
-| HDonors | 0.2711 | 0.0911 | Seelig efflux trigger |
-| HAcceptors | 0.1198 | 0.0708 | Polarity modifier |
-| RotBonds | 0.1113 | 0.0387 | Induced-fit plasticity |
+<!-- results:shap -->
+| Descriptor | BBB mean absolute SHAP | P-gp mean absolute SHAP | BBB mean signed SHAP | P-gp mean signed SHAP |
+| --- | --- | --- | --- | --- |
+| MolWt | 0.3991 | 0.6488 | -0.0240 | 0.0319 |
+| LogP | 0.2855 | 1.3574 | 0.0388 | 0.0814 |
+| TPSA | 1.2652 | 0.1431 | 0.1701 | 0.0364 |
+| HDonors | 0.1694 | 0.0519 | 0.0219 | 0.0156 |
+| HAcceptors | 0.0757 | 0.0656 | -0.0092 | 0.0060 |
+| RotBonds | 0.1002 | 0.0561 | 0.0066 | 0.0066 |
+<!-- /results:shap -->
 
-The priority **inverts** between barriers: polarity governs passive entry, lipophilicity
-governs efflux recruitment. **Lipophilicity is antagonistic** — it is what gets a molecule in
-and what gets it pumped out. That tension defines the design window: LogP 1.5–3.0,
-TPSA < 90 Å², MW < 400 Da, HBD ≤ 1, Rg < 3.8 Å.
+Among the six shared descriptors, TPSA has the largest BBB mean absolute
+attribution (1.2652), while LogP dominates P-gp (1.3574). Their importance ranking
+correlation is Spearman rho=0.5429, p=0.2657 (six descriptors). This small analysis
+does not establish a significant shared ranking. Mean absolute SHAP gives
+importance, not direction; a mean signed attribution is not a causal dose-response
+effect. Mechanistic interpretations and proposed descriptor windows remain hypotheses.
 
-### Pharmacopeia screen — 2,405 approved drugs
+### Historical pharmacopeia screen — 20 October 2026
 
-`S_CNS = P(BBB+) × (1 − P(P-gp+))`. The factorisation is licensed by the measured near-
-independence of the two labels above; without that result it would double-count.
+> The counts, probabilities, and applicability scores below belong to the October
+> model and screening implementation. They are not results of the November models.
+> Rerun screening to obtain current candidate rankings. Predictions are research
+> hypotheses, not evidence of therapeutic suitability.
+
+`S_CNS = P(BBB+) × (1 − P(P-gp+))`. This is a heuristic ranking score, not a calibrated joint probability.
+Marginal label association does not establish conditional independence given a molecule.
 
 | Quadrant | Meaning | Count |
 |---|---|---|
@@ -161,7 +232,10 @@ Linezolid, Milnacipran, Topotecan).
 resistance — including **Everolimus** (P(P-gp+) = 0.976), prescribed for subependymal giant
 cell astrocytoma, a brain tumour.
 
-### Cryo-EM structural validation (PDB 6QEX, AutoDock Vina, seeded)
+### Historical docking analysis — 24 October 2026
+
+> These seeded docking results, group assignments, and ML correlations use the
+> October model probabilities. They have not been reassessed with the new models.
 
 | Group | n | ΔG_bind (kcal/mol) |
 |---|:---:|:---:|
@@ -180,34 +254,58 @@ binding thermodynamics it was never shown.
 > population-level signal, not a per-molecule discriminator — consistent with published
 > reports, and **precisely why a ligand model adds information the structure does not.**
 
-### Multi-task GNN: a pre-registered null
+### Multi-task GNN: mixed single-run effects and no across-seed AUC gain
 
-A 2025 review proposed learning both barriers from one shared encoder. The precondition looked
-satisfied — near-independent labels are complementary rather than redundant supervision — and
-P-gp, with 848 training molecules against BBB's 5,463, was expected to gain. **The outcome was
-declared in writing before the runs.**
+The shared GINEConv encoder is compared with independent single-task models on
+identical molecule partitions. Random-split training includes 5,463 BBB-labelled
+and 848 P-gp-labelled molecules. Single-task models have 364,608 parameters;
+the two-head model has 372,898. The following are ROC-AUC comparisons for seed 42:
 
-| Task | Split | single-task | multi-task | Δ |
-|---|---|---:|---:|---:|
-| BBB | random | 0.9388 | 0.9404 | +0.0016 |
-| BBB | scaffold | 0.7583 | 0.7467 | −0.0116 |
-| P-gp | random | 0.9390 | 0.9301 | −0.0089 |
-| P-gp | scaffold | 0.8227 | 0.8171 | −0.0056 |
+<!-- results:gnn -->
+| Task | Split | Single-task AUC | Multitask AUC | Delta | Paired delta 95% CI | Paired result |
+| --- | --- | --- | --- | --- | --- | --- |
+| BBB | random | 0.9391 | 0.9285 | -0.0106 | [-0.0189, -0.0024] | degraded |
+| BBB | scaffold | 0.7661 | 0.7551 | -0.0110 | [-0.0273, +0.0034] | paired interval includes zero |
+| PGP | random | 0.9323 | 0.9366 | +0.0042 | [-0.0178, +0.0257] | paired interval includes zero |
+| PGP | scaffold | 0.8087 | 0.8365 | +0.0278 | [-0.0073, +0.0628] | paired interval includes zero |
+<!-- /results:gnn -->
 
-All intervals overlap. Three controls establish this is a result, not a bug:
+Paired bootstrap intervals resample the same test molecules for both models;
+they are conditional on these fitted models and do not measure training-seed
+variability. BBB random-split AUC decreases by 0.0106, with a paired interval
+excluding zero. The other three intervals include zero, including the positive
+P-gp scaffold estimate (+0.0278). Overlap of separate model intervals is not used
+as a significance test.
 
-1. **Plumbing verified.** With the P-gp loss weight set to 0, BBB reproduces single-task
-   (0.9411 vs 0.9388) while the untrained P-gp head sits at **0.5626 — chance**.
-2. **Confound eliminated.** Upweighting P-gp does not rescue it (0.9295 at ×3, 0.9299 at ×5)
-   and progressively **damages** BBB (0.9388 → 0.9310 → 0.9086). The tasks compete for
-   encoder capacity — negative transfer, with a dose-response.
-3. **It is what the measurement predicts.** Multi-task learning borrows *correlated* signal.
-   At Cramér's V = 0.064 there is none to lend. **Had it worked, it would have contradicted
-   the central measurement of this project.**
+The zero-P-gp-weight control yields BBB AUC 0.9383 versus single-task 0.9391,
+while the untrained P-gp head yields 0.5077. Increasing P-gp weight to 3 and 5
+yields P-gp AUCs 0.9346 and 0.9378, and BBB AUCs 0.9267 and 0.9215.
+These point estimates show a trade-off; they do not establish a universal
+negative-transfer mechanism or prove that weak marginal label association
+precludes useful shared representations.
 
-Across 5 paired seeds the deltas (−0.0094 BBB, −0.0027 P-gp) both fall **below the minimum
-detectable effect** (0.0187, 0.0429), so the licensed conclusion is *"no effect detected at
-this sample size"* — never *"no effect exists."* 14 seeds would settle BBB; P-gp would need 712.
+Five paired random-split seeds (42–46) give:
+
+<!-- results:seed_variance -->
+| Task | Metric | Seeds | Mean delta | Delta 95% CI | MDE | Paired p |
+| --- | --- | --- | --- | --- | --- | --- |
+| BBB | ROC_AUC | 5 | -0.006956 | [-0.018911, +0.004999] | 0.016007 | 0.1815 |
+| BBB | MCC | 5 | -0.039378 | [-0.075128, -0.003627] | 0.047866 | 0.0377 |
+| BBB | F1_Score | 5 | -0.015699 | [-0.025917, -0.005480] | 0.013681 | 0.013 |
+| BBB | Balanced_Accuracy | 5 | -0.018726 | [-0.047316, +0.009865] | 0.03828 | 0.1431 |
+| PGP | ROC_AUC | 5 | +0.001989 | [-0.023149, +0.027127] | 0.033657 | 0.8369 |
+| PGP | MCC | 5 | +0.002344 | [-0.097909, +0.102596] | 0.134229 | 0.9514 |
+| PGP | F1_Score | 5 | -0.000968 | [-0.048114, +0.046177] | 0.063124 | 0.9573 |
+| PGP | Balanced_Accuracy | 5 | +0.001613 | [-0.049375, +0.052601] | 0.068268 | 0.9342 |
+<!-- /results:seed_variance -->
+
+Neither task's across-seed ROC-AUC contrast excludes zero: BBB mean delta
+−0.006956 (p=0.1815), P-gp +0.001989 (p=0.8369). Both absolute deltas are below
+their estimated MDEs (0.016007 and 0.033657). BBB MCC and F1 decrease at nominal
+p<0.05, but these secondary tests are exploratory and unadjusted for multiplicity.
+The evidence supports no detected across-seed AUC improvement, not equivalence.
+No definitive required-seed count is inferred from these five runs.
+
 
 ---
 
@@ -224,7 +322,8 @@ Derived, with losses accounted for:
 
 ```
 7,807 B3DB      → 7,805  (2 SMILES RDKit cannot parse)
-1,219 Broccatelli → 1,205 (14 unparseable or ETKDGv3 cannot embed a conformer)
+1,219 Broccatelli → 1,205 featurized rows → 1,198 unique XGBoost structures
+                    (14 parsing/conformer exclusions; 7 duplicate identities removed)
 Hub .txt        → 2,405  (clinical_phase == "Launched", RDKit-validated, deduplicated)
 B3DB + Broccatelli → 8,801 unique structures (InChIKey join)
                       7,805 BBB-labelled · 1,212 P-gp-labelled · 216 BOTH
@@ -251,8 +350,8 @@ pip install -r requirements.txt
 The graph-neural-network arm needs `torch_geometric` and falls back to CPU without a GPU.
 **Activate the venv before running anything under `gnn/` or `scripts/*multitask*`** — including
 `verify_decision_metrics.py` and `verify_multitask_gnn.py`, which import the `gnn` package.
-`pytest` currently lives in the system interpreter rather than the venv, so run
-`tests/test_explainability.py` outside the venv (or `pip install pytest` into it).
+Install `requirements-dev.txt` into the same environment and run all tests there.
+The current project virtual environment already includes pytest.
 
 ```bash
 # Predict one molecule, with the full explainability report
@@ -283,13 +382,18 @@ python scripts/run_cryoem_docking_validation.py   # docking into 6QEX
 # 5. Multi-task GNN
 python scripts/train_multitask_gnn.py --tasks bbb,pgp --split random
 python scripts/run_kfold_multitask.py --tasks bbb,pgp --folds 5 --tag multitask
-python scripts/run_metric_analysis.py ; python scripts/run_seed_variance.py
+# Generate matching single-task OOF predictions before joint decision analysis.
+python scripts/run_kfold_multitask.py --tasks bbb --folds 5 --tag single_bbb
+python scripts/run_kfold_multitask.py --tasks pgp --folds 5 --tag single_pgp
+python scripts/run_metric_analysis.py
+python scripts/run_seed_variance.py
 
 # 6. Verify  — run after anything that changes a saved metric
-python scripts/verify_doc_consistency.py        # 45 checks: docs match artifacts
+python scripts/sync_result_tables.py --check  # all marked tables match CSVs
+python scripts/verify_doc_consistency.py        # documentation and provenance checks
 python scripts/verify_decision_metrics.py       # 31 checks: metric definitions
 python scripts/verify_multitask_gnn.py          # 29 checks: splits, masking, CUDA
-python -m pytest tests/test_explainability.py   #  8 checks: four-quadrant contracts
+python -m pytest tests -q                     # behavior and audit regressions
 ```
 
 ---
@@ -325,7 +429,7 @@ README.md  RESEARCH_PAPER_MANUSCRIPT.md  requirements.txt
   three molecules is an illustration, not a validation set.)
 - **Only 216 molecules carry both labels**, so every joint analysis rests on a small sample.
   The odds-ratio interval reaches 2.67; Q4 holds ~19 molecules.
-- **3D conformer descriptors add nothing** once Morgan fingerprints are present.
+- **3D conformer descriptors show no mean AUC gain** in the current P-gp ablation.
 - **The dual-barrier framing is not new.** Adenot & Lahana (*J. Chem. Inf. Comput. Sci.* 2004,
   44, 239–248) built a BBB model and a P-gp model and proposed a combined CNS map. The
   contribution here is the **measurement** and its decision-level consequence, not the

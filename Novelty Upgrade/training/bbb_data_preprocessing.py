@@ -26,7 +26,6 @@ from core.features import (
 )
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
-MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_PATH = os.path.join(DATA_DIR, "B3DB_classification.tsv")
 OUTPUT_PATH = os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv")
 

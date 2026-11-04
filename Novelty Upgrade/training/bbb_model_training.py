@@ -21,7 +21,6 @@ from sklearn.metrics import (
     roc_auc_score, balanced_accuracy_score
 )
 
-warnings.filterwarnings('ignore', category=UserWarning)
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -30,10 +29,10 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from core.features import BBB_DESCRIPTOR_NAMES
+from core.artifacts import clean_structures, save_model_bundle
 
 DATA_PATH = os.path.join(BASE_DIR, "data", "processed_b3db_data_advanced.csv")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
-SCALER_METADATA_PATH = os.path.join(MODELS_DIR, "bbb_scaler_metadata.json")
 MODEL_SAVE_PATH = os.path.join(MODELS_DIR, "bbb_xgboost.json")
 
 
@@ -42,7 +41,8 @@ def get_optimal_device() -> str:
     try:
         test_model = xgb.XGBClassifier(device='cuda', n_estimators=2, max_depth=2)
         test_model.fit(np.zeros((5, 2)), np.array([0, 1, 0, 1, 0]))
-        return 'cuda'
+        config = json.loads(test_model.get_booster().save_config())
+        return config['learner']['generic_param']['device']
     except Exception:
         return 'cpu'
 
@@ -57,7 +57,7 @@ def load_and_split_data():
     Scales continuous descriptors strictly using statistics from X_train.
     """
     print("Loading B3DB preprocessed dataset...")
-    df = pd.read_csv(DATA_PATH)
+    df = clean_structures(pd.read_csv(DATA_PATH))
     X = df.drop(columns=['SMILES', 'Label'])
     y = df['Label']
 
@@ -88,18 +88,18 @@ def load_and_split_data():
     X_val_scaled[BBB_DESCRIPTOR_NAMES] = scaler.transform(X_val[BBB_DESCRIPTOR_NAMES])
     X_test_scaled[BBB_DESCRIPTOR_NAMES] = scaler.transform(X_test[BBB_DESCRIPTOR_NAMES])
 
-    # Save scaler metadata
+    # Prepare model-bound scaler metadata
     os.makedirs(MODELS_DIR, exist_ok=True)
     metadata = {
         'means': scaler.mean_.tolist(),
         'stds': scaler.scale_.tolist(),
-        'features': BBB_DESCRIPTOR_NAMES
+        'features': BBB_DESCRIPTOR_NAMES,
+        'training_smiles': df.loc[X_train.index, 'SMILES'].tolist(),
+        'structure_cleaned': True
     }
-    with open(SCALER_METADATA_PATH, 'w', encoding='utf-8') as f:
-        json.dump(metadata, f, indent=2)
-    print(f"Saved training-derived scaler metadata to {SCALER_METADATA_PATH}")
 
-    return X_train_scaled, X_val_scaled, X_test_scaled, y_train, y_val, y_test
+
+    return X_train_scaled, X_val_scaled, X_test_scaled, y_train, y_val, y_test, metadata
 
 
 def objective(trial, X_train, X_val, y_train, y_val, scale_pos_weight, device):
@@ -134,13 +134,13 @@ def objective(trial, X_train, X_val, y_train, y_val, scale_pos_weight, device):
 
 
 def main():
-    X_train, X_val, X_test, y_train, y_val, y_test = load_and_split_data()
+    X_train, X_val, X_test, y_train, y_val, y_test, metadata = load_and_split_data()
     scale_pos_weight = (len(y_train) - sum(y_train)) / sum(y_train)
     device = get_optimal_device()
     print(f"Using acceleration device: {device.upper()}")
 
     print("\nStarting Optuna Hyperparameter Optimization (50 trials on Validation set)...")
-    study = optuna.create_study(direction="maximize")
+    study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=42))
 
     start_time = time.time()
     study.optimize(
@@ -192,7 +192,7 @@ def main():
     print(f"Held-Out Test F1-Score:          {f1:.4f}")
     print(f"Held-Out Test ROC-AUC:           {roc_auc:.4f}")
 
-    final_model.save_model(MODEL_SAVE_PATH)
+    save_model_bundle(final_model, MODEL_SAVE_PATH, metadata)
     print(f"\nSaved final tuned model to {MODEL_SAVE_PATH}")
 
 

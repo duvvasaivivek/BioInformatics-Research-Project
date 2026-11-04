@@ -17,7 +17,6 @@ from sklearn.metrics import (
     recall_score, f1_score, roc_auc_score
 )
 
-warnings.filterwarnings('ignore', category=UserWarning)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SCRIPT_DIR)
@@ -25,16 +24,16 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from core.features import PGP_DESCRIPTOR_NAMES
+from core.artifacts import clean_structures, save_model_bundle
 
 DATA_PATH = os.path.join(BASE_DIR, "data", "processed_pgp_data.csv")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
-SCALER_METADATA_PATH = os.path.join(MODELS_DIR, "pgp_scaler_metadata.json")
 MODEL_SAVE_PATH = os.path.join(MODELS_DIR, "pgp_xgboost.json")
 
 
 def train_pgp_model():
     print("Loading P-glycoprotein dataset...")
-    df = pd.read_csv(DATA_PATH)
+    df = clean_structures(pd.read_csv(DATA_PATH))
 
     X = df.drop(columns=['SMILES', 'Label'])
     y = df['Label']
@@ -62,11 +61,11 @@ def train_pgp_model():
     metadata = {
         'means': scaler.mean_.tolist(),
         'stds': scaler.scale_.tolist(),
-        'features': PGP_DESCRIPTOR_NAMES
+        'features': PGP_DESCRIPTOR_NAMES,
+        'training_smiles': df.loc[X_train.index, 'SMILES'].tolist(),
+        'structure_cleaned': True
     }
-    with open(SCALER_METADATA_PATH, 'w', encoding='utf-8') as f:
-        json.dump(metadata, f, indent=2)
-    print(f"Saved training-derived scaler metadata to {SCALER_METADATA_PATH}")
+
 
     # Compute scale_pos_weight
     scale_pos = (len(y_train) - sum(y_train)) / sum(y_train)
@@ -86,7 +85,7 @@ def train_pgp_model():
 
     model.fit(
         X_train_scaled, y_train,
-        eval_set=[(X_train_scaled, y_train), (X_test_scaled, y_test)],
+        eval_set=[(X_train_scaled, y_train)],
         verbose=50
     )
 
@@ -108,7 +107,7 @@ def train_pgp_model():
     print(f"Test F1-Score:          {f1:.4f}")
     print(f"Test ROC-AUC:           {auc:.4f}")
 
-    model.save_model(MODEL_SAVE_PATH)
+    save_model_bundle(model, MODEL_SAVE_PATH, metadata)
     print(f"\nModel saved successfully to {MODEL_SAVE_PATH}")
 
 

@@ -22,6 +22,7 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from core.features import BBB_DESCRIPTOR_NAMES, PGP_DESCRIPTOR_NAMES
+from core.artifacts import clean_structures
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
 FIGURES_DIR = os.path.join(BASE_DIR, "figures")
@@ -38,6 +39,7 @@ def evaluate_feature_subset_cv(X: pd.DataFrame, y: pd.Series, feature_cols: List
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
     accs, baccs, f1s, aucs, praucs, mccs = [], [], [], [], [], []
 
+    # Inputs are deduplicated before CV by run_ablation.
     X_sub = X[feature_cols].copy()
     cont_cols = [c for c in feature_cols if c in ALL_CONT_DESCRIPTORS]
 
@@ -93,7 +95,7 @@ def run_ablation():
 
     # 1. P-gp Feature Ablation
     print("\n--- Running P-gp Efflux Feature Set Ablations ---")
-    df_pgp = pd.read_csv(os.path.join(DATA_DIR, "processed_pgp_data.csv"))
+    df_pgp = clean_structures(pd.read_csv(os.path.join(DATA_DIR, "processed_pgp_data.csv")))
     X_pgp = df_pgp.drop(columns=['SMILES', 'Label'])
     y_pgp = df_pgp['Label']
 
@@ -128,7 +130,7 @@ def run_ablation():
 
     # 2. BBB Feature Ablation
     print("\n--- Running BBB Permeability Feature Set Ablations ---")
-    df_bbb = pd.read_csv(os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv"))
+    df_bbb = clean_structures(pd.read_csv(os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv")))
     X_bbb = df_bbb.drop(columns=['SMILES', 'Label'])
     y_bbb = df_bbb['Label']
 

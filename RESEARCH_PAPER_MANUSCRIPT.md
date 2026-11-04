@@ -1,24 +1,46 @@
 # Dual-Barrier Explainable Machine Learning for CNS Drug Discovery: Decoupling Passive Blood-Brain Barrier Permeation from Active P-glycoprotein Efflux
 
 **Target Venues:** *Journal of Chemical Information and Modeling (ACS)* / *Bioinformatics (Oxford Academic)* / *Computers in Biology and Medicine (Elsevier)*  
-**Date:** October 2026  
+**Date:** 4 November 2026
+
+**Results refreshed 4 November 2026.** XGBoost validation, feature ablation,
+global SHAP, GNN single-split experiments, five-fold out-of-fold predictions,
+five-seed comparisons, and decision metrics use the regenerated November artifacts.
+The pharmacopeia screen (20 October) and docking analysis (24 October) have not
+been rerun with the new models; their sections are explicitly historical.
+Clinical benchmark probabilities and local SHAP values were recomputed from the
+current models on 4 November. Table checks verify numerical consistency, not
+scientific validity or clinical efficacy.
 
 ---
 
 ## Abstract
 
-Over 95% of prospective central nervous system (CNS) drug candidates fail in clinical development due to inadequate therapeutic brain concentrations. Historically, computational quantitative structure-activity relationship (QSAR) models have treated the blood-brain barrier (BBB) primarily as a passive lipophilic partition membrane. This simplistic paradigm produces dangerous false positives: highly lipophilic molecules readily partition into brain capillary endothelial membranes, only to be violently cleared back into the capillary lumen by active ATP-binding cassette (ABC) efflux pumps, predominantly **P-glycoprotein (P-gp / ABCB1)**. This mechanism creates "paradoxical drugs" (e.g., Loperamide) that possess strong passive membrane affinity but negligible CNS efficacy. 
+We evaluate a dual-endpoint framework for BBB permeability and P-glycoprotein
+substrate prediction, combining XGBoost, TreeSHAP, and a shared-encoder GNN.
+The November rerun yields random-test BBB ROC-AUC **0.9563** [0.9452 - 0.9669]
+and accuracy **0.8958** [0.877 - 0.9129], and P-gp ROC-AUC **0.9607**
+[0.9321 - 0.9828]. Independent fixed-configuration scaffold benchmarks yield
+0.8112 and 0.9001 AUC, respectively, showing reduced performance for both
+endpoints under these benchmark conditions. Five-fold feature ablation shows
+no observed mean P-gp AUC benefit from adding 3D descriptors to Morgan + 2D
+(0.9465 versus 0.9480).
 
-To overcome this fundamental clinical limitation, we present a unified **Dual-Barrier Explainable Machine Learning Framework** that simultaneously evaluates passive transcellular BBB permeation and active P-gp transporter recognition. Our framework comprises:
-1. An Optuna Bayesian-tuned gradient-boosted ensemble trained on the curated B3DB benchmark ($\sim 7,805$ compounds), achieving **$0.9522$ ROC-AUC [95% CI: $0.9410 - 0.9629$]** and **$0.8856$ Accuracy [95% CI: $0.8659 - 0.9035$]**;
-2. A 3D conformation-augmented P-gp classifier combining 2048-bit Morgan fingerprints, 2D descriptors, and six stereochemical shape descriptors ($R_g$, Asphericity, Eccentricity, Spherocity, $NPR_1, NPR_2$) generated via RDKit ETKDGv3 embedding, achieving **$0.9587$ ROC-AUC [95% CI: $0.9330 - 0.9806$]**;
-3. Mathematically rigorous TreeSHAP explainability in log-odds margin space with automatic Morgan bit-to-substructure deconvolution;
-4. A dedicated **Shared Molecular Properties Analysis** module revealing that shared properties exert biologically divergent influences across the two barriers (e.g., Lipophilicity promotes passive BBB entry with Mean $|\text{SHAP}| = 0.3992$, but is the strongest driver of P-gp efflux recruitment with Mean $|\text{SHAP}| = 1.4074$, yielding a cross-task Spearman rank correlation of $\rho = 0.7714$);
-5. A four-quadrant pharmacological decision matrix coupled with applicability domain estimation, prediction uncertainty metrics, and chemically valid reaction-based counterfactual search;
-6. **Systematic Virtual Screening of the FDA-Approved Pharmacopeia ($N=2,405$ drugs)** from the Broad Institute Drug Repurposing Hub, which uncovers **273 non-CNS approved drugs residing in Quadrant 1 ($\text{BBB}^+ / \text{P-gp}^-$)** with high repurposing potential for neuro-oncology (Thalidomide, Topotecan, Aminoglutethimide), neuroinflammation (Betamethasone, Triamcinolone), and CNS infections (Linezolid); and reveals that **105 marketed neuropsychiatric therapeutics reside in Quadrant 2 ($\text{BBB}^+ / \text{P-gp}^+$)**, providing a structural molecular rationale for clinical treatment resistance in refractory schizophrenia and depression;
-7. **Orthogonal Biophysical Validation via Cryo-EM Molecular Docking (PDB: 6QEX)**: Systematic docking into the 3.5 \AA inward-facing human P-glycoprotein translocation cavity reveals that ML-predicted efflux-vulnerable drugs (Quadrant 2) bind deeply with high negative free energy ($\text{Mean } \Delta G_{\text{bind}} = -8.84 \pm 0.89\text{ kcal/mol}$, nanomolar $K_d$) driven by extensive aromatic contact networks (Trp232, Phe303, Tyr307, Phe343, Gln725, Phe728, Phe983), whereas efflux evaders (Quadrant 1) exhibit significantly weaker affinities ($\text{Mean } \Delta G_{\text{bind}} = -6.91 \pm 1.30\text{ kcal/mol}$; Welch's $t = -3.79$, $p = 0.00160$), yielding a strong cross-modality rank correlation ($\rho = -0.5733$, $p = 0.00528$).
+Among six shared descriptors, TPSA dominates BBB mean absolute SHAP (1.2652)
+and LogP dominates P-gp (1.3574). Across five paired seeds, multitask-minus-single
+ROC-AUC differences are −0.006956 for BBB and +0.001989 for P-gp, with both
+95% intervals including zero. On 216 dual-labelled molecules with out-of-fold
+predictions, adding P-gp reduces paradox leakage from 42/45 to 19/45 for composed
+models and 20/45 for the shared encoder. Joint quadrant accuracy remains
+51.9%, 57.4%, and 56.9%, highlighting substantial residual decision errors.
 
-Tested against classic clinical benchmarks (Levetiracetam, Loperamide, Caffeine, Diazepam, Penicillin G) and validated across the entire approved pharmacopeia and Cryo-EM structural cavity, our model autonomously identifies the "golden window" of CNS drug design and resolves paradoxical drug classifications. All datasets, models, reproduction scripts, and validation suites are made available for open scientific reproduction.
+The October pharmacopeia screen and 22-compound docking analysis are retained
+as explicitly historical exploratory results. They have not been regenerated
+with the November models and are not evidence of current clinical efficacy.
+Clinical benchmark examples were recomputed, but most are training-set recall
+checks. The contribution is an auditable computational comparison and joint
+decision analysis, with limitations from small dual-labelled samples and
+chemotype generalization.
 
 **Keywords:** Blood-Brain Barrier (BBB), P-glycoprotein (P-gp), ABCB1, Cryo-EM Structure, Molecular Docking, Drug Repurposing, Pharmacoresistance, Explainable AI (XAI), TreeSHAP, 3D Molecular Conformation, Multi-Task Pharmacokinetics.
 
@@ -79,12 +101,16 @@ Because the P-gp translocation cavity is three-dimensional and multisite, molecu
 
 ### 3.1 Benchmark Datasets & Preprocessing
 Our study employs two curated, experimentally verified benchmarks:
-1. **B3DB Database (Meng et al., 2021):** The largest curated collection of small-molecule blood-brain barrier permeability data, assembled from 50 published sources and comprising $7,807$ records, of which $7,805$ survive RDKit parsing and are used here after deduplication and stereochemical standardization. Compounds are annotated into $\text{BBB}^+$ ($N=4,956$, $63.5\%$) and $\text{BBB}^-$ ($N=2,849$, $36.5\%$).
-2. **Broccatelli TDC Dataset (Broccatelli et al., 2011; Therapeutics Data Commons):** An established, experimentally confirmed P-gp substrate dataset comprising $1,205$ unique pharmaceutical compounds ($N=650$ substrates, $53.9\%$; $N=555$ non-substrates, $46.1\%$).
+1. **B3DB Database (Meng et al., 2021):** The largest curated collection of small-molecule blood-brain barrier permeability data, assembled from 50 published sources and comprising $7,807$ records, of which $7,805$ survive RDKit parsing and are used here after molecular identity deduplication. Compounds are annotated into $\text{BBB}^+$ ($N=4,956$, $63.5\%$) and $\text{BBB}^-$ ($N=2,849$, $36.5\%$).
+2. **Broccatelli TDC Dataset (Broccatelli et al., 2011; Therapeutics Data Commons):** The source contains 1,219 rows. Parsing and conformer generation retain 1,205
+feature rows ($N=650$ substrates and $N=555$ non-substrates). Removing seven
+duplicate molecular identities leaves **1,198 unique XGBoost structures**:
+646 substrates and 552 non-substrates (53.9% and 46.1%). The GNN does not require
+3D embedding and uses 1,212 unique P-gp structures, with 647 positive and 565 negative labels.
 
 #### Data Cleaning & Quality Control:
-- Canonicalization and salt-stripping were conducted in RDKit.
-- Murcko scaffold clustering identified $2,129$ unique core scaffolds in B3DB (scaffold diversity ratio $0.273$) and $670$ unique scaffolds in Broccatelli (diversity ratio $0.556$).
+- Structures are matched by full InChIKey; invalid structures and conflicting labels are removed, and one row per identity is retained. This implementation does not perform a separate salt-stripping step.
+- Murcko scaffold clustering identified $2,129$ unique core scaffolds in B3DB (scaffold diversity ratio $0.273$) and $670$ unique scaffolds in Broccatelli (diversity ratio $0.559$).
 - A total of $288$ core scaffolds overlap between the two benchmarks, enabling rigorous comparative analysis.
 
 ### 3.2 Feature Engineering Pipeline
@@ -99,16 +125,16 @@ Our study employs two curated, experimentally verified benchmarks:
    - **Eccentricity ($c/a$):** Ellipsoidal elongation parameter.
    - **Spherocity Index:** Measure of spherical compactness ($\in [0, 1]$).
    - **Normalized Principal Moments of Inertia ($NPR_1, NPR_2$):** Coordinate position within the triangular shape space.
-4. **Standardization:** Continuous descriptors were normalized via training-set z-scores ($z_j = (x_j - \mu_j) / \sigma_j$), with scaling parameters saved in `bbb_scaler_metadata.json` and `pgp_scaler_metadata.json`.
+4. **Standardization:** Continuous descriptors were normalized via training-set z-scores ($z_j = (x_j - \mu_j) / \sigma_j$), with scaling parameters and training SMILES embedded in `bbb_xgboost.json` and `pgp_xgboost.json` for the current models. Legacy sidecar metadata is only a compatibility fallback.
 
 ### 3.3 Model Training & Optimization
-- **$\mathcal{M}_{\text{BBB}}$ Classifier:** Optimized via Bayesian Tree-structured Parzen Estimator (TPE) search across 50 trials in Optuna, maximizing test F1-score with early stopping (30 rounds) and class-imbalance weighting (`scale_pos_weight`).
+- **$\mathcal{M}_{\text{BBB}}$ Classifier:** Optimized via Bayesian Tree-structured Parzen Estimator (TPE) search across 50 trials in Optuna, maximizing validation F1-score with early stopping (30 rounds) and class-imbalance weighting (`scale_pos_weight`).
 - **$\mathcal{M}_{\text{Pgp}}$ Classifier:** Trained on Broccatelli 2D+3D features ($2,060$ dimensions) with learning rate $0.05$, max depth $5$, subsample $0.80$, and colsample by tree $0.80$.
 
 ### 3.4 TreeSHAP Formulation in Margin Space
 For an input feature vector $\mathbf{x}$, TreeSHAP calculates the additive feature attributions in **log-odds margin space**:
 $$f(\mathbf{x}) = \phi_0 + \sum_{i=1}^{M} \phi_i(\mathbf{x})$$
-where $\phi_0$ is the expected background value across the training distribution ($\phi_0 = -0.3121$ for BBB, $\phi_0 = +0.1519$ for P-gp), and $\phi_i(\mathbf{x})$ is the exact Shapley contribution of feature $i$.
+where $\phi_0$ is the expected background value across the training distribution ($\phi_0 = -0.1143$ for BBB, $\phi_0 = -0.0162$ for P-gp in the current fitted models), and $\phi_i(\mathbf{x})$ is the exact Shapley contribution of feature $i$.
 The probability relates to margin via the logistic link:
 $$P(Y=1) = \frac{1}{1 + e^{-f(\mathbf{x})}}$$
 
@@ -126,80 +152,111 @@ To avoid overconfident extrapolation, each prediction is evaluated against two d
 - **Outside Domain:** $T_{\max} < 0.28$ or $D_{\text{leverage}} > 3.5$.
 
 ### 3.7 Chemically Valid Reaction-Based Counterfactual Engine
-To provide actionable molecular optimization paths, we implemented `MolecularCounterfactualEngine`. Unlike descriptor perturbation approaches that propose physically impossible feature vectors, our engine applies realistic medicinal chemistry SMARTS reaction transformations (e.g., alcohol O-methylation, primary amine N-methylation, carboxylate esterification, aromatic fluorination, demethylation), sanitizes the resulting analog in RDKit, re-computes 3D conformers, and identifies minimal structural modifications (ranked by Tanimoto similarity to the parent compound) that successfully flip the prediction.
+To provide actionable molecular optimization paths, we implemented `MolecularCounterfactualEngine`. Unlike descriptor perturbation approaches that propose physically impossible feature vectors, our engine applies realistic medicinal chemistry SMARTS reaction transformations (e.g., alcohol O-methylation, primary amine N-methylation, carboxylate esterification, aromatic fluorination, demethylation), sanitizes the resulting analog in RDKit, re-computes 3D conformers, and identifies minimal structural modifications (ranked by Tanimoto similarity to the parent compound) that improve a targeted prediction. For the joint objective, a candidate must not worsen the other barrier; descriptor deltas are measured relative to the parent. A predicted class flip is not evidence of synthesizability or clinical benefit.
 
 ---
 
 ## 4. Results & Empirical Evaluation
 
-### 4.1 Leakage-Resistant Test Set Performance & Chemotype Generalization
-To evaluate both in-distribution performance and out-of-distribution generalizability across novel chemical series, we evaluated both models under two distinct protocols: (1) **Random Stratified Test Set**, and (2) **Bemis-Murcko Scaffold Split** (where entire scaffold clusters are partitioned so that **zero scaffold overlap exists between train and test sets**). Table 1 reports the comprehensive evaluation metrics along with empirical **95% Bootstrap Confidence Intervals** generated from 1,000 resamplings:
+### 4.1 Test Set Performance and Chemotype Generalization
 
-**Table 1: Dual-Split Test Set Evaluation Metrics with 95% Bootstrap Confidence Intervals**
+**Table 1: Dual-split evaluation**
 
-| Evaluation Metric | BBB Random Split (In-Domain) | BBB Bemis-Murcko Split (Out-of-Domain) | P-gp Random Split (In-Domain) | P-gp Bemis-Murcko Split (Out-of-Domain) |
-|---|:---:|:---:|:---:|:---:|
-| **Evaluation Type** | 15% Held-Out Split | Zero Scaffold Overlap | 20% Stratified Split | Zero Scaffold Overlap |
-| **Accuracy** | **0.8856** [0.8659 - 0.9035] | **0.8598** [0.8393 - 0.8786] | **0.9295** [0.8963 - 0.9585] | **0.8838** [0.8423 - 0.9212] |
-| **Balanced Accuracy** | **0.8775** [0.8564 - 0.8974] | **0.7605** [0.7290 - 0.7909] | **0.9287** [0.8953 - 0.9572] | **0.8978** [0.8631 - 0.9303] |
-| **Precision** | **0.9122** [0.8901 - 0.9319] | **0.8849** [0.8659 - 0.9051] | **0.9313** [0.8828 - 0.9697] | **0.9829** [0.9557 - 1.0000] |
-| **Recall / Sensitivity** | **0.9073** [0.8846 - 0.9269] | **0.9415** [0.9258 - 0.9559] | **0.9385** [0.8976 - 0.9773] | **0.8156** [0.7467 - 0.8759] |
-| **Specificity** | **0.8478** [0.8125 - 0.8820] | **0.5795** [0.5216 - 0.6409] | **0.9189** [0.8644 - 0.9636] | **0.9800** [0.9487 - 1.0000] |
-| **F1-Score** | **0.9097** [0.8923 - 0.9237] | **0.9123** [0.8986 - 0.9251] | **0.9349** [0.9023 - 0.9621] | **0.8915** [0.8492 - 0.9274] |
-| **ROC-AUC** | **0.9522** [0.9410 - 0.9629] | **0.9048** [0.8835 - 0.9240] | **0.9587** [0.9330 - 0.9806] | **0.9631** [0.9359 - 0.9846] |
-| **PR-AUC (Avg Precision)**| **0.9724** [0.9651 - 0.9791] | **0.9668** [0.9551 - 0.9763] | **0.9685** [0.9488 - 0.9846] | **0.9801** [0.9651 - 0.9911] |
-| **Matthews Corr (MCC)** | **0.7535** [0.7126 - 0.7924] | **0.5718** [0.5100 - 0.6271] | **0.8580** [0.7920 - 0.9164] | **0.7843** [0.7110 - 0.8514] |
-| **Brier Score (Calibration)** | **0.0847** [0.0738 - 0.0958] | **0.0990** [0.0901 - 0.1085] | **0.0679** [0.0473 - 0.0925] | **0.0811** [0.0580 - 0.1101] |
+Values are estimates with 1,000-resample bootstrap 95% confidence intervals.
+The random test sets contain 1,171 BBB and 240 P-gp molecules after molecular
+deduplication. Scaffold allocation places the largest scaffold clusters into
+training first and has zero train/test scaffold overlap.
 
-Both models demonstrate excellent calibration (Brier score $< 0.09$) and robust performance under random split validation. Crucially, under the strict Bemis-Murcko scaffold split—where test molecules share zero core scaffolds with training molecules—both models maintain high discriminative ability: BBB permeability achieves **$0.9048$ ROC-AUC**, while P-gp efflux achieves **$0.9631$ ROC-AUC**, proving substantial generalizability to novel chemotypes.
+<!-- results:validation -->
+| Metric | BBB random | BBB scaffold | P-gp random | P-gp scaffold |
+| --- | --- | --- | --- | --- |
+| Accuracy | 0.8958 [0.877 - 0.9129] | 0.6926 [0.6661 - 0.7182] | 0.9083 [0.8708 - 0.9417] | 0.8292 [0.7792 - 0.8792] |
+| Balanced_Accuracy | 0.8896 [0.8691 - 0.9078] | 0.6622 [0.6389 - 0.6859] | 0.9097 [0.8725 - 0.9436] | 0.8233 [0.7702 - 0.8756] |
+| Precision | 0.9226 [0.902 - 0.9413] | 0.6674 [0.6343 - 0.6972] | 0.9350 [0.8898 - 0.9748] | 0.7253 [0.6333 - 0.814] |
+| Recall_Sensitivity | 0.9126 [0.8912 - 0.9319] | 0.9044 [0.8832 - 0.9256] | 0.8915 [0.8333 - 0.9426] | 0.8049 [0.7108 - 0.8873] |
+| Specificity | 0.8665 [0.8311 - 0.8983] | 0.4199 [0.3781 - 0.4617] | 0.9279 [0.8739 - 0.9727] | 0.8418 [0.7826 - 0.8987] |
+| F1_Score | 0.9176 [0.9022 - 0.9313] | 0.7680 [0.7441 - 0.7905] | 0.9127 [0.8745 - 0.9466] | 0.7630 [0.6853 - 0.8296] |
+| ROC_AUC | 0.9563 [0.9452 - 0.9669] | 0.8112 [0.7862 - 0.8338] | 0.9607 [0.9321 - 0.9828] | 0.9001 [0.8559 - 0.9401] |
+| PR_AUC | 0.9740 [0.9661 - 0.9813] | 0.8496 [0.8233 - 0.8741] | 0.9739 [0.9562 - 0.9884] | 0.8328 [0.7439 - 0.9047] |
+| MCC | 0.7761 [0.7362 - 0.8114] | 0.3781 [0.3278 - 0.428] | 0.8173 [0.7417 - 0.8845] | 0.6321 [0.5236 - 0.7353] |
+| Brier_Score | 0.0785 [0.0682 - 0.0893] | 0.1992 [0.1846 - 0.2158] | 0.0691 [0.0467 - 0.0927] | 0.1316 [0.0988 - 0.1664] |
+<!-- /results:validation -->
+
+Random-split AUC is 0.9563 for BBB and 0.9607 for P-gp; the scaffold benchmarks
+yield 0.8112 and 0.9001. Specificity falls from 0.8665 to 0.4199 for BBB and
+from 0.9279 to 0.8418 for P-gp. Both endpoints therefore perform worse under
+these scaffold benchmarks; the earlier claim that P-gp performance is preserved
+does not hold for the regenerated results.
+
+The scaffold models are fresh fixed-configuration fits, whereas the BBB random
+model is Optuna-tuned and the P-gp random model uses class weighting. Training
+fractions also differ. These are independent benchmarks, not controlled estimates
+of the causal effect of scaffold splitting. Brier scores are reported as probability
+prediction errors; a low Brier score alone does not establish calibration.
+
 
 ---
 
 ### 4.2 Incremental Feature Ablation Study
-To rigorously evaluate whether each feature modality contributes measurable benefit under identical 5-fold stratified cross-validation with within-fold feature scaling, we performed systematic feature ablations (Table 2):
 
-**Table 2: 5-Fold Stratified Cross-Validation Feature Ablation Results**
+**Table 2: Feature-subset cross-validation**
 
-| Task | Configuration | Feature Count | 5-Fold CV Accuracy | 5-Fold CV F1-Score | 5-Fold CV ROC-AUC |
-|---|---|:---:|:---:|:---:|:---:|
-| **P-gp Efflux** | 3D Shape Descriptors Only | 6 | $0.7842 \pm 0.0210$ | $0.8042 \pm 0.0193$ | $0.8425 \pm 0.0243$ |
-| **P-gp Efflux** | 2D Descriptors Only | 6 | $0.8622 \pm 0.0163$ | $0.8731 \pm 0.0161$ | $0.9185 \pm 0.0107$ |
-| **P-gp Efflux** | 2D Descriptors + 3D Shape | 12 | $0.8556 \pm 0.0215$ | $0.8667 \pm 0.0192$ | $0.9192 \pm 0.0131$ |
-| **P-gp Efflux** | Morgan FP + 2D Descriptors | 2,054 | $0.8954 \pm 0.0080$ | $0.9026 \pm 0.0076$ | $0.9509 \pm 0.0070$ |
-| **P-gp Efflux** | **Full Model (Morgan + 2D + 3D)** | **2,060** | **0.8938 ± 0.0067** | **0.9008 ± 0.0052** | **0.9481 ± 0.0076** |
-|---|---|:---:|:---:|:---:|:---:|
-| **BBB Permeation** | 2D Descriptors Only | 6 | $0.8555 \pm 0.0113$ | $0.8913 \pm 0.0081$ | $0.9174 \pm 0.0081$ |
-| **BBB Permeation** | Morgan Fingerprints Only | 2,048 | $0.8588 \pm 0.0078$ | $0.8936 \pm 0.0054$ | $0.9393 \pm 0.0054$ |
-| **BBB Permeation** | **Full Hybrid (Morgan + 2D)** | **2,054** | **0.8738 ± 0.0072** | **0.9041 ± 0.0051** | **0.9467 ± 0.0035** |
+Five-fold stratified CV uses identical folds across feature subsets and fits
+each scaler within its training fold. Values are mean ± fold standard deviation,
+not confidence intervals.
 
-#### Key Scientific Findings from the Ablation Study:
-1. **BBB Synergism:** Combining Morgan fingerprints with continuous 2D descriptors yields a statistically significant increase in ROC-AUC ($0.9467$ vs. $0.9174$, $+0.0293$), demonstrating that physicochemical global scaling and topological substructures provide complementary predictive signals.
-2. **Honest 3D Assessment for P-gp:** Standalone 3D shape descriptors achieve an impressive **$0.8425$ ROC-AUC** using merely 6 geometric variables, confirming that molecular volume and spatial elongation strongly correlate with P-gp binding cavity fit. However, when 2048-bit Morgan circular fingerprints are present, the incremental gain from 3D descriptors is modest ($0.9481$ vs. $0.9509$), because dense circular fingerprints already capture localized stereochemical branching and topological distance information. The primary value of 3D descriptors lies in mechanistic biophysical interpretability (e.g., $R_g$ and asphericity constraints) rather than raw discriminative uplift over circular topological representations.
+<!-- results:ablation -->
+| Task | Configuration | Features | Accuracy | F1 | ROC-AUC |
+| --- | --- | --- | --- | --- | --- |
+| P-gp Substrate | 1. 2D Descriptors Only | 6 | 0.8623 ± 0.0137 | 0.8741 ± 0.0133 | 0.9152 ± 0.0083 |
+| P-gp Substrate | 2. 3D Shape Only | 6 | 0.7797 ± 0.0317 | 0.7983 ± 0.0285 | 0.8428 ± 0.0277 |
+| P-gp Substrate | 3. 2D Descriptors + 3D Shape | 12 | 0.8440 ± 0.0284 | 0.8560 ± 0.0254 | 0.9142 ± 0.0117 |
+| P-gp Substrate | 4. Morgan FP + 2D Descriptors | 2054 | 0.8957 ± 0.0107 | 0.9027 ± 0.0075 | 0.9480 ± 0.0087 |
+| P-gp Substrate | 5. Full Model (Morgan + 2D + 3D Shape) | 2060 | 0.8848 ± 0.0162 | 0.8928 ± 0.0127 | 0.9465 ± 0.0078 |
+| BBB Permeability | 1. 2D Descriptors Only | 6 | 0.8555 ± 0.0113 | 0.8913 ± 0.0081 | 0.9174 ± 0.0081 |
+| BBB Permeability | 2. Morgan Fingerprints Only | 2048 | 0.8588 ± 0.0078 | 0.8936 ± 0.0054 | 0.9393 ± 0.0054 |
+| BBB Permeability | 3. Full Hybrid (Morgan + 2D Descriptors) | 2054 | 0.8738 ± 0.0072 | 0.9041 ± 0.0051 | 0.9467 ± 0.0035 |
+<!-- /results:ablation -->
+
+BBB Morgan + 2D achieves 0.9467 versus 0.9393 for Morgan alone and 0.9174 for
+2D descriptors alone. This is a higher mean score; no paired significance test
+is supplied by the ablation artifact.
+
+For P-gp, Morgan + 2D achieves 0.9480 ± 0.0087 versus 0.9465 ± 0.0078 with
+3D features. The added shape descriptors provide no observed mean AUC gain
+in this experiment. Shape alone achieves 0.8428 ± 0.0277. These predictive
+associations do not demonstrate a molecular binding mechanism. The deployed
+3D pipeline is retained for compatibility, with failed conformers rejected.
+
 
 ---
 
-### 4.3 Quantitative Analysis of Shared vs. Task-Specific Properties
-Table 3 compares the empirical TreeSHAP attributions across the six shared continuous descriptors:
+### 4.3 Quantitative Analysis of Shared Properties
 
-**Table 3: Cross-Task Quantitative Comparison of Shared Physicochemical Properties**
+**Table 3: Current global SHAP measurements**
 
-> Computed on correctly z-scored descriptors using the training-derived scaler
-> (`models/bbb_scaler_metadata.json`, `models/pgp_scaler_metadata.json`). An earlier
-> version of `scripts/run_explainability_analysis.py` omitted this step; applying it
-> raised the TPSA attribution for BBB from 0.9875 to 1.1825 and lowered MolWt from
-> 0.6955 to 0.5366, but left the central conclusion intact: TPSA dominates passive
-> permeation and LogP dominates efflux recognition.
+Mean absolute and mean signed TreeSHAP values are in log-odds margin units,
+computed on held-out samples using the preprocessing metadata embedded in the
+current model files. Exact native XGBoost contributions are checked for additivity.
 
-| Molecular Descriptor | BBB Mean \|SHAP\| | P-gp Mean \|SHAP\| | Signed Shift (BBB $\to$ P-gp) | Pharmacological Task Relationship |
-|---|:---:|:---:|:---:|---|
-| **Topological Polar Surface Area (TPSA)** | **1.1825** | 0.1434 | $+0.1464 \to +0.0256$ | **Primary Desolvation Filter (BBB-Specific):** TPSA is the #1 predictor of BBB crossing due to high aqueous desolvation penalty, but exerts minimal influence on P-gp cavity binding. |
-| **Lipophilicity (MolLogP)** | 0.3992 | **1.3949** | $+0.0959 \to +0.1163$ | **Antagonistic (Divergent Driver):** LogP moderately favors passive membrane partition (BBB+), but serves as the #1 recruiter for the P-gp translocation cleft (P-gp+). |
-| **Molecular Weight (MolWt)** | 0.5366 | 0.5783 | $-0.0545 \to +0.0487$ | **Compound Barrier Burden:** Elevated mass simultaneously retards passive transcellular diffusion (BBB-) and provides bulk contact points for P-gp binding (P-gp+). |
-| **Hydrogen Bond Donors (HDonors)** | 0.2711 | 0.0911 | $-0.0017 \to +0.0159$ | **Seelig Efflux Trigger:** H-bond donor pairs trigger P-gp ATPase activation while forming lumen water traps. |
-| **Hydrogen Bond Acceptors (HAcceptors)**| 0.1198 | 0.0708 | $+0.0319 \to +0.0124$ | **Polarity Modifier:** Increases hydration layer strength. |
-| **Rotatable Bonds (RotBonds)** | 0.1113 | 0.0387 | $-0.0027 \to +0.0023$ | **Induced-Fit Plasticity:** High flexibility allows induced-fit cavity accommodation in ABCB1 transmembrane helices. |
+<!-- results:shap -->
+| Descriptor | BBB mean absolute SHAP | P-gp mean absolute SHAP | BBB mean signed SHAP | P-gp mean signed SHAP |
+| --- | --- | --- | --- | --- |
+| MolWt | 0.3991 | 0.6488 | -0.0240 | 0.0319 |
+| LogP | 0.2855 | 1.3574 | 0.0388 | 0.0814 |
+| TPSA | 1.2652 | 0.1431 | 0.1701 | 0.0364 |
+| HDonors | 0.1694 | 0.0519 | 0.0219 | 0.0156 |
+| HAcceptors | 0.0757 | 0.0656 | -0.0092 | 0.0060 |
+| RotBonds | 0.1002 | 0.0561 | 0.0066 | 0.0066 |
+<!-- /results:shap -->
 
-**Cross-Task Correlation:** The Spearman rank correlation across shared continuous descriptors is $\rho = 0.7714$, but with only six descriptors this is **not statistically significant** ($p = 0.0724$, $n = 6$) and is reported as an observation rather than a result. Although both tasks reward compact hydrophobic molecules, the prioritization is diametrically opposed: **TPSA dominates BBB permeation, whereas LogP dominates P-gp efflux.**
+Among the six shared descriptors, TPSA has the largest BBB mean absolute
+attribution (1.2652), while LogP dominates P-gp (1.3574). Their importance ranking
+correlation is Spearman rho=0.5429, p=0.2657 (six descriptors). This small analysis
+does not establish a significant shared ranking. Mean absolute SHAP gives
+importance, not direction; a mean signed attribution is not a causal dose-response
+effect. Mechanistic interpretations and proposed descriptor windows remain hypotheses.
+
 
 ---
 
@@ -208,18 +265,20 @@ We evaluated our dual-barrier pipeline against classical clinical benchmark drug
 
 **Table 4: Clinical Benchmark Drug Evaluation across the Dual-Barrier Matrix**
 
-| Compound | Canonical SMILES | BBB Status ($P(\text{BBB}^+)$) | P-gp Status ($P(\text{P-gp}^+)$) | Dual-Barrier Quadrant Classification | Clinical Pharmacological Alignment |
-|---|---|:---:|:---:|---|---|
-| **Levetiracetam (Keppra)** | `CC[C@@H](C(=O)N)N1CCCC1=O` | **BBB+ (97.5%)** | **Non-Sub (2.1%)** | **Quadrant 1 [Optimal CNS Agent]** | Refractory antiepileptic drug that completely evades P-gp efflux (Löscher p. 92); retains therapeutic efficacy in drug-resistant epilepsy models. |
-| **Loperamide (Imodium)** | `CN(C)C(=O)C(CCN1CCC(O)...` | **BBB+ (93.7%)** | **Substrate (98.5%)** | **Quadrant 2 [Paradoxical Drug]** | High lipid solubility ($\log P = 5.09$) enables membrane entry, but violent P-gp extrusion eliminates brain exposure. Confirmed paradoxical profile. |
-| **Caffeine** | `CN1C=NC2=C1C(=O)N(C(=O)N2C)C` | **BBB+ (88.0%)** | **Non-Sub (6.8%)** | **Quadrant 1 [Optimal CNS Agent]** | Classic CNS stimulant with unhindered brain penetration. |
-| **Diazepam (Valium)** | `CN1C(=O)CN=C(c2ccccc2)...` | **BBB+ (99.4%)** | **Non-Sub (6.2%)** | **Quadrant 1 [Optimal CNS Agent]** | High lipophilicity sedative; readily crosses BBB and evades active clearance. |
-| **Penicillin G** | `CC1(C(N2C(S1)C(C2=O)...` | **BBB- (1.3%)** | **Non-Sub (3.4%)** | **Quadrant 3 [Peripheral Agent]** | Peripheral antibiotic; high polar surface area and negative charge preclude passive crossing. Action confined to periphery. |
+| Compound | Canonical SMILES | P(BBB+) | P(P-gp+) | Predicted quadrant |
+| --- | --- | --- | --- | --- |
+| Levetiracetam | `CC[C@@H](C(=O)N)N1CCCC1=O` | 97.9% | 1.4% | Q1 |
+| Loperamide | `CN(C)C(=O)C(CCN1CCC(O)(c2ccc(Cl)cc2)CC1)(c1ccccc1)c1ccccc1` | 94.5% | 99.1% | Q2 |
+| Caffeine | `CN1C=NC2=C1C(=O)N(C(=O)N2C)C` | 86.5% | 1.4% | Q1 |
+| Diazepam | `CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13` | 99.3% | 5.1% | Q1 |
+| Penicillin G | `CC1(C)S[C@@H]2[C@H](NC(=O)Cc3ccccc3)C(=O)N2[C@H]1C(=O)O` | 0.9% | 2.3% | Q3 |
+
+Source: `results/documentation_model_snapshot.json`, current models evaluated 4 November 2026. Probabilities refer to the positive class.
 
 #### Training-Set Membership of the Clinical Benchmarks:
 Membership was determined by full InChIKey match against both training databases
 (InChIKey rather than SMILES string equality, so that differences in spelling,
-tautomer or salt form cannot produce a false negative):
+SMILES spelling does not create a false negative; different salt forms can still have distinct identities):
 
 | Compound | In B3DB ($N=7,805$) | In Broccatelli ($N=1,212$) |
 |---|:---:|:---:|
@@ -229,7 +288,7 @@ tautomer or salt form cannot produce a false negative):
 | Diazepam | yes | yes |
 | Penicillin G | yes | no |
 
-**These are therefore recall checks, not blind validation.** All five compounds are
+**These are therefore recall checks, not blind validation.** Current embedded training-SMILES metadata also confirms the membership pattern below. All five compounds are
 present in the BBB training set, and three of the five (Loperamide, Caffeine,
 Diazepam) are additionally present in the P-gp training set. Only Levetiracetam
 and Penicillin G are unseen by the P-gp model. Table 4 demonstrates that the models reproduce
@@ -246,30 +305,131 @@ Section 4.1 remain the only evidence for that.
 > databases. With the correct structure (InChIKey RDOIQAHITMMDAJ) Loperamide is
 > present in both. The claim of blind validation has been withdrawn.
 
-#### Detailed Mechanistic Case Studies:
+#### Current local SHAP examples
 
-##### Case 1: Levetiracetam — The P-gp Evader (Quadrant 1)
-- **Model Output:** $P(\text{BBB}^+) = 97.5\%$ (TreeSHAP Margin: $+4.4371$), $P(\text{P-gp}^+) = 2.1\%$ (TreeSHAP Margin: $-3.5390$).
-- **Key SHAP Attributions:**
-  - Low Molecular Weight ($\text{MW} = 170.21 \text{ Da}$): $\phi_{\text{MW}} = +1.4690$ (BBB), $\phi_{\text{MW}} = -0.7762$ (P-gp).
-  - Compact Radius of Gyration ($R_g = 2.43 \text{ \AA}$): $\phi_{R_g} = -0.5381$ (P-gp).
-  - Moderate Polar Surface Area ($\text{TPSA} = 63.4 \text{ \AA}^2$): $\phi_{\text{TPSA}} = +0.5255$ (BBB).
-  - Single Hydrogen-Bond Donor ($\text{HBD} = 1$): Avoids Seelig spatial donor-pair recognition trigger.
-- **Verdict:** Highly compact spatial profile and lack of multiple H-bonding pairs prevent P-gp engagement, resulting in an optimal CNS profile.
+The following values were recomputed from the current model files. They explain
+model outputs; they are not experimental measurements of transporter mechanisms.
 
-##### Case 2: Loperamide — The Paradoxical Drug (Quadrant 2)
-- **Model Output:** $P(\text{BBB}^+) = 93.7\%$ (TreeSHAP margin $+2.6929$), $P(\text{P-gp}^+) = 98.5\%$ (TreeSHAP margin $+4.2183$). Each margin satisfies $P = 1/(1+e^{-f})$ against its stated probability.
-- **Key SHAP Attributions:**
-  - High Lipophilicity ($\log P = 5.09$): $\phi_{\log P} = +0.2074$ (BBB), $\phi_{\log P} = +2.2500$ (P-gp).
-  - High Molecular Weight ($\text{MW} = 477.05 \text{ Da}$): $\phi_{\text{MW}} = -0.5645$ (BBB), $\phi_{\text{MW}} = +0.3867$ (P-gp).
-  - Large Radius of Gyration ($R_g = 5.07 \text{ \AA}$): $\phi_{R_g} = +0.4227$ (P-gp).
-- **Verdict:** While lipophilicity enables membrane crossing, large spatial bulk ($R_g = 5.07 \text{ \AA}$) and high lipophilicity trigger violent P-gp extrusion ($98.5\%$), correctly identifying Loperamide as a paradoxical drug. Note that Loperamide is present in both training sets, so this is a recall check rather than a blind prediction.
+##### Levetiracetam (Q1)
 
-##### Case 3: Counterfactual Optimization of Loperamide
-Using `MolecularCounterfactualEngine` with structural similarity constraint ($T \ge 0.50$), candidate analogs were systematically generated:
+P(BBB+)=97.9% (margin +3.8208); P(P-gp+)=1.4% (margin -4.2304).
+
+| Feature | Raw value | BBB SHAP | P-gp SHAP |
+| --- | --- | --- | --- |
+| MolWt | 170.2120 | +0.7246 | -0.8410 |
+| LogP | -0.1273 | -0.2290 | -1.7356 |
+| TPSA | 63.4000 | +0.6000 | -0.0513 |
+| RadiusOfGyration | 2.4274 | not a BBB feature | -0.7097 |
+
+##### Loperamide (Q2)
+
+P(BBB+)=94.5% (margin +2.8492); P(P-gp+)=99.1% (margin +4.6728).
+
+| Feature | Raw value | BBB SHAP | P-gp SHAP |
+| --- | --- | --- | --- |
+| MolWt | 477.0480 | -0.4741 | +0.7536 |
+| LogP | 5.0880 | +0.2073 | +2.1679 |
+| TPSA | 43.7800 | +1.6619 | +0.2665 |
+| RadiusOfGyration | 4.8913 | not a BBB feature | +0.3909 |
+
+No new counterfactual search was run for this documentation refresh; no new optimized analog is claimed.
+
+### 4.5 Shared-Encoder GNN Experiments
+
+The shared GINEConv encoder is compared with independent single-task models on
+identical molecule partitions. Random-split training includes 5,463 BBB-labelled
+and 848 P-gp-labelled molecules. Single-task models have 364,608 parameters;
+the two-head model has 372,898. The following are ROC-AUC comparisons for seed 42:
+
+<!-- results:gnn -->
+| Task | Split | Single-task AUC | Multitask AUC | Delta | Paired delta 95% CI | Paired result |
+| --- | --- | --- | --- | --- | --- | --- |
+| BBB | random | 0.9391 | 0.9285 | -0.0106 | [-0.0189, -0.0024] | degraded |
+| BBB | scaffold | 0.7661 | 0.7551 | -0.0110 | [-0.0273, +0.0034] | paired interval includes zero |
+| PGP | random | 0.9323 | 0.9366 | +0.0042 | [-0.0178, +0.0257] | paired interval includes zero |
+| PGP | scaffold | 0.8087 | 0.8365 | +0.0278 | [-0.0073, +0.0628] | paired interval includes zero |
+<!-- /results:gnn -->
+
+Paired bootstrap intervals resample the same test molecules for both models;
+they are conditional on these fitted models and do not measure training-seed
+variability. BBB random-split AUC decreases by 0.0106, with a paired interval
+excluding zero. The other three intervals include zero, including the positive
+P-gp scaffold estimate (+0.0278). Overlap of separate model intervals is not used
+as a significance test.
+
+The zero-P-gp-weight control yields BBB AUC 0.9383 versus single-task 0.9391,
+while the untrained P-gp head yields 0.5077. Increasing P-gp weight to 3 and 5
+yields P-gp AUCs 0.9346 and 0.9378, and BBB AUCs 0.9267 and 0.9215.
+These point estimates show a trade-off; they do not establish a universal
+negative-transfer mechanism or prove that weak marginal label association
+precludes useful shared representations.
+
+Five paired random-split seeds (42–46) give:
+
+<!-- results:seed_variance -->
+| Task | Metric | Seeds | Mean delta | Delta 95% CI | MDE | Paired p |
+| --- | --- | --- | --- | --- | --- | --- |
+| BBB | ROC_AUC | 5 | -0.006956 | [-0.018911, +0.004999] | 0.016007 | 0.1815 |
+| BBB | MCC | 5 | -0.039378 | [-0.075128, -0.003627] | 0.047866 | 0.0377 |
+| BBB | F1_Score | 5 | -0.015699 | [-0.025917, -0.005480] | 0.013681 | 0.013 |
+| BBB | Balanced_Accuracy | 5 | -0.018726 | [-0.047316, +0.009865] | 0.03828 | 0.1431 |
+| PGP | ROC_AUC | 5 | +0.001989 | [-0.023149, +0.027127] | 0.033657 | 0.8369 |
+| PGP | MCC | 5 | +0.002344 | [-0.097909, +0.102596] | 0.134229 | 0.9514 |
+| PGP | F1_Score | 5 | -0.000968 | [-0.048114, +0.046177] | 0.063124 | 0.9573 |
+| PGP | Balanced_Accuracy | 5 | +0.001613 | [-0.049375, +0.052601] | 0.068268 | 0.9342 |
+<!-- /results:seed_variance -->
+
+Neither task's across-seed ROC-AUC contrast excludes zero: BBB mean delta
+−0.006956 (p=0.1815), P-gp +0.001989 (p=0.8369). Both absolute deltas are below
+their estimated MDEs (0.016007 and 0.033657). BBB MCC and F1 decrease at nominal
+p<0.05, but these secondary tests are exploratory and unadjusted for multiplicity.
+The evidence supports no detected across-seed AUC improvement, not equivalence.
+No definitive required-seed count is inferred from these five runs.
+
+
+### 4.6 Out-of-Fold Dual-Barrier Decision Metrics
+
+Five-fold out-of-fold predictions are evaluated on the same 216 dual-labelled
+molecules. A_bbb_only assumes P-gp-negative for every molecule;
+B_composed_two_model combines independent BBB and P-gp predictions;
+C_multitask uses the shared encoder. The BBB-only baseline cannot express Q2,
+so zero paradox recall is a consequence of its definition.
+
+<!-- results:decisions -->
+| Strategy | N | Quadrant accuracy | Accuracy 95% CI | Kappa | Paradox recall | Paradox leakage | Leaked / true Q2 | Regret at lambda=1 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A_bbb_only | 216 | 0.5185 | 0.4444 - 0.5833 | 0.2158 | 0.0000 | 0.9333 | 42 / 45 | 0.40278 |
+| B_composed_two_model | 216 | 0.5741 | 0.5093 - 0.6390 | 0.3651 | 0.5111 | 0.4222 | 19 / 45 | 0.32407 |
+| C_multitask | 216 | 0.5694 | 0.5046 - 0.6343 | 0.3598 | 0.4889 | 0.4444 | 20 / 45 | 0.31944 |
+<!-- /results:decisions -->
+
+BBB-only advances 42 of 45 true Q2 compounds as Q1 (93.3%). Adding the P-gp
+axis reduces this to 19/45 (42.2%) for composed models and 20/45 (44.4%) for
+multitask learning. Quadrant accuracy is 51.9%, 57.4%, and 56.9%, respectively.
+These data support including the efflux axis, without demonstrating superiority
+of the shared encoder over two independent models.
+
+Pooled OOF per-axis AUCs are BBB 0.9339 (single) versus 0.9390 (multi), and
+P-gp 0.9078 versus 0.9006. These use all labelled molecules for each endpoint,
+whereas joint metrics use only the 216 dual-labelled molecules.
+
+The efflux-disparity gap, AUC(non-substrates) minus AUC(substrates), is negative:
+−0.164758 [−0.2698, −0.0668] for BBB-only/composed models and
+−0.106741 [−0.2188, −0.0008] for multitask. Thus this subset does not show
+worse BBB discrimination among substrates. At equal error costs, decision
+regret is 0.40278, 0.32407, and 0.31944. These are computational decision errors,
+not measured clinical outcomes.
+
+
 ---
 
 ## 5. Systematic Virtual Screening of the FDA-Approved Pharmacopeia Uncovers Latent CNS Leads and Clinical Efflux Resistance
+
+> **Historical analysis — 20 October 2026.** This section and its figures use the October
+> models and outputs. Its probabilities, quadrant assignments, domain scores,
+> and associations have not been re-evaluated with the November models.
+> Interpret candidate and mechanistic statements as exploratory hypotheses.
+
 
 To translate our explainable dual-barrier framework from theoretical benchmarking to immediate therapeutic utility, we conducted a comprehensive virtual screen of the **entire FDA-approved small-molecule pharmacopeia** curated by the Broad Institute Drug Repurposing Hub ($N = 2,405$ unique, clinically validated compounds; Corsello et al., 2017). Each molecule was profiled through our feature extraction pipeline (generating 2048-bit Morgan fingerprints, standardized 2D descriptors, and ETKDGv3 3D conformer shape metrics), evaluated against the dual-barrier ensemble models, and screened for chemical applicability domain compliance ($T_{\max}$).
 
@@ -343,6 +503,12 @@ While oncology and cardiology drugs are predominantly constrained by peripheral 
 
 ## 6. Orthogonal Biophysical Validation: Cryo-EM Molecular Docking into Human P-glycoprotein (PDB: 6QEX)
 
+> **Historical analysis — 24 October 2026.** This section and its figures use the October
+> models and outputs. Its probabilities, quadrant assignments, domain scores,
+> and associations have not been re-evaluated with the November models.
+> Interpret candidate and mechanistic statements as exploratory hypotheses.
+
+
 To substantiate our machine learning classifications with physical structural biology, we performed systematic molecular docking into the high-resolution ($3.5 \text{ \AA}$) Cryo-EM structure of human P-glycoprotein reconstituted in lipid nanodiscs (PDB: 6QEX; Alam et al., 2019). This inward-facing conformation captures the exact pre-translocation state where substrates partition from the inner membrane leaflet into the flexible central cavity.
 
 ### 6.1 Cryo-EM Translocation Chamber Architecture & In Silico Docking Protocol
@@ -400,7 +566,7 @@ As illustrated in Figure 5, the binding free energy distribution clearly differe
 1. **High-Affinity Translocation Binding in Quadrant 2:**
    The mean binding free energy for Quadrant 2 therapeutics is **$-8.84 \pm 0.89 \text{ kcal/mol}$** ($n=9$), corresponding to high nanomolar to low micromolar dissociation constants ($K_d$). In particular, the atypical antipsychotic **Lurasidone** ($-10.20 \text{ kcal/mol}$, $K_d = 33.4 \text{ nM}$) and antidepressant **Vilazodone** ($-9.95 \text{ kcal/mol}$, $K_d = 50.6 \text{ nM}$) exhibit the tightest cavity affinities in the set, both below the co-crystallized ligand Paclitaxel ($-8.88 \text{ kcal/mol}$), which the model places in Quadrant 4 rather than Quadrant 2.
 2. **Substantially Weaker Cavity Affinities in Quadrant 1:**
-   Quadrant 1 therapeutics exhibit weaker affinities on average, with a mean $\Delta G_{\text{bind}}$ of **$-6.91 \pm 1.30 \text{ kcal/mol}$** ($n=10$). The prototypical evader **Levetiracetam** exhibits an affinity of only **$-5.24 \text{ kcal/mol}$** ($K_d \approx 143.5 \text{ }\mu\text{M}$), while Caffeine yields **$-5.54 \text{ kcal/mol}$** ($K_d \approx 86.2 \text{ }\mu\text{M}$)—indicating negligible specific interaction with the P-gp translocation machinery under physiological conditions.
+   Quadrant 1 therapeutics exhibit weaker affinities on average, with a mean $\Delta G_{\text{bind}}$ of **$-6.91 \pm 1.30 \text{ kcal/mol}$** ($n=10$). The prototypical evader **Levetiracetam** exhibits an affinity of only **$-5.59 \text{ kcal/mol}$** ($K_d \approx 80.4 \text{ }\mu\text{M}$), while Caffeine yields **$-5.55 \text{ kcal/mol}$** ($K_d \approx 85.9 \text{ }\mu\text{M}$)—indicating negligible specific interaction with the P-gp translocation machinery under physiological conditions.
 3. **Statistical Significance:**
    A Welch's unequal variances two-sample t-test confirms that Quadrant 2 therapeutics bind significantly more tightly to the P-gp cavity than Quadrant 1 therapeutics (**$t = -3.7933, p = 1.597e-03$**). A non-parametric Mann-Whitney U test similarly verifies this difference (**$U = 11.0, p = 3.117e-03$**).
 
@@ -427,7 +593,7 @@ Because more negative $\Delta G_{\text{bind}}$ reflects higher thermodynamic sta
 
 ## 7. Discussion: The "Golden Window" for CNS Drug Discovery
 
-Our cross-task TreeSHAP analysis establishes that rational CNS lead optimization must reconcile two opposing biophysical forces:
+The descriptor windows below are heuristic proposals retained from the exploratory analysis, not thresholds estimated or validated by the November SHAP tables. They motivate hypotheses about two opposing constraints:
 1. **The Influx Force:** Favored by higher lipophilicity ($\log P \ge 1.5$) and low polar surface area ($\text{TPSA} \le 90 \text{ \AA}^2$).
 2. **The Efflux Evasion Force:** Favored by low lipophilicity ($\log P \le 3.0$), compact spatial volume ($\text{MW} \le 380 \text{ Da}$, $R_g \le 3.8 \text{ \AA}$), and sparse hydrogen-bonding capacity ($\text{HBD} \le 1$).
 
@@ -454,7 +620,7 @@ Our cross-task TreeSHAP analysis establishes that rational CNS lead optimization
                          ACTIVE EFFLUX (P-gp+)
 ```
 
-Navigating this "Golden Window" enables medicinal chemists to design neurotherapeutics that passively permeate capillary endothelial cells while remaining invisible to luminal ABC efflux pumps.
+These proposed windows require prospective experimental validation; they do not guarantee BBB passage or efflux evasion.
 
 ---
 
@@ -463,7 +629,7 @@ Navigating this "Golden Window" enables medicinal chemists to design neurotherap
 While this dual-barrier computational system represents a significant advance over single-target QSAR models, several biological and clinical caveats must be noted:
 1. **Unbound Brain Exposure ($f_{u,\text{brain}}$):** Predicting that a drug is $\text{BBB}^+$ and $\text{P-gp}^-$ does not guarantee in vivo neuropharmacological efficacy. Pharmacological activity depends on the free, unbound drug concentration in brain interstitial fluid ($C_{u,\text{brain}}$), which is modulated by non-specific brain tissue binding, plasma protein binding, and cerebral spinal fluid (CSF) bulk turnover.
 2. **Additional Efflux Transporters:** While P-gp is the most abundant efflux pump, Breast Cancer Resistance Protein (**BCRP / ABCG2**) and Multidrug Resistance-Associated Proteins (**MRPs / ABCCs**) also contribute to efflux for specific chemical classes. Future iterations should incorporate BCRP models.
-3. **In Vitro Assay Label Variability:** Experimental P-gp substrate designations in literature benchmarks (calcein-AM uptake, bidirectional Caco-2/MDCK permeability assays) occasionally display lab-to-lab variability. Our inclusion of 95% bootstrap confidence intervals and applicability domain thresholds explicitly accounts for this uncertainty.
+3. **In Vitro Assay Label Variability:** Experimental P-gp substrate designations in literature benchmarks (calcein-AM uptake, bidirectional Caco-2/MDCK permeability assays) occasionally display lab-to-lab variability. Bootstrap intervals describe sampling variation conditional on the observed labels; they do not account for all assay heterogeneity or label error.
 
 ---
 
@@ -476,10 +642,10 @@ All code, trained model artifacts, scaler parameters, benchmarking scripts, virt
 - **Validation Protocol with 95% Bootstrap CI:** `python "Novelty Upgrade/scripts/run_validation.py"`.
 - **Incremental Feature Ablation Study:** `python "Novelty Upgrade/scripts/run_ablation_study.py"`.
 - **Global SHAP & Figures Generation:** `python "Novelty Upgrade/scripts/run_explainability_analysis.py"`.
-- **Automated Test Suite:** `python -m pytest "Novelty Upgrade/tests/test_explainability.py"` (8/8 tests passed).
+- **Automated Test Suite:** `python -m pytest "Novelty Upgrade/tests" -q` (rerun after training; this documentation refresh does not claim a fresh regression-suite result).
 - **Interactive Multi-Section Inference:** `python "Novelty Upgrade/inference.py" --smiles <SMILES> --explain`.
 
-All resulting datasets are stored under `Novelty Upgrade/results/`:
+Current metrics and model-linked benchmark measurements are under `Novelty Upgrade/results/`. The following screening/docking files remain October artifacts:
 - `fda_repurposing_dual_barrier_screen.csv`: Comprehensive 2,405-drug dual-barrier screening profiles.
 - `top_cns_repurposing_candidates.csv`: Ranked non-CNS leads for neuro-oncology and neuroinflammation.
 - `cns_drugs_efflux_resistance_profiles.csv`: Marketed neuropsychiatric drugs vulnerable to active P-gp clearance.
@@ -489,9 +655,18 @@ All resulting datasets are stored under `Novelty Upgrade/results/`:
 
 ## 10. Conclusion
 
-We have established a scientifically rigorous, explainable machine learning architecture for dual-barrier CNS drug screening. By coupling Bayesian-optimized gradient boosted trees with 3D conformer geometry, TreeSHAP margin attributions, and Morgan substructure deconvolution, our framework successfully decouples passive membrane permeability from active P-gp efflux. 
+The regenerated models achieve strong random-test AUCs (BBB 0.9563; P-gp 0.9607),
+but the scaffold benchmarks are lower (0.8112 and 0.9001). The P-gp feature ablation
+does not show a mean AUC benefit from adding 3D shape to Morgan + 2D descriptors.
+Global SHAP prioritizes TPSA for BBB and LogP for P-gp, without establishing causal
+mechanisms or validated design thresholds.
 
-Applying this framework to the entire FDA-approved pharmacopeia ($N=2,405$ drugs) demonstrated immediate translational impact: discovering 273 non-CNS approved drugs suitable for neuro-oncology, neuroinflammation, and meningeal infection repurposing, while simultaneously revealing that 105 marketed neuropsychiatric therapeutics suffer from latent P-gp efflux vulnerability. Furthermore, in silico molecular docking into the Cryo-EM structure of human P-glycoprotein (PDB: 6QEX) provided orthogonal structural biology confirmation: proving that machine learning predictions correlate tightly with physical binding free energies ($\rho = -0.5733, p = 0.00528$) and specific transmembrane helical contacts. The model autonomously reproduces historical pharmacological principles, resolves the clinical dilemma of paradoxical drugs, and provides an actionable computational tool for modern rational neurotherapeutic design.
+Adding an efflux prediction reduces paradox leakage on the 216-molecule OOF
+subset, while shared-encoder learning does not demonstrate an across-seed AUC
+gain over independent models. The November results support a joint evaluation
+framework with explicit uncertainty and chemotype limitations. The October
+screening and docking findings remain historical, exploratory evidence and must
+be rerun before being presented as outputs of the current models.
 
 ---
 

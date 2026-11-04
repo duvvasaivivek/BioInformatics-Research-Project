@@ -16,7 +16,6 @@ from rdkit import RDLogger
 
 # Suppress RDKit C++ warnings
 RDLogger.DisableLog('rdApp.*')
-warnings.filterwarnings('ignore')
 
 BBB_DESCRIPTOR_NAMES = ['MolWt', 'LogP', 'TPSA', 'HDonors', 'HAcceptors', 'RotBonds']
 PGP_DESCRIPTOR_NAMES = [
@@ -32,18 +31,16 @@ def load_scaler_metadata(
     default_means: Optional[List[float]] = None,
     default_stds: Optional[List[float]] = None
 ) -> Tuple[Optional[List[float]], Optional[List[float]]]:
-    """Loads feature scaler normalization metadata from a JSON file."""
-    if os.path.exists(file_path):
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            return data['means'], data['stds']
-        except Exception as e:
-            print(f"[WARN] Could not load scaler metadata from {file_path}: {e}")
-
-    if default_means is not None and default_stds is not None:
-        return default_means, default_stds
-    return None, None
+    """Load validated metadata; legacy default arguments are never used silently."""
+    from .artifacts import read_metadata
+    data = read_metadata(file_path)
+    names = PGP_DESCRIPTOR_NAMES if 'pgp' in os.path.basename(file_path).lower() else BBB_DESCRIPTOR_NAMES
+    means, stds = np.asarray(data['means'], float), np.asarray(data['stds'], float)
+    if data.get('features') != names or means.shape != (len(names),) or stds.shape != means.shape:
+        raise ValueError('Scaler feature schema mismatch')
+    if not np.isfinite(means).all() or not np.isfinite(stds).all() or (stds <= 0).any():
+        raise ValueError('Scaler statistics must be finite with positive standard deviations')
+    return means.tolist(), stds.tolist()
 
 
 def calculate_2d_descriptors(mol: Chem.Mol) -> Dict[str, float]:
@@ -103,7 +100,7 @@ def extract_features_bbb(smiles: str) -> Tuple[Optional[Tuple[np.ndarray, List[f
     Returns: ((fp_array, desc_list), raw_desc_dict, mol)
     """
     mol = Chem.MolFromSmiles(smiles)
-    if mol is None:
+    if mol is None or mol.GetNumAtoms() == 0:
         return None, None, None
 
     fp_array = calculate_morgan_fingerprint(mol, radius=2, n_bits=2048)
@@ -119,7 +116,7 @@ def extract_features_pgp(smiles: str) -> Tuple[Optional[Tuple[np.ndarray, List[f
     Returns: ((fp_array, desc_list), raw_desc_dict, mol_h)
     """
     mol = Chem.MolFromSmiles(smiles)
-    if mol is None:
+    if mol is None or mol.GetNumAtoms() == 0:
         return None, None, None
 
     desc_3d, mol_h = calculate_3d_descriptors(mol)
@@ -189,6 +186,9 @@ def load_processed_dataset(
         )
 
     df = pd.read_csv(data_path)
+    from .artifacts import read_metadata, clean_structures
+    if read_metadata(scaler_metadata_path).get('structure_cleaned'):
+        df = clean_structures(df)
     y = df['Label']
     smiles = df['SMILES']
     X = df.drop(columns=['SMILES', 'Label'])

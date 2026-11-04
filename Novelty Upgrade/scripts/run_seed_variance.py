@@ -239,9 +239,9 @@ def main() -> int:
             pab = prob_a_beats_b(av, bv)
 
             underpowered = bool(abs(mean_diff) < mde.get('mde', np.inf))
-            verdict = ('no effect detected; study underpowered for an effect this small'
-                       if underpowered else
-                       ('multi-task better' if mean_diff > 0 else 'multi-task worse'))
+            significant = np.isfinite(p_val) and p_val < args.alpha
+            verdict = (('multi-task better' if mean_diff > 0 else 'multi-task worse')
+                       if significant else 'no effect detected by paired t-test')
 
             contrasts.append({
                 'task': task, 'metric': metric, 'n_seeds': len(shared),

@@ -19,7 +19,6 @@ from rdkit import RDLogger
 # Enable ANSI escape sequences on Windows
 if os.name == 'nt':
     os.system('color')
-warnings.filterwarnings('ignore')
 RDLogger.DisableLog('rdApp.*')
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -97,7 +96,7 @@ def display_full_scientific_report(
     pgp_expl = shap_explainer.explain_prediction("Pgp", pgp_df, mol=mol, raw_descriptors=raw_pgp_desc, top_n=5)
 
     print(f"{Colors.BOLD}{Colors.UNDERLINE}2. BLOOD-BRAIN BARRIER (BBB) PERMEABILITY EXPLAINABILITY (TreeSHAP){Colors.ENDC}")
-    print(f"Predicted Class: {Colors.BOLD}{bbb_expl['class_label']}{Colors.ENDC} | Confidence: {bbb_prob*100:.1f}%")
+    print(f"Predicted Class: {Colors.BOLD}{bbb_expl['class_label']}{Colors.ENDC} | P(BBB+): {bbb_prob*100:.1f}%")
     print(f"TreeSHAP Margin f(x): {bbb_expl['model_margin']:+.4f} (Base value phi_0 = {bbb_expl['base_value']:+.4f})")
     print(f"Biophysical Rationale: {bbb_expl['interpretation']['biophysical_basis']}")
     print(f"Reference Rule: {bbb_expl['interpretation']['rule_alignment']}")
@@ -118,7 +117,7 @@ def display_full_scientific_report(
 
     # 3. P-gp Efflux Explainability
     print(f"\n{Colors.BOLD}{Colors.UNDERLINE}3. P-GLYCOPROTEIN (P-gp / ABCB1) EFFLUX EXPLAINABILITY (TreeSHAP & 3D Conformation){Colors.ENDC}")
-    print(f"Predicted Class: {Colors.BOLD}{pgp_expl['class_label']}{Colors.ENDC} | Confidence: {pgp_prob*100:.1f}%")
+    print(f"Predicted Class: {Colors.BOLD}{pgp_expl['class_label']}{Colors.ENDC} | P(P-gp+): {pgp_prob*100:.1f}%")
     print(f"TreeSHAP Margin f(x): {pgp_expl['model_margin']:+.4f} (Base value phi_0 = {pgp_expl['base_value']:+.4f})")
     print(f"Efflux Cavity Mechanism: {pgp_expl['interpretation']['biophysical_basis']}")
     print(f"Reference Rule: {pgp_expl['interpretation']['rule_alignment']}")
@@ -339,6 +338,13 @@ def main():
         pgp_df = prepare_dataframe(pgp_feats[0], pgp_feats[1], pgp_means, pgp_stds, is_pgp=True)
         pgp_prob = float(pgp_model.predict_proba(pgp_df)[0][1])
         pgp_pred = int(pgp_prob > 0.5)
+
+        if not (interactive or args.explain or args.counterfactual or
+                args.export_html or args.export_csv or args.export_json):
+            quadrant, description = determine_dual_barrier_quadrant(bbb_pred, pgp_pred)
+            print(f'{quadrant}: {description}')
+            print(f'P(BBB+)={bbb_prob:.4f}, P(P-gp+)={pgp_prob:.4f}')
+            break
 
         report_data = display_full_scientific_report(
             smiles=user_input,

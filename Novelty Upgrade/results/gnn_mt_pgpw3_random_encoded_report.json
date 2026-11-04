@@ -1,6 +1,6 @@
 {
   "run_id": "mt_pgpw3_random_encoded",
-  "timestamp": "2026-10-24T16:53:52",
+  "timestamp": "2026-11-03T23:29:42",
   "arguments": {
     "tasks": "bbb,pgp",
     "task_weights": "pgp=3",
@@ -23,7 +23,7 @@
     "amp": false,
     "no_cache": false,
     "tag": "mt_pgpw3",
-    "quiet": true
+    "quiet": false
   },
   "tasks": [
     "bbb",
@@ -201,134 +201,135 @@
     "num_classes": 2,
     "dropout": 0.3,
     "residual": false,
+    "readout_dim": 32,
     "trainable_parameters": 372898,
     "head_parameters": {
       "bbb": 8290,
       "pgp": 8290
     }
   },
-  "best_epoch": 22,
-  "best_val_score": 0.88111,
-  "epochs_run": 42,
+  "best_epoch": 28,
+  "best_val_score": 0.87692,
+  "epochs_run": 48,
   "test_metrics": {
     "bbb": {
       "n": 1172,
-      "Accuracy": 0.8549488054607508,
-      "Balanced_Accuracy": 0.8296842025927043,
-      "Precision": 0.85875,
-      "Recall_Sensitivity": 0.9233870967741935,
-      "Specificity": 0.735981308411215,
-      "F1_Score": 0.8898963730569949,
-      "MCC": 0.682055981807741,
-      "Brier_Score": 0.09978448303438119,
-      "ROC_AUC": 0.9309679931665159,
-      "PR_AUC": 0.9576445522215687,
-      "TP": 687,
-      "FP": 113,
-      "TN": 315,
-      "FN": 57,
+      "Accuracy": 0.8498293515358362,
+      "Balanced_Accuracy": 0.827636669681439,
+      "Precision": 0.861323155216285,
+      "Recall_Sensitivity": 0.9099462365591398,
+      "Specificity": 0.7453271028037384,
+      "F1_Score": 0.8849673202614379,
+      "MCC": 0.6713143417425759,
+      "Brier_Score": 0.10235800636161463,
+      "ROC_AUC": 0.9266688021304391,
+      "PR_AUC": 0.9545478904990794,
+      "TP": 677,
+      "FP": 109,
+      "TN": 319,
+      "FN": 67,
       "Accuracy_CI95": [
-        0.8353,
-        0.8746
+        0.8285,
+        0.8695
       ],
       "Balanced_Accuracy_CI95": [
-        0.806,
-        0.8515
+        0.8043,
+        0.8498
       ],
       "Precision_CI95": [
-        0.8327,
-        0.8824
+        0.8359,
+        0.8851
       ],
       "Recall_Sensitivity_CI95": [
-        0.9032,
-        0.9406
+        0.8898,
+        0.9289
       ],
       "Specificity_CI95": [
-        0.6923,
-        0.7759
+        0.7029,
+        0.7842
       ],
       "F1_Score_CI95": [
-        0.873,
-        0.9055
+        0.8664,
+        0.901
       ],
       "ROC_AUC_CI95": [
-        0.9156,
-        0.9448
+        0.9124,
+        0.9417
       ],
       "PR_AUC_CI95": [
-        0.9465,
-        0.968
+        0.9432,
+        0.9652
       ],
       "MCC_CI95": [
-        0.6374,
-        0.723
+        0.6245,
+        0.714
       ],
       "Brier_Score_CI95": [
-        0.0883,
-        0.1113
+        0.0904,
+        0.1141
       ],
       "n_bootstraps": 1000
     },
     "pgp": {
       "n": 182,
-      "Accuracy": 0.8681318681318682,
-      "Balanced_Accuracy": 0.8675560946027896,
-      "Precision": 0.8762886597938144,
-      "Recall_Sensitivity": 0.8762886597938144,
-      "Specificity": 0.8588235294117647,
-      "F1_Score": 0.8762886597938144,
-      "MCC": 0.7351121892055792,
-      "Brier_Score": 0.10649267626499427,
-      "ROC_AUC": 0.9295330503335355,
-      "PR_AUC": 0.9042106576790157,
-      "TP": 85,
-      "FP": 12,
-      "TN": 73,
-      "FN": 12,
+      "Accuracy": 0.8626373626373627,
+      "Balanced_Accuracy": 0.8602183141297757,
+      "Precision": 0.8529411764705882,
+      "Recall_Sensitivity": 0.8969072164948454,
+      "Specificity": 0.8235294117647058,
+      "F1_Score": 0.8743718592964824,
+      "MCC": 0.7241791813824543,
+      "Brier_Score": 0.11225004645116286,
+      "ROC_AUC": 0.9346270466949667,
+      "PR_AUC": 0.9096530607562896,
+      "TP": 87,
+      "FP": 15,
+      "TN": 70,
+      "FN": 10,
       "Accuracy_CI95": [
         0.8132,
-        0.9176
+        0.9121
       ],
       "Balanced_Accuracy_CI95": [
-        0.8131,
-        0.9176
+        0.8089,
+        0.9103
       ],
       "Precision_CI95": [
-        0.8021,
-        0.9348
+        0.7742,
+        0.9167
       ],
       "Recall_Sensitivity_CI95": [
-        0.8064,
-        0.9444
+        0.8367,
+        0.9529
       ],
       "Specificity_CI95": [
-        0.7778,
-        0.9303
+        0.7444,
+        0.8978
       ],
       "F1_Score_CI95": [
-        0.8208,
-        0.9231
+        0.8216,
+        0.9223
       ],
       "ROC_AUC_CI95": [
-        0.8806,
-        0.9665
+        0.8907,
+        0.9698
       ],
       "PR_AUC_CI95": [
-        0.8182,
-        0.9686
+        0.8293,
+        0.9742
       ],
       "MCC_CI95": [
-        0.6266,
-        0.8351
+        0.6215,
+        0.8243
       ],
       "Brier_Score_CI95": [
-        0.0676,
-        0.1501
+        0.0715,
+        0.1577
       ],
       "n_bootstraps": 1000
     }
   },
-  "elapsed_seconds": 117.2,
+  "elapsed_seconds": 120.7,
   "cuda_memory": {
     "peak_allocated_gb": 0.065,
     "peak_reserved_gb": 0.098

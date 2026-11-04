@@ -13,6 +13,10 @@ repeated experiment runs fast.
 """
 
 import os
+import hashlib
+import json
+from pathlib import Path
+from rdkit import rdBase
 from typing import Dict, List, Optional, Tuple, Any
 
 import numpy as np
@@ -62,22 +66,28 @@ def build_graph_dataset(
     """
     os.makedirs(CACHE_DIR, exist_ok=True)
     cache = cache_path_for(mode)
+    columns = ['inchikey', 'canonical_smiles', 'y_bbb', 'm_bbb', 'y_pgp', 'm_pgp']
+    fingerprint = hashlib.sha256(json.dumps({
+        'rows': corpus[columns].to_dict('split'), 'mode': mode,
+        'rdkit': rdBase.rdkitVersion, 'schema': CACHE_VERSION,
+        'featurizer': hashlib.sha256(Path(__file__).with_name('featurizer.py').read_bytes()).hexdigest(),
+    }, sort_keys=True).encode()).hexdigest()
 
     if use_cache and os.path.exists(cache):
         payload = torch.load(cache, weights_only=False)
-        if payload.get('corpus_size') == len(corpus) and payload.get('version') == CACHE_VERSION:
+        if payload.get('fingerprint') == fingerprint:
             if verbose:
                 print(f'[GRAPH] Loaded {len(payload["graphs"])} cached graphs '
                       f'({mode} features) from {os.path.relpath(cache, BASE_DIR)}')
             return payload['graphs'], payload['stats']
         if verbose:
-            print('[GRAPH] Cache corpus size mismatch; rebuilding.')
+            print('[GRAPH] Cache identity mismatch; rebuilding.')
 
     atom_dim, bond_dim = feature_dims(mode)
     graphs: List[Data] = []
     failed: List[str] = []
 
-    for i, row in corpus.iterrows():
+    for i, (_, row) in enumerate(corpus.iterrows()):
         data = smiles_to_data(
             row['canonical_smiles'],
             mode=mode,
@@ -113,7 +123,7 @@ def build_graph_dataset(
     if use_cache:
         torch.save(
             {'graphs': graphs, 'stats': stats, 'corpus_size': len(corpus),
-             'mode': mode, 'version': CACHE_VERSION},
+             'mode': mode, 'version': CACHE_VERSION, 'fingerprint': fingerprint},
             cache,
         )
         if verbose:
@@ -154,10 +164,3 @@ def make_loader(
         pin_memory=pin,
         num_workers=num_workers,
     )
-
-
-def label_vector(graphs: List[Data], task: str) -> Tuple[np.ndarray, np.ndarray]:
-    """Returns (labels, mask) arrays for a task over a graph list, for diagnostics."""
-    y = np.array([int(getattr(g, f'y_{task}').item()) for g in graphs])
-    m = np.array([float(getattr(g, f'm_{task}').item()) for g in graphs])
-    return y, m

@@ -17,6 +17,8 @@ import glob
 from typing import Dict, List, Any, Optional
 
 import pandas as pd
+import numpy as np
+from sklearn.metrics import roc_auc_score
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
@@ -125,20 +127,41 @@ def add_deltas(table: pd.DataFrame) -> pd.DataFrame:
             row[f'single_{m}'] = s_val
             row[f'multi_{m}'] = m_val
             row[f'delta_{m}'] = round(float(m_val) - float(s_val), 4)
+        row.update(paired_auc_contrast(task, split, features))
         deltas.append(row)
     return pd.DataFrame(deltas)
 
 
-def ci_overlaps(a: Optional[str], b: Optional[str]) -> Optional[bool]:
-    """True when two '[lo, hi]' interval strings overlap, i.e. the delta is not clear-cut."""
-    if not a or not b:
-        return None
-    try:
-        alo, ahi = [float(x) for x in a.strip('[]').split(',')]
-        blo, bhi = [float(x) for x in b.strip('[]').split(',')]
-    except ValueError:
-        return None
-    return not (ahi < blo or bhi < alo)
+def paired_auc_contrast(task, split, features, n_bootstraps=1000, seed=42):
+    """Paired molecule bootstrap, conditional on these fitted models and test set."""
+    paths = [os.path.join(RESULTS_DIR, f'gnn_{tag}_{split}_{features}_test_predictions.csv')
+             for tag in (f'single_{task}', 'multitask')]
+    if not all(os.path.exists(p) for p in paths):
+        return {'paired_verdict': 'paired predictions unavailable'}
+    frames = [pd.read_csv(p) for p in paths]
+    frames = [frame[frame['task'] == task] for frame in frames]
+    if any(f.inchikey.duplicated().any() for f in frames):
+        raise ValueError('Duplicate identities in paired prediction files')
+    if set(frames[0].inchikey) != set(frames[1].inchikey):
+        return {'paired_verdict': 'incomparable: different test identities'}
+    joined = frames[0].merge(frames[1], on='inchikey', suffixes=('_single','_multi'), validate='one_to_one')
+    if not np.array_equal(joined.y_true_single, joined.y_true_multi):
+        raise ValueError('Ground truth differs between paired runs')
+    y = joined.y_true_single.to_numpy()
+    if len(np.unique(y)) < 2:
+        return {'paired_verdict': 'paired AUC undefined: fewer than two classes'}
+    a, b = joined.y_prob_multi.to_numpy(), joined.y_prob_single.to_numpy()
+    rng = np.random.RandomState(seed)
+    differences = []
+    for _ in range(n_bootstraps):
+        indices = rng.randint(0, len(y), len(y))
+        if len(np.unique(y[indices])) == 2:
+            differences.append(roc_auc_score(y[indices], a[indices]) - roc_auc_score(y[indices], b[indices]))
+    low, high = np.percentile(differences, [2.5,97.5])
+    verdict = 'improved' if low > 0 else 'degraded' if high < 0 else 'paired interval includes zero'
+    return {'paired_delta_ROC_AUC': roc_auc_score(y,a)-roc_auc_score(y,b),
+            'paired_delta_CI95_low': low, 'paired_delta_CI95_high': high,
+            'paired_verdict': verdict}
 
 
 def main() -> int:
@@ -179,21 +202,7 @@ def main() -> int:
               f'{"d BalAcc":>9}  verdict')
         for _, r in deltas.sort_values(['task', 'split']).iterrows():
             d_auc = r.get('delta_ROC_AUC')
-            # A delta whose confidence intervals overlap is within noise.
-            srow = table[(table['task'] == r['task']) & (table['split'] == r['split'])
-                         & (table['experiment'] == f'single_{r["task"]}')]
-            mrow = table[(table['task'] == r['task']) & (table['split'] == r['split'])
-                         & (table['experiment'] == 'multitask')]
-            overlap = ci_overlaps(
-                srow.iloc[0]['ROC_AUC_CI95'] if not srow.empty else None,
-                mrow.iloc[0]['ROC_AUC_CI95'] if not mrow.empty else None,
-            )
-            if overlap is None:
-                verdict = 'incomparable'
-            elif overlap:
-                verdict = 'within noise (CIs overlap)'
-            else:
-                verdict = 'improved' if d_auc > 0 else 'degraded'
+            verdict = r['paired_verdict']
             print(f'{r["task"]:<5} {r["split"]:<10} {d_auc:>+10.4f} '
                   f'{r.get("delta_MCC", float("nan")):>+9.4f} '
                   f'{r.get("delta_F1_Score", float("nan")):>+9.4f} '

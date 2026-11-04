@@ -6,6 +6,7 @@ structured CSV, JSON, and publication-ready HTML reports.
 """
 
 import json
+from html import escape
 import csv
 import datetime
 import os
@@ -58,6 +59,15 @@ class ScientificReportGenerator:
         """Generates a publication-grade standalone HTML scientific report."""
         os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
 
+        def escaped(value):
+            if isinstance(value, str):
+                return escape(value, quote=True)
+            if isinstance(value, dict):
+                return {k: escaped(v) for k, v in value.items()}
+            if isinstance(value, list):
+                return [escaped(v) for v in value]
+            return value
+        report_data = escaped(report_data)
         smiles = report_data.get("smiles", "")
         timestamp = report_data.get("timestamp", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         quadrant = report_data.get("quadrant_category", "Unknown")
@@ -283,13 +293,13 @@ class ScientificReportGenerator:
             <div style="background:#f7fafc; padding:15px; border-radius:6px;">
                 <p style="margin:0 0 5px 0;"><strong>Blood-Brain Barrier (BBB) Permeability:</strong></p>
                 <span class="metric-badge {'badge-green' if bbb_prob > 0.5 else 'badge-red'}">{bbb_label}</span>
-                <span style="margin-left:10px; font-weight:600;">{bbb_prob*100:.1f}% Confidence</span>
+                <span style="margin-left:10px; font-weight:600;">{bbb_prob*100:.1f}% P(BBB+)</span>
                 <p style="font-size:0.85rem; color:#718096; margin-top:8px;">Model: Bayesian Optuna-XGBoost (B3DB Benchmark, 7,807 molecules)</p>
             </div>
             <div style="background:#f7fafc; padding:15px; border-radius:6px;">
                 <p style="margin:0 0 5px 0;"><strong>P-glycoprotein (ABCB1) Efflux Status:</strong></p>
                 <span class="metric-badge {'badge-red' if pgp_prob > 0.5 else 'badge-green'}">{pgp_label}</span>
-                <span style="margin-left:10px; font-weight:600;">{pgp_prob*100:.1f}% Confidence</span>
+                <span style="margin-left:10px; font-weight:600;">{pgp_prob*100:.1f}% P(P-gp+)</span>
                 <p style="font-size:0.85rem; color:#718096; margin-top:8px;">Model: 3D Conformation-Augmented XGBoost (Broccatelli TDC Benchmark)</p>
             </div>
         </div>

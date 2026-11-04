@@ -2,6 +2,7 @@
 venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 *.pkl
 *.exe
 test_*.pdbqt

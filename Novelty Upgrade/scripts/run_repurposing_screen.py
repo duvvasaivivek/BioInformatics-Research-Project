@@ -12,6 +12,9 @@ Profiles ~2,400 approved small molecule drugs from the Broad Institute Drug Repu
 import os
 import sys
 import json
+import hashlib
+from pathlib import Path
+from rdkit import rdBase
 import warnings
 import numpy as np
 import pandas as pd
@@ -26,7 +29,6 @@ import seaborn as sns
 
 # Suppress warnings
 RDLogger.DisableLog('rdApp.*')
-warnings.filterwarnings('ignore')
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SCRIPT_DIR)
@@ -71,12 +73,7 @@ def process_single_molecule(row_tuple) -> Optional[Dict[str, Any]]:
         # 2. 3D Shape Conformer via ETKDGv3
         desc_3d, _ = calculate_3d_descriptors(mol, seed=42)
         if desc_3d is None:
-            # Fallback for conformer generation
-            desc_3d = {
-                'RadiusOfGyration': 0.0, 'Asphericity': 0.0, 'Eccentricity': 0.0,
-                'SpherocityIndex': 0.0, 'NPR1': 0.0, 'NPR2': 0.0
-            }
-            has_3d = False
+            return None  # Never invent 3D features for a failed conformer.
         else:
             has_3d = True
 
@@ -143,6 +140,10 @@ def run_screen():
     ]
 
     cache_path = os.path.join(REPURPOSING_DIR, "repurposing_features_cache.pkl")
+    cache_key = hashlib.sha256(Path(INPUT_CSV).read_bytes() +
+        Path(__file__).read_bytes() + (Path(BASE_DIR)/'core'/'features.py').read_bytes() +
+        rdBase.rdkitVersion.encode()).hexdigest()
+    cache_path = cache_path.replace('.pkl', '_' + cache_key + '.pkl')
     if os.path.exists(cache_path):
         print(f"Loading cached molecular features from {cache_path}...")
         import pickle
@@ -168,6 +169,8 @@ def run_screen():
 
     # 3. Model Inference & Screening (Batched & Vectorized for 100x Speedup)
     print("\nRunning Batched Dual-Barrier Ensembles and Applicability Domain Assessment...")
+    if not extracted_records:
+        raise ValueError('No molecules could be featurized; no screening results produced')
     N = len(extracted_records)
     fp_cols = [f'FP_{i}' for i in range(2048)]
     fp_mat = np.array([item['fp'] for item in extracted_records], dtype=np.int8)

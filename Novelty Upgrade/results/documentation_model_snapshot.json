@@ -1,0 +1,342 @@
+{
+  "datasets": {
+    "bbb": {
+      "processed_rows": 7805,
+      "processed_positive": 4956,
+      "clean_rows": 7805,
+      "positive": 4956,
+      "negative": 2849,
+      "scaffolds": 2129
+    },
+    "pgp": {
+      "processed_rows": 1205,
+      "processed_positive": 650,
+      "clean_rows": 1198,
+      "positive": 646,
+      "negative": 552,
+      "scaffolds": 670
+    }
+  },
+  "benchmarks": {
+    "Levetiracetam": {
+      "smiles": "CC[C@@H](C(=O)N)N1CCCC1=O",
+      "bbb": {
+        "probability": 0.9785585403442383,
+        "pred": 1,
+        "base": -0.11426806449890137,
+        "margin": 3.820754051208496,
+        "shap": {
+          "MolWt": 0.7246201634407043,
+          "LogP": -0.22903428971767426,
+          "TPSA": 0.599983274936676,
+          "HDonors": 0.16077862679958344,
+          "HAcceptors": 0.12765654921531677,
+          "RotBonds": -0.012759936973452568
+        },
+        "raw": {
+          "MolWt": 170.212,
+          "LogP": -0.12729999999999997,
+          "TPSA": 63.400000000000006,
+          "HDonors": 1.0,
+          "HAcceptors": 2.0,
+          "RotBonds": 3.0
+        },
+        "in_train": true
+      },
+      "pgp": {
+        "probability": 0.014338324777781963,
+        "pred": 0,
+        "base": -0.01617400161921978,
+        "margin": -4.230377197265625,
+        "shap": {
+          "MolWt": -0.8410000205039978,
+          "LogP": -1.7356138229370117,
+          "TPSA": -0.05126632750034332,
+          "HDonors": -0.005363787524402142,
+          "HAcceptors": 0.014832085929811,
+          "RotBonds": -0.03443777933716774,
+          "RadiusOfGyration": -0.7097250819206238,
+          "Asphericity": 0.10168182104825974,
+          "Eccentricity": 0.027211735025048256,
+          "SpherocityIndex": 0.6183576583862305,
+          "NPR1": 0.038160793483257294,
+          "NPR2": -0.05494939908385277
+        },
+        "raw": {
+          "MolWt": 170.212,
+          "LogP": -0.12729999999999997,
+          "TPSA": 63.400000000000006,
+          "HDonors": 1.0,
+          "HAcceptors": 2.0,
+          "RotBonds": 3.0,
+          "RadiusOfGyration": 2.427351699328557,
+          "Asphericity": 0.25464254386273755,
+          "Eccentricity": 0.9238898527065611,
+          "SpherocityIndex": 0.392344362560939,
+          "NPR1": 0.38265851625940445,
+          "NPR2": 0.9163961764012263
+        },
+        "in_train": false
+      },
+      "quadrant": 1
+    },
+    "Loperamide": {
+      "smiles": "CN(C)C(=O)C(CCN1CCC(O)(c2ccc(Cl)cc2)CC1)(c1ccccc1)c1ccccc1",
+      "bbb": {
+        "probability": 0.9452754855155945,
+        "pred": 1,
+        "base": -0.11426806449890137,
+        "margin": 2.8491671085357666,
+        "shap": {
+          "MolWt": -0.4740735590457916,
+          "LogP": 0.2073161005973816,
+          "TPSA": 1.6619445085525513,
+          "HDonors": 0.1696072518825531,
+          "HAcceptors": -0.048690274357795715,
+          "RotBonds": 0.0587770938873291
+        },
+        "raw": {
+          "MolWt": 477.0480000000002,
+          "LogP": 5.088000000000005,
+          "TPSA": 43.78,
+          "HDonors": 1.0,
+          "HAcceptors": 3.0,
+          "RotBonds": 7.0
+        },
+        "in_train": true
+      },
+      "pgp": {
+        "probability": 0.9907404184341431,
+        "pred": 1,
+        "base": -0.01617400161921978,
+        "margin": 4.672789573669434,
+        "shap": {
+          "MolWt": 0.7535744309425354,
+          "LogP": 2.1678504943847656,
+          "TPSA": 0.2664892077445984,
+          "HDonors": 0.07027358561754227,
+          "HAcceptors": -0.11351095885038376,
+          "RotBonds": -0.05058594048023224,
+          "RadiusOfGyration": 0.3909436762332916,
+          "Asphericity": 0.10111147910356522,
+          "Eccentricity": 0.07980180531740189,
+          "SpherocityIndex": 0.5927098989486694,
+          "NPR1": 0.09076720476150513,
+          "NPR2": -0.007296940311789513
+        },
+        "raw": {
+          "MolWt": 477.0480000000002,
+          "LogP": 5.088000000000005,
+          "TPSA": 43.78,
+          "HDonors": 1.0,
+          "HAcceptors": 3.0,
+          "RotBonds": 7.0,
+          "RadiusOfGyration": 4.8913052849460925,
+          "Asphericity": 0.4352225016343256,
+          "Eccentricity": 0.9673229335267003,
+          "SpherocityIndex": 0.4558540204788516,
+          "NPR1": 0.2535475148237491,
+          "NPR2": 0.980634080937032
+        },
+        "in_train": true
+      },
+      "quadrant": 2
+    },
+    "Caffeine": {
+      "smiles": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C",
+      "bbb": {
+        "probability": 0.8645510077476501,
+        "pred": 1,
+        "base": -0.11426806449890137,
+        "margin": 1.8536149263381958,
+        "shap": {
+          "MolWt": 0.03517436236143112,
+          "LogP": -0.03899401053786278,
+          "TPSA": 1.1276030540466309,
+          "HDonors": 0.2500298023223877,
+          "HAcceptors": -0.0010801143944263458,
+          "RotBonds": -0.324895977973938
+        },
+        "raw": {
+          "MolWt": 194.194,
+          "LogP": -1.0293,
+          "TPSA": 61.82,
+          "HDonors": 0.0,
+          "HAcceptors": 3.0,
+          "RotBonds": 0.0
+        },
+        "in_train": true
+      },
+      "pgp": {
+        "probability": 0.014082046225667,
+        "pred": 0,
+        "base": -0.01617400161921978,
+        "margin": -4.248671054840088,
+        "shap": {
+          "MolWt": -0.8597492575645447,
+          "LogP": -1.7199748754501343,
+          "TPSA": -0.04978007450699806,
+          "HDonors": 0.03228452429175377,
+          "HAcceptors": -0.06604129076004028,
+          "RotBonds": -0.04731099307537079,
+          "RadiusOfGyration": -0.7214926481246948,
+          "Asphericity": -0.021757522597908974,
+          "Eccentricity": -0.03517846390604973,
+          "SpherocityIndex": 0.22261254489421844,
+          "NPR1": 0.01846722885966301,
+          "NPR2": -0.018469886854290962
+        },
+        "raw": {
+          "MolWt": 194.194,
+          "LogP": -1.0293,
+          "TPSA": 61.82,
+          "HDonors": 0.0,
+          "HAcceptors": 3.0,
+          "RotBonds": 0.0,
+          "RadiusOfGyration": 2.4330571533584253,
+          "Asphericity": 0.27519399154881313,
+          "Eccentricity": 0.9159431509596994,
+          "SpherocityIndex": 0.06771024853663639,
+          "NPR1": 0.40130804154666166,
+          "NPR2": 0.6072374888937137
+        },
+        "in_train": true
+      },
+      "quadrant": 1
+    },
+    "Diazepam": {
+      "smiles": "CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13",
+      "bbb": {
+        "probability": 0.9930751323699951,
+        "pred": 1,
+        "base": -0.11426806449890137,
+        "margin": 4.965696811676025,
+        "shap": {
+          "MolWt": 0.18340373039245605,
+          "LogP": 0.2632792890071869,
+          "TPSA": 1.496886968612671,
+          "HDonors": 0.025576263666152954,
+          "HAcceptors": 0.05841339752078056,
+          "RotBonds": 0.10563550144433975
+        },
+        "raw": {
+          "MolWt": 284.74600000000004,
+          "LogP": 3.153800000000002,
+          "TPSA": 32.67,
+          "HDonors": 0.0,
+          "HAcceptors": 2.0,
+          "RotBonds": 1.0
+        },
+        "in_train": true
+      },
+      "pgp": {
+        "probability": 0.050564564764499664,
+        "pred": 0,
+        "base": -0.01617400161921978,
+        "margin": -2.9326164722442627,
+        "shap": {
+          "MolWt": -1.4071046113967896,
+          "LogP": -0.45421499013900757,
+          "TPSA": 0.018226956948637962,
+          "HDonors": -0.04506731778383255,
+          "HAcceptors": -0.04948639124631882,
+          "RotBonds": -0.061842598021030426,
+          "RadiusOfGyration": -0.7060312628746033,
+          "Asphericity": 0.07404915988445282,
+          "Eccentricity": -0.022273529320955276,
+          "SpherocityIndex": -0.09618396311998367,
+          "NPR1": 0.020737051963806152,
+          "NPR2": 0.08715954422950745
+        },
+        "raw": {
+          "MolWt": 284.74600000000004,
+          "LogP": 3.153800000000002,
+          "TPSA": 32.67,
+          "HDonors": 0.0,
+          "HAcceptors": 2.0,
+          "RotBonds": 1.0,
+          "RadiusOfGyration": 3.289734986111546,
+          "Asphericity": 0.20385253267172856,
+          "Eccentricity": 0.8743477908279582,
+          "SpherocityIndex": 0.1861079030230408,
+          "NPR1": 0.4852998461510871,
+          "NPR2": 0.5948762702197129
+        },
+        "in_train": true
+      },
+      "quadrant": 1
+    },
+    "Penicillin G": {
+      "smiles": "CC1(C)S[C@@H]2[C@H](NC(=O)Cc3ccccc3)C(=O)N2[C@H]1C(=O)O",
+      "bbb": {
+        "probability": 0.009283674880862236,
+        "pred": 0,
+        "base": -0.11426806449890137,
+        "margin": -4.670169830322266,
+        "shap": {
+          "MolWt": -0.15907232463359833,
+          "LogP": 0.01956777274608612,
+          "TPSA": -0.6202034950256348,
+          "HDonors": -0.14537902176380157,
+          "HAcceptors": 0.05035644397139549,
+          "RotBonds": 0.07221093028783798
+        },
+        "raw": {
+          "MolWt": 334.39700000000005,
+          "LogP": 0.8607999999999998,
+          "TPSA": 86.71000000000001,
+          "HDonors": 2.0,
+          "HAcceptors": 4.0,
+          "RotBonds": 4.0
+        },
+        "in_train": true
+      },
+      "pgp": {
+        "probability": 0.02284565567970276,
+        "pred": 0,
+        "base": -0.01617400161921978,
+        "margin": -3.755882740020752,
+        "shap": {
+          "MolWt": -0.35649365186691284,
+          "LogP": -2.532280445098877,
+          "TPSA": 0.27244576811790466,
+          "HDonors": 0.029322274029254913,
+          "HAcceptors": 0.011780902743339539,
+          "RotBonds": -0.0019441395998001099,
+          "RadiusOfGyration": -0.0033844797872006893,
+          "Asphericity": -0.02950246073305607,
+          "Eccentricity": -0.07050751894712448,
+          "SpherocityIndex": -0.21114401519298553,
+          "NPR1": -0.05931065231561661,
+          "NPR2": -0.17658956348896027
+        },
+        "raw": {
+          "MolWt": 334.39700000000005,
+          "LogP": 0.8607999999999998,
+          "TPSA": 86.71000000000001,
+          "HDonors": 2.0,
+          "HAcceptors": 4.0,
+          "RotBonds": 4.0,
+          "RadiusOfGyration": 4.119737247187421,
+          "Asphericity": 0.6425788431259557,
+          "Eccentricity": 0.9904181839860908,
+          "SpherocityIndex": 0.15845555401542488,
+          "NPR1": 0.13810076332046023,
+          "NPR2": 0.9231654742313834
+        },
+        "in_train": false
+      },
+      "quadrant": 3
+    }
+  },
+  "scaffold_overlap": 288,
+  "shap_correlation": {
+    "rho": 0.5428571428571429,
+    "p": 0.26570262390670557
+  },
+  "generated_date": "2026-11-04",
+  "model_sha256": {
+    "bbb": "82ab2fca9d67d773276a4f71c6ce358b953cf4001160dabf3b765c2dc3b89ca5",
+    "pgp": "6134a65c914b1d73ecd3620ca959dca67ce89ab57a5a2cbafa1a0b739d572be4"
+  }
+}

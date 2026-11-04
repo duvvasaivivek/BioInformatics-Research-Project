@@ -45,13 +45,11 @@ from gnn.device import (
 from gnn.data_assembly import build_corpus, label_independence
 from gnn.dataset import build_graph_dataset, subset_by_corpus_index, make_loader
 from gnn.splits import make_splits, assert_split_integrity
-from gnn.model import MultiTaskGNN
-from gnn.losses import MaskedMultiTaskLoss, build_class_weights
 from gnn.metrics import classification_metrics, format_metrics_row
 # Training helpers live in gnn/training.py so this runner, the K-fold runner and
 # the seed-variance runner share one implementation instead of three copies.
 from gnn.training import (
-    set_all_seeds, parse_task_weights, run_epoch, quick_f1,
+    set_all_seeds, parse_task_weights, run_epoch, TrainConfig, train_one_model,
 )
 
 RESULTS_DIR = os.path.join(BASE_DIR, 'results')
@@ -151,99 +149,17 @@ def main() -> int:
 
     graph_sets = {name: subset_by_corpus_index(graphs, splits[name]) for name in ('train', 'val', 'test')}
 
-    # Molecules with no label for any active task contribute exactly zero loss;
-    # dropping them from TRAIN only is a speed optimisation, never a change of
-    # evaluation. Val and test stay complete so metrics cover every labelled molecule.
-    def has_active_label(g) -> bool:
-        return any(float(getattr(g, f'm_{t}').item()) > 0 for t in active_tasks)
-
-    before = len(graph_sets['train'])
-    graph_sets['train'] = [g for g in graph_sets['train'] if has_active_label(g)]
-    dropped = before - len(graph_sets['train'])
-    if dropped:
-        print(f'[SPLIT]   dropped {dropped} train molecules with no label for the active tasks')
-
-    loaders = {
-        'train': make_loader(graph_sets['train'], args.batch_size, shuffle=True, device=device),
-        'val': make_loader(graph_sets['val'], args.batch_size, shuffle=False, device=device),
-        'test': make_loader(graph_sets['test'], args.batch_size, shuffle=False, device=device),
-    }
-
-    # ---------------- model ----------------
-    atom_dim = graph_stats['num_atom_features']
-    bond_dim = graph_stats['num_bond_features']
-    model = MultiTaskGNN(
-        num_atom_features=atom_dim,
-        num_bond_features=bond_dim,
-        tasks=tasks,
-        hidden_channels=args.hidden,
-        dropout=args.dropout,
-        num_layers=args.layers,
-        residual=args.residual,
-    ).to(device)
-
-    class_weights = build_class_weights(corpus, tasks, splits['train'], device)
-    criterion = MaskedMultiTaskLoss(tasks, class_weights, task_weights).to(device)
-
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='max', factor=0.5, patience=8, min_lr=1e-6
-    )
-    scaler = torch.amp.GradScaler(device.type) if (args.amp and device.type == 'cuda') else None
-
-    print(f'\n[MODEL] {model.count_parameters():,} trainable parameters '
-          f'({atom_dim} atom / {bond_dim} bond features, hidden {args.hidden}, {args.layers} layers)')
-    print(f'[MODEL] class weights: '
-          + ', '.join(f'{t}={class_weights[t].cpu().numpy().round(3).tolist()}' for t in class_weights))
-    print(f'[MODEL] mixed precision: {"on" if scaler else "off"}')
-
-    # ---------------- training ----------------
-    best_score = -np.inf
-    best_state: Optional[Dict[str, torch.Tensor]] = None
-    best_epoch = -1
-    stale = 0
-    history: List[Dict[str, Any]] = []
-
-    print(f'\n[TRAIN] up to {args.epochs} epochs, early stopping patience {args.patience}')
-    for epoch in range(1, args.epochs + 1):
-        tr = run_epoch(model, loaders['train'], criterion, device, tasks,
-                       optimizer=optimizer, scaler=scaler, clip_grad=args.clip_grad)
-        va = run_epoch(model, loaders['val'], criterion, device, tasks)
-
-        # Early stopping on the mean validation F1 across ACTIVE tasks. The
-        # reference implementation drives scheduling, checkpointing and stopping
-        # from a single scalar; with two tasks that scalar has to be explicit.
-        task_f1 = {t: quick_f1(va['per_task'][t]) for t in active_tasks if t in va['per_task']}
-        score = float(np.mean(list(task_f1.values()))) if task_f1 else 0.0
-
-        scheduler.step(score)
-        history.append({
-            'epoch': epoch,
-            'train_loss': round(tr['loss'], 5),
-            'val_loss': round(va['loss'], 5),
-            'val_score': round(score, 5),
-            **{f'val_f1_{t}': round(v, 5) for t, v in task_f1.items()},
-            'lr': optimizer.param_groups[0]['lr'],
-        })
-
-        if score > best_score:
-            best_score, best_epoch, stale = score, epoch, 0
-            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
-        else:
-            stale += 1
-
-        if not args.quiet and (epoch % 10 == 0 or epoch == 1):
-            detail = ' '.join(f'{t}_f1={v:.4f}' for t, v in task_f1.items())
-            print(f'  epoch {epoch:>3}  train_loss={tr["loss"]:.4f}  '
-                  f'val_loss={va["loss"]:.4f}  {detail}  score={score:.4f}')
-
-        if stale >= args.patience:
-            print(f'  early stop at epoch {epoch} (no improvement for {args.patience} epochs)')
-            break
-
-    if best_state is not None:
-        model.load_state_dict(best_state)
-    print(f'[TRAIN] best epoch {best_epoch}, val score {best_score:.4f}')
+    cfg = TrainConfig(tasks=tasks, task_weights=task_weights,
+        epochs=args.epochs, batch_size=args.batch_size, lr=args.lr,
+        weight_decay=args.weight_decay, hidden=args.hidden, dropout=args.dropout,
+        layers=args.layers, patience=args.patience, clip_grad=args.clip_grad,
+        seed=args.seed, residual=args.residual, amp=args.amp)
+    model, info = train_one_model(graph_sets['train'], graph_sets['val'], corpus,
+        splits['train'], cfg, device, graph_stats['num_atom_features'],
+        graph_stats['num_bond_features'], verbose=not args.quiet)
+    criterion = info['criterion']
+    best_epoch, best_score, history = info['best_epoch'], info['best_val_score'], info['history']
+    loaders = {'test': make_loader(graph_sets['test'], args.batch_size, device=device)}
 
     # ---------------- test ----------------
     te = run_epoch(model, loaders['test'], criterion, device, tasks)

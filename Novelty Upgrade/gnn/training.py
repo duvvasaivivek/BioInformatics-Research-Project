@@ -43,6 +43,8 @@ class TrainConfig:
     def resolved_weights(self) -> Dict[str, float]:
         w = {t: 1.0 for t in self.tasks}
         w.update({k: v for k, v in (self.task_weights or {}).items() if k in w})
+        if any(not np.isfinite(v) or v < 0 for v in w.values()):
+            raise ValueError('Task weights must be finite and nonnegative')
         return w
 
     def active_tasks(self) -> List[str]:
@@ -78,7 +80,10 @@ def parse_task_weights(spec: str, tasks: List[str]) -> Dict[str, float]:
         name = name.strip()
         if name not in tasks:
             raise ValueError(f'Task weight names {name!r}, not an active task {tasks}')
-        weights[name] = float(value)
+        weight = float(value)
+        if not np.isfinite(weight) or weight < 0:
+            raise ValueError('Task weights must be finite and nonnegative')
+        weights[name] = weight
     return weights
 
 
@@ -194,6 +199,8 @@ def train_one_model(
     validation F1 across active tasks. With two tasks that scalar has to be stated
     explicitly; the reference implementation leaves it implicit with one task.
     """
+    if cfg.epochs < 1 or cfg.patience < 1 or cfg.batch_size < 1:
+        raise ValueError('epochs, patience and batch_size must be positive')
     set_all_seeds(cfg.seed)
     tasks = list(cfg.tasks)
     weights = cfg.resolved_weights()

@@ -1,6 +1,6 @@
 {
   "run_id": "multitask_scaffold_encoded",
-  "timestamp": "2026-10-24T16:50:36",
+  "timestamp": "2026-11-03T23:24:04",
   "arguments": {
     "tasks": "bbb,pgp",
     "task_weights": "",
@@ -23,7 +23,7 @@
     "amp": false,
     "no_cache": false,
     "tag": "multitask",
-    "quiet": true
+    "quiet": false
   },
   "tasks": [
     "bbb",
@@ -201,6 +201,7 @@
     "num_classes": 2,
     "dropout": 0.3,
     "residual": false,
+    "readout_dim": 32,
     "trainable_parameters": 372898,
     "head_parameters": {
       "bbb": 8290,
@@ -208,127 +209,127 @@
     }
   },
   "best_epoch": 9,
-  "best_val_score": 0.84275,
+  "best_val_score": 0.82952,
   "epochs_run": 29,
   "test_metrics": {
     "bbb": {
       "n": 1036,
-      "Accuracy": 0.6505791505791506,
-      "Balanced_Accuracy": 0.6129936122438934,
-      "Precision": 0.631079478054567,
-      "Recall_Sensitivity": 0.9125214408233276,
-      "Specificity": 0.31346578366445915,
-      "F1_Score": 0.7461430575035063,
-      "MCC": 0.2879219830707973,
-      "Brier_Score": 0.2255858810926524,
-      "ROC_AUC": 0.7467351258429604,
-      "PR_AUC": 0.7651551242552499,
-      "TP": 532,
-      "FP": 311,
-      "TN": 142,
-      "FN": 51,
+      "Accuracy": 0.667953667953668,
+      "Balanced_Accuracy": 0.636060719654372,
+      "Precision": 0.6495619524405507,
+      "Recall_Sensitivity": 0.8902229845626072,
+      "Specificity": 0.3818984547461369,
+      "F1_Score": 0.7510853835021708,
+      "MCC": 0.3213649994751907,
+      "Brier_Score": 0.21217216453148424,
+      "ROC_AUC": 0.7551372780661798,
+      "PR_AUC": 0.7739352418822175,
+      "TP": 519,
+      "FP": 280,
+      "TN": 173,
+      "FN": 64,
       "Accuracy_CI95": [
-        0.6197,
-        0.6795
+        0.64,
+        0.6969
       ],
       "Balanced_Accuracy_CI95": [
-        0.5887,
-        0.638
+        0.6111,
+        0.6624
       ],
       "Precision_CI95": [
-        0.5986,
-        0.665
+        0.6163,
+        0.6839
       ],
       "Recall_Sensitivity_CI95": [
-        0.8896,
-        0.9335
+        0.8655,
+        0.9153
       ],
       "Specificity_CI95": [
-        0.2705,
-        0.3582
+        0.3389,
+        0.4279
       ],
       "F1_Score_CI95": [
-        0.7194,
-        0.7708
+        0.7255,
+        0.7762
       ],
       "ROC_AUC_CI95": [
-        0.718,
-        0.7753
+        0.7257,
+        0.784
       ],
       "PR_AUC_CI95": [
-        0.7285,
-        0.8045
+        0.7369,
+        0.8131
       ],
       "MCC_CI95": [
-        0.2307,
-        0.3459
+        0.2651,
+        0.378
       ],
       "Brier_Score_CI95": [
-        0.2091,
-        0.2418
+        0.1975,
+        0.2278
       ],
       "n_bootstraps": 1000
     },
     "pgp": {
       "n": 333,
-      "Accuracy": 0.7687687687687688,
-      "Balanced_Accuracy": 0.7659501445086705,
-      "Precision": 0.7474226804123711,
-      "Recall_Sensitivity": 0.838150289017341,
-      "Specificity": 0.69375,
-      "F1_Score": 0.7901907356948229,
-      "MCC": 0.5388960546980542,
-      "Brier_Score": 0.19082969020468762,
-      "ROC_AUC": 0.8170700867052023,
-      "PR_AUC": 0.7915171777241502,
-      "TP": 145,
-      "FP": 49,
-      "TN": 111,
-      "FN": 28,
+      "Accuracy": 0.7747747747747747,
+      "Balanced_Accuracy": 0.7700867052023121,
+      "Precision": 0.7333333333333333,
+      "Recall_Sensitivity": 0.8901734104046243,
+      "Specificity": 0.65,
+      "F1_Score": 0.804177545691906,
+      "MCC": 0.559183106424581,
+      "Brier_Score": 0.19078675284194815,
+      "ROC_AUC": 0.8364523121387282,
+      "PR_AUC": 0.8186987522383957,
+      "TP": 154,
+      "FP": 56,
+      "TN": 104,
+      "FN": 19,
       "Accuracy_CI95": [
-        0.7237,
-        0.8139
+        0.7297,
+        0.8198
       ],
       "Balanced_Accuracy_CI95": [
-        0.7223,
-        0.8124
+        0.7249,
+        0.8129
       ],
       "Precision_CI95": [
-        0.6855,
-        0.8044
+        0.6748,
+        0.7885
       ],
       "Recall_Sensitivity_CI95": [
-        0.7809,
-        0.8883
+        0.8405,
+        0.9353
       ],
       "Specificity_CI95": [
-        0.6226,
-        0.7657
+        0.5758,
+        0.7209
       ],
       "F1_Score_CI95": [
-        0.7451,
-        0.8333
+        0.7592,
+        0.8444
       ],
       "ROC_AUC_CI95": [
-        0.772,
-        0.8616
+        0.7934,
+        0.8775
       ],
       "PR_AUC_CI95": [
-        0.7217,
-        0.86
+        0.7489,
+        0.8786
       ],
       "MCC_CI95": [
-        0.4522,
-        0.6319
+        0.4698,
+        0.6441
       ],
       "Brier_Score_CI95": [
-        0.1556,
-        0.2243
+        0.1568,
+        0.225
       ],
       "n_bootstraps": 1000
     }
   },
-  "elapsed_seconds": 97.7,
+  "elapsed_seconds": 91.0,
   "cuda_memory": {
     "peak_allocated_gb": 0.063,
     "peak_reserved_gb": 0.096

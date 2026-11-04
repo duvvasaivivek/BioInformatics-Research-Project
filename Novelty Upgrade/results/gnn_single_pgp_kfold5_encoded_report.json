@@ -1,6 +1,6 @@
 {
   "run_id": "single_pgp_kfold5_encoded",
-  "timestamp": "2026-10-24T17:58:24",
+  "timestamp": "2026-11-04T00:16:28",
   "arguments": {
     "tasks": "pgp",
     "task_weights": "",
@@ -160,26 +160,26 @@
       "train_molecules": 825,
       "val_molecules": 1056,
       "test_molecules": 1761,
-      "best_epoch": 36,
-      "best_val_score": 0.87013,
-      "epochs_run": 56,
+      "best_epoch": 27,
+      "best_val_score": 0.87179,
+      "epochs_run": 47,
       "metrics": {
         "pgp": {
           "n": 242,
-          "Accuracy": 0.8223140495867769,
-          "Balanced_Accuracy": 0.820710708650614,
-          "Precision": 0.8257575757575758,
-          "Recall_Sensitivity": 0.8449612403100775,
-          "Specificity": 0.7964601769911505,
-          "F1_Score": 0.8352490421455939,
-          "MCC": 0.6426791724622012,
-          "Brier_Score": 0.15420495103444726,
-          "ROC_AUC": 0.8885916169307814,
-          "PR_AUC": 0.9059707658943026,
-          "TP": 109,
-          "FP": 23,
-          "TN": 90,
-          "FN": 20
+          "Accuracy": 0.8347107438016529,
+          "Balanced_Accuracy": 0.833436235164986,
+          "Precision": 0.8396946564885496,
+          "Recall_Sensitivity": 0.8527131782945736,
+          "Specificity": 0.8141592920353983,
+          "F1_Score": 0.8461538461538461,
+          "MCC": 0.6676974675159423,
+          "Brier_Score": 0.13648472592293054,
+          "ROC_AUC": 0.8977841805584139,
+          "PR_AUC": 0.907573201122368,
+          "TP": 110,
+          "FP": 21,
+          "TN": 92,
+          "FN": 19
         }
       }
     },
@@ -188,26 +188,26 @@
       "train_molecules": 825,
       "val_molecules": 1057,
       "test_molecules": 1760,
-      "best_epoch": 18,
-      "best_val_score": 0.91503,
-      "epochs_run": 38,
+      "best_epoch": 52,
+      "best_val_score": 0.91026,
+      "epochs_run": 72,
       "metrics": {
         "pgp": {
           "n": 242,
           "Accuracy": 0.8677685950413223,
-          "Balanced_Accuracy": 0.8711622807017544,
-          "Precision": 0.9285714285714286,
-          "Recall_Sensitivity": 0.8125,
-          "Specificity": 0.9298245614035088,
-          "F1_Score": 0.8666666666666667,
-          "MCC": 0.7431398549621463,
-          "Brier_Score": 0.09729156616180816,
-          "ROC_AUC": 0.9346902412280701,
-          "PR_AUC": 0.9523061308620053,
-          "TP": 104,
-          "FP": 8,
-          "TN": 106,
-          "FN": 24
+          "Balanced_Accuracy": 0.8668448464912281,
+          "Precision": 0.8692307692307693,
+          "Recall_Sensitivity": 0.8828125,
+          "Specificity": 0.8508771929824561,
+          "F1_Score": 0.875968992248062,
+          "MCC": 0.7344955028826383,
+          "Brier_Score": 0.11233985279512097,
+          "ROC_AUC": 0.9315378289473684,
+          "PR_AUC": 0.9497499976207151,
+          "TP": 113,
+          "FP": 17,
+          "TN": 97,
+          "FN": 15
         }
       }
     },
@@ -216,26 +216,26 @@
       "train_molecules": 824,
       "val_molecules": 1057,
       "test_molecules": 1760,
-      "best_epoch": 16,
-      "best_val_score": 0.85333,
-      "epochs_run": 36,
+      "best_epoch": 24,
+      "best_val_score": 0.8481,
+      "epochs_run": 44,
       "metrics": {
         "pgp": {
           "n": 243,
-          "Accuracy": 0.8765432098765432,
-          "Balanced_Accuracy": 0.8765146358066712,
-          "Precision": 0.890625,
-          "Recall_Sensitivity": 0.8769230769230769,
-          "Specificity": 0.8761061946902655,
-          "F1_Score": 0.8837209302325582,
-          "MCC": 0.7522615270416516,
-          "Brier_Score": 0.0978997850411007,
-          "ROC_AUC": 0.931790333560245,
-          "PR_AUC": 0.9478246722957475,
-          "TP": 114,
-          "FP": 14,
-          "TN": 99,
-          "FN": 16
+          "Accuracy": 0.8847736625514403,
+          "Balanced_Accuracy": 0.8818924438393465,
+          "Precision": 0.8695652173913043,
+          "Recall_Sensitivity": 0.9230769230769231,
+          "Specificity": 0.8407079646017699,
+          "F1_Score": 0.8955223880597015,
+          "MCC": 0.7690379405597323,
+          "Brier_Score": 0.09607863742923274,
+          "ROC_AUC": 0.9368277739959157,
+          "PR_AUC": 0.9511711941923148,
+          "TP": 120,
+          "FP": 18,
+          "TN": 95,
+          "FN": 10
         }
       }
     },
@@ -244,26 +244,26 @@
       "train_molecules": 824,
       "val_molecules": 1057,
       "test_molecules": 1760,
-      "best_epoch": 9,
-      "best_val_score": 0.875,
-      "epochs_run": 29,
+      "best_epoch": 34,
+      "best_val_score": 0.8875,
+      "epochs_run": 54,
       "metrics": {
         "pgp": {
           "n": 243,
-          "Accuracy": 0.8148148148148148,
-          "Balanced_Accuracy": 0.8089857045609259,
-          "Precision": 0.7891156462585034,
-          "Recall_Sensitivity": 0.8923076923076924,
-          "Specificity": 0.7256637168141593,
-          "F1_Score": 0.8375451263537906,
-          "MCC": 0.6304998631098434,
-          "Brier_Score": 0.12976689494115037,
-          "ROC_AUC": 0.9020422055820285,
-          "PR_AUC": 0.9180960059819199,
-          "TP": 116,
-          "FP": 31,
-          "TN": 82,
-          "FN": 14
+          "Accuracy": 0.8353909465020576,
+          "Balanced_Accuracy": 0.8328454731109598,
+          "Precision": 0.8308823529411765,
+          "Recall_Sensitivity": 0.8692307692307693,
+          "Specificity": 0.7964601769911505,
+          "F1_Score": 0.849624060150376,
+          "MCC": 0.6688399491795344,
+          "Brier_Score": 0.1323115945533854,
+          "ROC_AUC": 0.8938053097345132,
+          "PR_AUC": 0.8888279740267117,
+          "TP": 113,
+          "FP": 23,
+          "TN": 90,
+          "FN": 17
         }
       }
     },
@@ -272,26 +272,26 @@
       "train_molecules": 825,
       "val_molecules": 1057,
       "test_molecules": 1760,
-      "best_epoch": 40,
-      "best_val_score": 0.89308,
-      "epochs_run": 60,
+      "best_epoch": 55,
+      "best_val_score": 0.89157,
+      "epochs_run": 75,
       "metrics": {
         "pgp": {
           "n": 242,
-          "Accuracy": 0.8677685950413223,
-          "Balanced_Accuracy": 0.8682692307692308,
-          "Precision": 0.8888888888888888,
-          "Recall_Sensitivity": 0.8615384615384616,
-          "Specificity": 0.875,
-          "F1_Score": 0.875,
-          "MCC": 0.7351261141957023,
-          "Brier_Score": 0.12198965607137002,
-          "ROC_AUC": 0.9006181318681319,
-          "PR_AUC": 0.9173540773794453,
-          "TP": 112,
-          "FP": 14,
-          "TN": 98,
-          "FN": 18
+          "Accuracy": 0.8305785123966942,
+          "Balanced_Accuracy": 0.8256181318681319,
+          "Precision": 0.8111888111888111,
+          "Recall_Sensitivity": 0.8923076923076924,
+          "Specificity": 0.7589285714285714,
+          "F1_Score": 0.8498168498168498,
+          "MCC": 0.6604404238757996,
+          "Brier_Score": 0.13877912871578943,
+          "ROC_AUC": 0.8888049450549451,
+          "PR_AUC": 0.8691054155548246,
+          "TP": 116,
+          "FP": 27,
+          "TN": 85,
+          "FN": 14
         }
       }
     }
@@ -299,89 +299,89 @@
   "fold_summary": {
     "pgp": {
       "n_folds": 5,
-      "Accuracy_mean": 0.8498,
-      "Accuracy_std": 0.0258,
-      "Balanced_Accuracy_mean": 0.8491,
-      "Balanced_Accuracy_std": 0.0284,
-      "Precision_mean": 0.8646,
-      "Precision_std": 0.0501,
-      "Recall_Sensitivity_mean": 0.8576,
-      "Recall_Sensitivity_std": 0.0275,
-      "Specificity_mean": 0.8406,
-      "Specificity_std": 0.0715,
-      "F1_Score_mean": 0.8596,
-      "F1_Score_std": 0.0197,
-      "ROC_AUC_mean": 0.9115,
-      "ROC_AUC_std": 0.0183,
-      "PR_AUC_mean": 0.9283,
-      "PR_AUC_std": 0.0183,
-      "MCC_mean": 0.7007,
-      "MCC_std": 0.0528,
-      "Brier_Score_mean": 0.1202,
-      "Brier_Score_std": 0.0213
+      "Accuracy_mean": 0.8506,
+      "Accuracy_std": 0.0217,
+      "Balanced_Accuracy_mean": 0.8481,
+      "Balanced_Accuracy_std": 0.0221,
+      "Precision_mean": 0.8441,
+      "Precision_std": 0.0226,
+      "Recall_Sensitivity_mean": 0.884,
+      "Recall_Sensitivity_std": 0.0236,
+      "Specificity_mean": 0.8122,
+      "Specificity_std": 0.0329,
+      "F1_Score_mean": 0.8634,
+      "F1_Score_std": 0.0193,
+      "ROC_AUC_mean": 0.9098,
+      "ROC_AUC_std": 0.0202,
+      "PR_AUC_mean": 0.9133,
+      "PR_AUC_std": 0.0327,
+      "MCC_mean": 0.7001,
+      "MCC_std": 0.0437,
+      "Brier_Score_mean": 0.1232,
+      "Brier_Score_std": 0.0165
     }
   },
   "pooled_oof_metrics": {
     "pgp": {
       "n": 1212,
-      "Accuracy": 0.8498349834983498,
-      "Balanced_Accuracy": 0.849256609812477,
-      "Precision": 0.8604651162790697,
-      "Recall_Sensitivity": 0.8578052550231839,
-      "Specificity": 0.8407079646017699,
-      "F1_Score": 0.8591331269349846,
-      "MCC": 0.6983604034405313,
-      "Brier_Score": 0.12022001416373956,
-      "ROC_AUC": 0.9011338923007484,
-      "PR_AUC": 0.9075831861908692,
-      "TP": 555,
-      "FP": 90,
-      "TN": 475,
-      "FN": 92,
+      "Accuracy": 0.8506600660066007,
+      "Balanced_Accuracy": 0.8482348757368932,
+      "Precision": 0.8436578171091446,
+      "Recall_Sensitivity": 0.884080370942813,
+      "Specificity": 0.8123893805309734,
+      "F1_Score": 0.8633962264150944,
+      "MCC": 0.6998309545108526,
+      "Brier_Score": 0.1231839303389156,
+      "ROC_AUC": 0.9077649054177893,
+      "PR_AUC": 0.9065272965333783,
+      "TP": 572,
+      "FP": 106,
+      "TN": 459,
+      "FN": 75,
       "Accuracy_CI95": [
         0.83,
         0.8696
       ],
       "Balanced_Accuracy_CI95": [
-        0.8294,
-        0.8691
+        0.8274,
+        0.8677
       ],
       "Precision_CI95": [
-        0.8353,
-        0.8866
+        0.8167,
+        0.871
       ],
       "Recall_Sensitivity_CI95": [
-        0.8318,
-        0.8858
+        0.8582,
+        0.9084
       ],
       "Specificity_CI95": [
-        0.8117,
-        0.8696
+        0.7816,
+        0.8459
       ],
       "F1_Score_CI95": [
-        0.8391,
-        0.8783
+        0.8437,
+        0.8827
       ],
       "ROC_AUC_CI95": [
-        0.8838,
-        0.919
+        0.8907,
+        0.925
       ],
       "PR_AUC_CI95": [
-        0.884,
-        0.9295
+        0.8807,
+        0.931
       ],
       "MCC_CI95": [
-        0.6582,
-        0.7383
+        0.6592,
+        0.7388
       ],
       "Brier_Score_CI95": [
-        0.1061,
-        0.1337
+        0.1078,
+        0.1391
       ],
       "n_bootstraps": 1000
     }
   },
-  "elapsed_seconds": 141.9,
+  "elapsed_seconds": 122.5,
   "cuda_memory": {
     "peak_allocated_gb": 0.062,
     "peak_reserved_gb": 0.094

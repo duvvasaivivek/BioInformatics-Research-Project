@@ -15,7 +15,6 @@ from rdkit import RDLogger
 
 # Suppress RDKit C++ warnings
 RDLogger.DisableLog('rdApp.*')
-warnings.filterwarnings('ignore')
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SCRIPT_DIR)
@@ -31,7 +30,6 @@ from core.features import (
 
 DATA_PATH = os.path.join(BASE_DIR, "data", "pgp_broccatelli.tab")
 OUTPUT_PATH = os.path.join(BASE_DIR, "data", "processed_pgp_data.csv")
-MODELS_DIR = os.path.join(BASE_DIR, "models")
 
 
 def process_pgp_data():

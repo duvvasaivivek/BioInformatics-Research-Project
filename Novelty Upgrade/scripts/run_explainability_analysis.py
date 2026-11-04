@@ -31,7 +31,7 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 
 # Add explainability package
 sys.path.insert(0, BASE_DIR)
-from explainability import DualBarrierShapExplainer
+from explainability.shap_explainer import native_tree_contributions
 from core.features import load_processed_dataset
 
 
@@ -76,9 +76,6 @@ def run_global_analysis():
     pgp_model = xgb.XGBClassifier()
     pgp_model.load_model(os.path.join(MODELS_DIR, "pgp_xgboost.json"))
 
-    # Initialize Explainer
-    explainer = DualBarrierShapExplainer(bbb_model, pgp_model)
-
     # 3. Compute Sampled TreeSHAP on Held-Out Test Sets
     sample_size_bbb = min(500, len(X_bbb_test))
     sample_size_pgp = min(250, len(X_pgp_test))
@@ -87,8 +84,8 @@ def run_global_analysis():
     X_bbb_sample = X_bbb_test.sample(n=sample_size_bbb, random_state=42)
     X_pgp_sample = X_pgp_test.sample(n=sample_size_pgp, random_state=42)
 
-    shap_bbb = explainer._bbb_explainer(X_bbb_sample).values
-    shap_pgp = explainer._pgp_explainer(X_pgp_sample).values
+    shap_bbb = native_tree_contributions(bbb_model, X_bbb_sample)[:, :-1]
+    shap_pgp = native_tree_contributions(pgp_model, X_pgp_sample)[:, :-1]
 
     # Mean absolute SHAP across test sample
     mean_abs_bbb = pd.Series(np.mean(np.abs(shap_bbb), axis=0), index=X_bbb.columns)

@@ -272,7 +272,7 @@ if __name__ == "__main__":
     print("   RUNNING AUTOMATED TEST SUITE: DUAL-BARRIER CNS PREDICTOR & XAI   ")
     print("=" * 75)
 
-    ctx = models_and_scalers()
+    ctx = getattr(models_and_scalers, '__wrapped__', models_and_scalers)()
     test_functions = [
         ("Quadrant 1: Optimal CNS (Levetiracetam)", lambda: test_quadrant_1_optimal_cns(ctx)),
         ("Quadrant 2: Paradoxical Drug (Loperamide)", lambda: test_quadrant_2_paradoxical_drug(ctx)),

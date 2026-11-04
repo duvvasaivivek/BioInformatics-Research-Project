@@ -8,7 +8,7 @@ that flip BBB or P-gp classification while preserving chemical sanity.
 import numpy as np
 from typing import Dict, Any, List, Optional
 from rdkit import Chem
-from rdkit.Chem import AllChem, rdChemReactions, DataStructs, rdFingerprintGenerator
+from rdkit.Chem import rdChemReactions, DataStructs, rdFingerprintGenerator
 
 _MORGAN_GEN = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 
@@ -65,6 +65,12 @@ class MolecularCounterfactualEngine:
         if mol is None:
             return []
 
+        if target_endpoint not in ('BBB', 'Pgp', 'both'):
+            raise ValueError('Unknown target endpoint')
+        from core.features import extract_features_pgp
+        _, parent_descriptors, _ = extract_features_pgp(smiles)
+        if parent_descriptors is None or max_counterfactuals < 1:
+            return []
         orig_fp = _MORGAN_GEN.GetFingerprint(mol)
         counterfactuals = []
         seen_smiles = {Chem.MolToSmiles(mol)}
@@ -120,6 +126,8 @@ class MolecularCounterfactualEngine:
                         if objective_note else "Successfully evaded P-gp efflux (P-gp+ -> P-gp-)."
                     )
 
+                if target_endpoint == 'both':
+                    flipped = flipped and cand_bbb >= current_bbb_pred and cand_pgp <= current_pgp_pred
                 if flipped:
                     counterfactuals.append({
                         "analog_smiles": cand_smiles,
@@ -130,7 +138,7 @@ class MolecularCounterfactualEngine:
                         "bbb_prob": eval_res["bbb_prob"],
                         "pgp_pred": cand_pgp,
                         "pgp_prob": eval_res["pgp_prob"],
-                        "delta_descriptors": eval_res["delta_descriptors"],
+                        "delta_descriptors": {k: v - parent_descriptors[k] for k, v in eval_res["descriptors"].items()},
                     })
 
                 if len(counterfactuals) >= max_counterfactuals * 2:
@@ -142,75 +150,14 @@ class MolecularCounterfactualEngine:
 
     def _evaluate_candidate(self, mol: Chem.Mol, smiles: str) -> Optional[Dict[str, Any]]:
         """Extracts features and predicts candidate analog outcomes."""
-        import pandas as pd
-        from rdkit.Chem import Descriptors, Descriptors3D
-
-        # 1. BBB features
-        fp = _MORGAN_GEN.GetFingerprint(mol)
-        arr = np.zeros((0,), dtype=np.int8)
-        DataStructs.ConvertToNumpyArray(fp, arr)
-        fp_array = arr.tolist()
-
-        mw = Descriptors.MolWt(mol)
-        logp = Descriptors.MolLogP(mol)
-        tpsa = Descriptors.TPSA(mol)
-        hbd = Descriptors.NumHDonors(mol)
-        hba = Descriptors.NumHAcceptors(mol)
-        rotb = Descriptors.NumRotatableBonds(mol)
-
-        bbb_desc = [mw, logp, tpsa, hbd, hba, rotb]
-        bbb_scaled = [(bbb_desc[i] - self.bbb_means[i]) / (self.bbb_stds[i] if self.bbb_stds[i] != 0 else 1.0) for i in range(6)]
-        
-        bbb_feat_dict = {f'FP_{i}': fp_array[i] for i in range(2048)}
-        for i, name in enumerate(['MolWt', 'LogP', 'TPSA', 'HDonors', 'HAcceptors', 'RotBonds']):
-            bbb_feat_dict[name] = bbb_scaled[i]
-        bbb_df = pd.DataFrame([bbb_feat_dict])
-        bbb_prob = float(self.bbb_model.predict_proba(bbb_df)[0][1])
-        bbb_pred = int(bbb_prob > 0.5)
-
-        # 2. P-gp 3D features
-        mol_h = Chem.AddHs(mol)
-        params = AllChem.ETKDGv3()
-        params.randomSeed = 42
-        res = AllChem.EmbedMolecule(mol_h, params)
-        if res != 0:
-            res = AllChem.EmbedMolecule(mol_h, randomSeed=42, maxAttempts=50)
-        if res != 0:
+        from core.features import extract_features_bbb, extract_features_pgp, prepare_dataframe
+        bbb, _, _ = extract_features_bbb(smiles)
+        pgp, descriptors, _ = extract_features_pgp(smiles)
+        if bbb is None or pgp is None:
             return None
-
-        rg = Descriptors3D.RadiusOfGyration(mol_h)
-        asph = Descriptors3D.Asphericity(mol_h)
-        ecc = Descriptors3D.Eccentricity(mol_h)
-        sph = Descriptors3D.SpherocityIndex(mol_h)
-        npr1 = Descriptors3D.NPR1(mol_h)
-        npr2 = Descriptors3D.NPR2(mol_h)
-
-        pgp_desc = [mw, logp, tpsa, hbd, hba, rotb, rg, asph, ecc, sph, npr1, npr2]
-        pgp_scaled = [(pgp_desc[i] - self.pgp_means[i]) / (self.pgp_stds[i] if self.pgp_stds[i] != 0 else 1.0) for i in range(12)]
-        
-        pgp_feat_dict = {f'FP_{i}': fp_array[i] for i in range(2048)}
-        desc_names_12 = [
-            'MolWt', 'LogP', 'TPSA', 'HDonors', 'HAcceptors', 'RotBonds',
-            'RadiusOfGyration', 'Asphericity', 'Eccentricity', 'SpherocityIndex', 'NPR1', 'NPR2'
-        ]
-        for i, name in enumerate(desc_names_12):
-            pgp_feat_dict[name] = pgp_scaled[i]
-        pgp_df = pd.DataFrame([pgp_feat_dict])
+        bbb_df = prepare_dataframe(*bbb, self.bbb_means, self.bbb_stds)
+        pgp_df = prepare_dataframe(*pgp, self.pgp_means, self.pgp_stds, is_pgp=True)
+        bbb_prob = float(self.bbb_model.predict_proba(bbb_df)[0][1])
         pgp_prob = float(self.pgp_model.predict_proba(pgp_df)[0][1])
-        pgp_pred = int(pgp_prob > 0.5)
-
-        return {
-            "bbb_pred": bbb_pred,
-            "bbb_prob": round(bbb_prob, 4),
-            "pgp_pred": pgp_pred,
-            "pgp_prob": round(pgp_prob, 4),
-            "delta_descriptors": {
-                "MolWt": round(mw, 2),
-                "LogP": round(logp, 2),
-                "TPSA": round(tpsa, 2),
-                "HDonors": hbd,
-                "HAcceptors": hba,
-                "RotBonds": rotb,
-                "RadiusOfGyration": round(rg, 2),
-            }
-        }
+        return {'bbb_pred': int(bbb_prob > .5), 'pgp_pred': int(pgp_prob > .5),
+                'bbb_prob': bbb_prob, 'pgp_prob': pgp_prob, 'descriptors': descriptors}

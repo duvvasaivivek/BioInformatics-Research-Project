@@ -32,40 +32,22 @@ class ApplicabilityDomainEstimator:
 
     def _load_reference_fingerprints(self, max_samples: Optional[int] = None):
         """Loads reference training fingerprints for fast Tanimoto screening across full dataset."""
-        # 1. BBB reference
-        bbb_path = os.path.join(self.data_dir, "B3DB_classification.tsv")
-        if os.path.exists(bbb_path):
+        from core.artifacts import training_smiles
+        self.reference_errors = {}
+        for task, destination in [('bbb', self.bbb_fps), ('pgp', self.pgp_fps)]:
             try:
-                df_bbb = pd.read_csv(bbb_path, sep='\t')
-                smiles_list = df_bbb['SMILES'].dropna().tolist()
-                if max_samples and max_samples < len(smiles_list):
-                    step = max(1, len(smiles_list) // max_samples)
-                    smiles_list = smiles_list[::step]
-                for s in smiles_list:
-                    m = Chem.MolFromSmiles(s)
-                    if m is not None:
-                        fp = _MORGAN_GEN.GetFingerprint(m)
-                        self.bbb_fps.append(fp)
-            except Exception as e:
-                print(f"[WARN] Failed to load BBB reference for applicability domain: {e}")
-
-        # 2. P-gp reference
-        pgp_path = os.path.join(self.data_dir, "pgp_broccatelli.tab")
-        if os.path.exists(pgp_path):
-            try:
-                df_pgp = pd.read_csv(pgp_path, sep='\t')
-                smiles_col = 'Drug' if 'Drug' in df_pgp.columns else df_pgp.columns[1]
-                smiles_list = df_pgp[smiles_col].dropna().tolist()
-                if max_samples and max_samples < len(smiles_list):
-                    step = max(1, len(smiles_list) // max_samples)
-                    smiles_list = smiles_list[::step]
-                for s in smiles_list:
-                    m = Chem.MolFromSmiles(s)
-                    if m is not None:
-                        fp = _MORGAN_GEN.GetFingerprint(m)
-                        self.pgp_fps.append(fp)
-            except Exception as e:
-                print(f"[WARN] Failed to load P-gp reference for applicability domain: {e}")
+                smiles = training_smiles(self.data_dir, task)
+                if max_samples is not None:
+                    if max_samples < 1:
+                        raise ValueError('max_samples must be positive')
+                    ids = np.linspace(0, len(smiles)-1, min(max_samples, len(smiles)), dtype=int)
+                    smiles = [smiles[i] for i in ids]
+                for value in smiles:
+                    mol = Chem.MolFromSmiles(value)
+                    if mol is not None:
+                        destination.append(_MORGAN_GEN.GetFingerprint(mol))
+            except (OSError, ValueError, KeyError) as exc:
+                self.reference_errors[task] = str(exc)
 
     def evaluate_compound(
         self,
@@ -120,6 +102,10 @@ class ApplicabilityDomainEstimator:
                 "High chemical novelty relative to training benchmarks. "
                 "The model's empirical confidence may not reflect true biological activity."
             )
+
+        if not ref_fps:
+            domain_status = 'Domain unavailable'
+            domain_warning = self.reference_errors.get('pgp' if is_pgp else 'bbb', 'No training references')
 
         # 4. Uncertainty Quantification
         # Margin confidence: distance from decision threshold [0, 1]

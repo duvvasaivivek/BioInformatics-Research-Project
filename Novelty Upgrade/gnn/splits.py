@@ -137,6 +137,8 @@ def make_splits(
     seed: int = 42,
 ) -> Dict[str, np.ndarray]:
     """Partitions the corpus by molecule. Returns index arrays for train/val/test."""
+    if not (0 < test_size < 1 and 0 < val_size < 1 and test_size + val_size < 1):
+        raise ValueError('Test and validation fractions must be positive and sum to less than one')
     if mode not in SPLIT_MODES:
         raise ValueError(f'Unknown split mode {mode!r}; expected one of {SPLIT_MODES}')
     if mode == 'random':
@@ -162,6 +164,9 @@ def assert_split_integrity(
          ROC-AUC is undefined there.
     """
     names = ['train', 'val', 'test']
+    assigned = np.concatenate([np.asarray(splits[n]) for n in names])
+    if not np.array_equal(np.sort(assigned), np.arange(len(corpus))):
+        raise ValueError('Splits must contain each corpus row exactly once')
     keys = {name: set(corpus.iloc[splits[name]]['inchikey']) for name in names}
 
     for i, a in enumerate(names):

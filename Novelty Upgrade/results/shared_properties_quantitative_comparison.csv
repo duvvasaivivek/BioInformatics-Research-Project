@@ -1,7 +1,7 @@
 Property,BBB_Mean_Abs_SHAP,Pgp_Mean_Abs_SHAP,BBB_Signed_SHAP,Pgp_Signed_SHAP,Task_Category,Scientific_Interpretation
-MolWt,0.5366,0.5783,-0.0545,0.0487,Compound Barrier,Impedes passive diffusion (BBB-) while expanding contacts within the P-gp translocation pocket (P-gp+).
-LogP,0.3992,1.3949,0.0959,0.1163,Antagonistic,Promotes passive lipid partitioning (BBB+) but simultaneously increases affinity for the P-gp cavity (P-gp+).
-TPSA,1.1825,0.1434,0.1464,0.0256,Desolvation Filter,Polar penalty reduces transcellular influx (BBB-) while moderately deterring hydrophobic P-gp cleft binding.
-HDonors,0.2711,0.0911,-0.0017,0.0159,Efflux Trigger (Seelig),Hydrogen-bonding pairs act as primary recognition motifs for ABCB1 transmembrane helices.
-HAcceptors,0.1198,0.0708,0.0319,0.0124,Efflux Trigger (Seelig),Hydrogen-bonding pairs act as primary recognition motifs for ABCB1 transmembrane helices.
-RotBonds,0.1113,0.0387,-0.0027,0.0023,Conformational Flexibility,Rotatable bonds allow induced-fit cavity binding inside the multidrug transporter chamber.
+MolWt,0.3991,0.6488,-0.024,0.0319,Compound Barrier,Impedes passive diffusion (BBB-) while expanding contacts within the P-gp translocation pocket (P-gp+).
+LogP,0.2855,1.3574,0.0388,0.0814,Antagonistic,Promotes passive lipid partitioning (BBB+) but simultaneously increases affinity for the P-gp cavity (P-gp+).
+TPSA,1.2652,0.1431,0.1701,0.0364,Desolvation Filter,Polar penalty reduces transcellular influx (BBB-) while moderately deterring hydrophobic P-gp cleft binding.
+HDonors,0.1694,0.0519,0.0219,0.0156,Efflux Trigger (Seelig),Hydrogen-bonding pairs act as primary recognition motifs for ABCB1 transmembrane helices.
+HAcceptors,0.0757,0.0656,-0.0092,0.006,Efflux Trigger (Seelig),Hydrogen-bonding pairs act as primary recognition motifs for ABCB1 transmembrane helices.
+RotBonds,0.1002,0.0561,0.0066,0.0066,Conformational Flexibility,Rotatable bonds allow induced-fit cavity binding inside the multidrug transporter chamber.

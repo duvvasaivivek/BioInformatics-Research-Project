@@ -30,7 +30,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-from core.features import BBB_DESCRIPTOR_NAMES, PGP_DESCRIPTOR_NAMES
+from core.features import BBB_DESCRIPTOR_NAMES, PGP_DESCRIPTOR_NAMES, load_scaler_metadata
+from core.artifacts import read_metadata, clean_structures
 
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -48,7 +49,7 @@ def calculate_metrics_with_ci(y_true, y_pred, y_prob, n_bootstraps=1000, seed=42
     y_pred = np.array(y_pred)
     y_prob = np.array(y_prob)
 
-    cm = confusion_matrix(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
     tn, fp, fn, tp = cm.ravel()
     specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
 
@@ -128,17 +129,17 @@ def generate_bemis_murcko_split(df: pd.DataFrame, smiles_col: str = 'SMILES', te
         scaffold_map.setdefault(scaff, []).append(idx)
 
     # Sort scaffold clusters by size
-    clusters = sorted(scaffold_map.values(), key=len, reverse=True)
-    target_test_size = int(len(df) * test_size)
+    clusters = [v for _, v in sorted(scaffold_map.items(), key=lambda item: (-len(item[1]), item[0]))]
+    target_train_size = int(len(df) * (1 - test_size))
 
     train_indices = []
     test_indices = []
 
     for cluster in clusters:
-        if len(test_indices) + len(cluster) <= target_test_size:
-            test_indices.extend(cluster)
-        else:
+        if len(train_indices) + len(cluster) <= target_train_size:
             train_indices.extend(cluster)
+        else:
+            test_indices.extend(cluster)
 
     return train_indices, test_indices
 
@@ -147,6 +148,9 @@ def evaluate_bbb_model():
     print("\n--- Validating BBB Model (B3DB Benchmark, 7,807 molecules) ---")
     data_path = os.path.join(DATA_DIR, "processed_b3db_data_advanced.csv")
     df = pd.read_csv(data_path)
+    task = 'bbb' if 'b3db' in data_path else 'pgp'
+    if read_metadata(os.path.join(MODELS_DIR, f'{task}_scaler_metadata.json')).get('structure_cleaned'):
+        df = clean_structures(df)
     X = df.drop(columns=['SMILES', 'Label'])
     y = df['Label']
 
@@ -157,9 +161,7 @@ def evaluate_bbb_model():
 
     # Scale continuous features using trained scaler metadata
     scaler_path = os.path.join(MODELS_DIR, "bbb_scaler_metadata.json")
-    with open(scaler_path, 'r', encoding='utf-8') as f:
-        meta = json.load(f)
-    means, stds = meta['means'], meta['stds']
+    means, stds = load_scaler_metadata(scaler_path)
 
     X_test_scaled = X_test.copy()
     for i, name in enumerate(BBB_DESCRIPTOR_NAMES):
@@ -211,7 +213,7 @@ def evaluate_bbb_model():
     scaff_probs = scaff_model.predict_proba(X_te_scaff)[:, 1]
 
     scaff_results = calculate_metrics_with_ci(y_te_scaff, scaff_preds, scaff_probs)
-    print("BBB Bemis-Murcko Scaffold Generalization Results (95% Bootstrap CI):")
+    print("BBB fixed-configuration scaffold benchmark (not a controlled split contrast) (95% Bootstrap CI):")
     for k, v in scaff_results.items():
         if isinstance(v, dict) and "display" in v:
             print(f" * {k:<20}: {v['display']}")
@@ -223,6 +225,9 @@ def evaluate_pgp_model():
     print("\n--- Validating P-gp Efflux Model (Broccatelli TDC, 1,218 molecules) ---")
     data_path = os.path.join(DATA_DIR, "processed_pgp_data.csv")
     df = pd.read_csv(data_path)
+    task = 'bbb' if 'b3db' in data_path else 'pgp'
+    if read_metadata(os.path.join(MODELS_DIR, f'{task}_scaler_metadata.json')).get('structure_cleaned'):
+        df = clean_structures(df)
     X = df.drop(columns=['SMILES', 'Label'])
     y = df['Label']
 
@@ -232,9 +237,7 @@ def evaluate_pgp_model():
 
     # Scale continuous features using trained scaler metadata
     scaler_path = os.path.join(MODELS_DIR, "pgp_scaler_metadata.json")
-    with open(scaler_path, 'r', encoding='utf-8') as f:
-        meta = json.load(f)
-    means, stds = meta['means'], meta['stds']
+    means, stds = load_scaler_metadata(scaler_path)
 
     X_test_scaled = X_test.copy()
     for i, name in enumerate(PGP_DESCRIPTOR_NAMES):
@@ -285,7 +288,7 @@ def evaluate_pgp_model():
     scaff_probs = scaff_model.predict_proba(X_te_scaff)[:, 1]
 
     scaff_results = calculate_metrics_with_ci(y_te_scaff, scaff_preds, scaff_probs)
-    print("P-gp Bemis-Murcko Scaffold Generalization Results (95% Bootstrap CI):")
+    print("P-gp fixed-configuration scaffold benchmark (not a controlled split contrast) (95% Bootstrap CI):")
     for k, v in scaff_results.items():
         if isinstance(v, dict) and "display" in v:
             print(f" * {k:<20}: {v['display']}")

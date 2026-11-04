@@ -2,8 +2,8 @@
   "A_bbb_only": {
     "quadrant": {
       "n": 216,
-      "quadrant_exact_match": 0.555556,
-      "quadrant_kappa": 0.274153,
+      "quadrant_exact_match": 0.518519,
+      "quadrant_kappa": 0.215752,
       "paradox_recall": 0.0,
       "paradox_precision": 0.0,
       "paradox_f1": 0.0,
@@ -12,9 +12,9 @@
       "paradox_true_n": 45.0,
       "quadrant_confusion": {
         "true_Q1": {
-          "pred_Q1": 84,
+          "pred_Q1": 79,
           "pred_Q2": 0,
-          "pred_Q3": 11,
+          "pred_Q3": 16,
           "pred_Q4": 0
         },
         "true_Q2": {
@@ -24,9 +24,9 @@
           "pred_Q4": 0
         },
         "true_Q3": {
-          "pred_Q1": 21,
+          "pred_Q1": 24,
           "pred_Q2": 0,
-          "pred_Q3": 36,
+          "pred_Q3": 33,
           "pred_Q4": 0
         },
         "true_Q4": {
@@ -49,12 +49,12 @@
         "Q4": "Q4 Restricted (BBB-/P-gp+)"
       },
       "quadrant_exact_match_CI95": [
-        0.476852,
-        0.62037
+        0.444444,
+        0.583333
       ],
       "quadrant_kappa_CI95": [
-        0.187881,
-        0.351614
+        0.128132,
+        0.297931
       ],
       "paradox_recall_CI95": [
         0.0,
@@ -69,65 +69,65 @@
         0.0
       ],
       "paradox_leakage_rate_CI95": [
-        0.864834,
+        0.857056,
         1.0
       ],
       "n_bootstraps": 1000
     },
     "regret": {
       "n": 216,
-      "n_false_progress": 68,
-      "n_missed_opportunity": 11,
+      "n_false_progress": 71,
+      "n_missed_opportunity": 16,
       "false_progress_by_true_quadrant": {
         "Q1": 0,
         "Q2": 42,
-        "Q3": 21,
+        "Q3": 24,
         "Q4": 5
       },
       "paradoxical_false_progress": 42,
       "regret_curve": [
         {
           "lambda": 0.25,
-          "regret": 0.12963
+          "regret": 0.15625
         },
         {
           "lambda": 0.5,
-          "regret": 0.20833
+          "regret": 0.23843
         },
         {
           "lambda": 1.0,
-          "regret": 0.36574
+          "regret": 0.40278
         },
         {
           "lambda": 2.0,
-          "regret": 0.68056
+          "regret": 0.73148
         },
         {
           "lambda": 4.0,
-          "regret": 1.31019
+          "regret": 1.38889
         },
         {
           "lambda": 8.0,
-          "regret": 2.56944
+          "regret": 2.7037
         },
         {
           "lambda": 16.0,
-          "regret": 5.08796
+          "regret": 5.33333
         }
       ],
-      "regret_at_lambda_1": 0.36574,
-      "q1_vs_rest_error_rate": 0.36574
+      "regret_at_lambda_1": 0.40278,
+      "q1_vs_rest_error_rate": 0.40278
     },
     "efflux_disparity": {
       "n_total": 216,
       "n_non_substrate": 152,
       "n_substrate": 64,
-      "auc_non_substrate": 0.798984,
-      "auc_substrate": 0.936842,
-      "efflux_disparity_gap": -0.137858,
+      "auc_non_substrate": 0.770914,
+      "auc_substrate": 0.935673,
+      "efflux_disparity_gap": -0.164758,
       "efflux_disparity_gap_CI95": [
-        -0.240604,
-        -0.040966
+        -0.269832,
+        -0.066812
       ],
       "gap_excludes_zero": true,
       "n_bootstraps": 1000
@@ -137,36 +137,36 @@
   "B_composed_two_model": {
     "quadrant": {
       "n": 216,
-      "quadrant_exact_match": 0.578704,
-      "quadrant_kappa": 0.372494,
-      "paradox_recall": 0.444444,
-      "paradox_precision": 0.434783,
-      "paradox_f1": 0.43956,
-      "paradox_leakage_rate": 0.488889,
-      "paradox_leaked_n": 22.0,
+      "quadrant_exact_match": 0.574074,
+      "quadrant_kappa": 0.365071,
+      "paradox_recall": 0.511111,
+      "paradox_precision": 0.489362,
+      "paradox_f1": 0.5,
+      "paradox_leakage_rate": 0.422222,
+      "paradox_leaked_n": 19.0,
       "paradox_true_n": 45.0,
       "quadrant_confusion": {
         "true_Q1": {
-          "pred_Q1": 66,
-          "pred_Q2": 18,
-          "pred_Q3": 8,
-          "pred_Q4": 3
+          "pred_Q1": 64,
+          "pred_Q2": 15,
+          "pred_Q3": 16,
+          "pred_Q4": 0
         },
         "true_Q2": {
-          "pred_Q1": 22,
-          "pred_Q2": 20,
+          "pred_Q1": 19,
+          "pred_Q2": 23,
           "pred_Q3": 3,
           "pred_Q4": 0
         },
         "true_Q3": {
-          "pred_Q1": 16,
+          "pred_Q1": 19,
           "pred_Q2": 5,
-          "pred_Q3": 33,
-          "pred_Q4": 3
+          "pred_Q3": 31,
+          "pred_Q4": 2
         },
         "true_Q4": {
-          "pred_Q1": 2,
-          "pred_Q2": 3,
+          "pred_Q1": 1,
+          "pred_Q2": 4,
           "pred_Q3": 8,
           "pred_Q4": 6
         }
@@ -185,53 +185,53 @@
       },
       "quadrant_exact_match_CI95": [
         0.509259,
-        0.648148
+        0.639005
       ],
       "quadrant_kappa_CI95": [
-        0.273313,
-        0.471508
+        0.270684,
+        0.460109
       ],
       "paradox_recall_CI95": [
-        0.29536,
-        0.604666
+        0.358974,
+        0.660535
       ],
       "paradox_precision_CI95": [
-        0.289459,
-        0.577833
+        0.347804,
+        0.63794
       ],
       "paradox_f1_CI95": [
-        0.30137,
-        0.568807
+        0.361634,
+        0.623661
       ],
       "paradox_leakage_rate_CI95": [
-        0.342089,
-        0.638942
+        0.275,
+        0.581395
       ],
       "n_bootstraps": 1000
     },
     "regret": {
       "n": 216,
-      "n_false_progress": 40,
-      "n_missed_opportunity": 29,
+      "n_false_progress": 39,
+      "n_missed_opportunity": 31,
       "false_progress_by_true_quadrant": {
         "Q1": 0,
-        "Q2": 22,
-        "Q3": 16,
-        "Q4": 2
+        "Q2": 19,
+        "Q3": 19,
+        "Q4": 1
       },
-      "paradoxical_false_progress": 22,
+      "paradoxical_false_progress": 19,
       "regret_curve": [
         {
           "lambda": 0.25,
-          "regret": 0.18056
+          "regret": 0.18866
         },
         {
           "lambda": 0.5,
-          "regret": 0.22685
+          "regret": 0.2338
         },
         {
           "lambda": 1.0,
-          "regret": 0.31944
+          "regret": 0.32407
         },
         {
           "lambda": 2.0,
@@ -239,31 +239,31 @@
         },
         {
           "lambda": 4.0,
-          "regret": 0.875
+          "regret": 0.86574
         },
         {
           "lambda": 8.0,
-          "regret": 1.61574
+          "regret": 1.58796
         },
         {
           "lambda": 16.0,
-          "regret": 3.09722
+          "regret": 3.03241
         }
       ],
-      "regret_at_lambda_1": 0.31944,
-      "q1_vs_rest_error_rate": 0.31944,
-      "crossover_lambda_vs_bbb_only": 0.6429
+      "regret_at_lambda_1": 0.32407,
+      "q1_vs_rest_error_rate": 0.32407,
+      "crossover_lambda_vs_bbb_only": 0.4688
     },
     "efflux_disparity": {
       "n_total": 216,
       "n_non_substrate": 152,
       "n_substrate": 64,
-      "auc_non_substrate": 0.798984,
-      "auc_substrate": 0.936842,
-      "efflux_disparity_gap": -0.137858,
+      "auc_non_substrate": 0.770914,
+      "auc_substrate": 0.935673,
+      "efflux_disparity_gap": -0.164758,
       "efflux_disparity_gap_CI95": [
-        -0.240604,
-        -0.040966
+        -0.269832,
+        -0.066812
       ],
       "gap_excludes_zero": true,
       "n_bootstraps": 1000
@@ -273,38 +273,38 @@
   "C_multitask": {
     "quadrant": {
       "n": 216,
-      "quadrant_exact_match": 0.560185,
-      "quadrant_kappa": 0.347785,
-      "paradox_recall": 0.511111,
-      "paradox_precision": 0.479167,
-      "paradox_f1": 0.494624,
-      "paradox_leakage_rate": 0.422222,
-      "paradox_leaked_n": 19.0,
+      "quadrant_exact_match": 0.569444,
+      "quadrant_kappa": 0.359806,
+      "paradox_recall": 0.488889,
+      "paradox_precision": 0.536585,
+      "paradox_f1": 0.511628,
+      "paradox_leakage_rate": 0.444444,
+      "paradox_leaked_n": 20.0,
       "paradox_true_n": 45.0,
       "quadrant_confusion": {
         "true_Q1": {
-          "pred_Q1": 64,
-          "pred_Q2": 18,
-          "pred_Q3": 11,
+          "pred_Q1": 65,
+          "pred_Q2": 12,
+          "pred_Q3": 16,
           "pred_Q4": 2
         },
         "true_Q2": {
-          "pred_Q1": 19,
-          "pred_Q2": 23,
-          "pred_Q3": 2,
-          "pred_Q4": 1
+          "pred_Q1": 20,
+          "pred_Q2": 22,
+          "pred_Q3": 3,
+          "pred_Q4": 0
         },
         "true_Q3": {
-          "pred_Q1": 19,
+          "pred_Q1": 16,
           "pred_Q2": 2,
-          "pred_Q3": 29,
+          "pred_Q3": 32,
           "pred_Q4": 7
         },
         "true_Q4": {
-          "pred_Q1": 4,
+          "pred_Q1": 3,
           "pred_Q2": 5,
-          "pred_Q3": 5,
-          "pred_Q4": 5
+          "pred_Q3": 7,
+          "pred_Q4": 4
         }
       },
       "quadrant_support": {
@@ -320,88 +320,88 @@
         "Q4": "Q4 Restricted (BBB-/P-gp+)"
       },
       "quadrant_exact_match_CI95": [
-        0.49537,
-        0.625116
+        0.50463,
+        0.634259
       ],
       "quadrant_kappa_CI95": [
-        0.248428,
-        0.442867
+        0.264571,
+        0.450494
       ],
       "paradox_recall_CI95": [
-        0.365707,
-        0.666667
+        0.333333,
+        0.642897
       ],
       "paradox_precision_CI95": [
-        0.333333,
-        0.625
+        0.379272,
+        0.690522
       ],
       "paradox_f1_CI95": [
-        0.363636,
-        0.609524
+        0.369195,
+        0.64
       ],
       "paradox_leakage_rate_CI95": [
-        0.266579,
-        0.568182
+        0.302326,
+        0.589744
       ],
       "n_bootstraps": 1000
     },
     "regret": {
       "n": 216,
-      "n_false_progress": 42,
-      "n_missed_opportunity": 31,
+      "n_false_progress": 39,
+      "n_missed_opportunity": 30,
       "false_progress_by_true_quadrant": {
         "Q1": 0,
-        "Q2": 19,
-        "Q3": 19,
-        "Q4": 4
+        "Q2": 20,
+        "Q3": 16,
+        "Q4": 3
       },
-      "paradoxical_false_progress": 19,
+      "paradoxical_false_progress": 20,
       "regret_curve": [
         {
           "lambda": 0.25,
-          "regret": 0.19213
+          "regret": 0.18403
         },
         {
           "lambda": 0.5,
-          "regret": 0.24074
+          "regret": 0.22917
         },
         {
           "lambda": 1.0,
-          "regret": 0.33796
+          "regret": 0.31944
         },
         {
           "lambda": 2.0,
-          "regret": 0.53241
+          "regret": 0.5
         },
         {
           "lambda": 4.0,
-          "regret": 0.9213
+          "regret": 0.86111
         },
         {
           "lambda": 8.0,
-          "regret": 1.69907
+          "regret": 1.58333
         },
         {
           "lambda": 16.0,
-          "regret": 3.25463
+          "regret": 3.02778
         }
       ],
-      "regret_at_lambda_1": 0.33796,
-      "q1_vs_rest_error_rate": 0.33796,
-      "crossover_lambda_vs_bbb_only": 0.7692
+      "regret_at_lambda_1": 0.31944,
+      "q1_vs_rest_error_rate": 0.31944,
+      "crossover_lambda_vs_bbb_only": 0.4375
     },
     "efflux_disparity": {
       "n_total": 216,
       "n_non_substrate": 152,
       "n_substrate": 64,
-      "auc_non_substrate": 0.790397,
-      "auc_substrate": 0.876023,
-      "efflux_disparity_gap": -0.085626,
+      "auc_non_substrate": 0.802031,
+      "auc_substrate": 0.908772,
+      "efflux_disparity_gap": -0.106741,
       "efflux_disparity_gap_CI95": [
-        -0.1992,
-        0.024717
+        -0.218772,
+        -0.000831
       ],
-      "gap_excludes_zero": false,
+      "gap_excludes_zero": true,
       "n_bootstraps": 1000
     },
     "description": "shared-encoder multi-task model"

@@ -35,6 +35,17 @@ except ImportError:
 from .substructure_mapper import MorganSubstructureMapper
 
 
+def native_tree_contributions(model, frame):
+    """Exact TreeSHAP for the same tree range used by classifier prediction."""
+    import xgboost as xgb
+    end = getattr(model, 'best_iteration', None)
+    result = model.get_booster().predict(xgb.DMatrix(frame), pred_contribs=True,
+        iteration_range=(0, end + 1) if end is not None else (0, 0))
+    if not np.allclose(result.sum(axis=1), model.predict(frame, output_margin=True), atol=1e-4, rtol=1e-4):
+        raise ValueError('Native TreeSHAP contributions fail additivity')
+    return result
+
+
 class DualBarrierShapExplainer:
     """
     Computes TreeSHAP explanations for XGBoost models predicting
@@ -91,7 +102,7 @@ class DualBarrierShapExplainer:
         probs = model.predict_proba(input_df)[0]
         prob_pos = float(probs[1])
         prob_neg = float(probs[0])
-        predicted_class = int(prob_pos >= decision_threshold)
+        predicted_class = int(prob_pos > decision_threshold)
 
         # Continuous feature definitions
         continuous_names = ['MolWt', 'LogP', 'TPSA', 'HDonors', 'HAcceptors', 'RotBonds']
@@ -120,21 +131,17 @@ class DualBarrierShapExplainer:
                 is_tree_shap = False
 
         if not is_tree_shap:
-            # Rigorous model attribution fallback using booster feature weights and standardized values
-            booster = model.get_booster()
-            score_dict = booster.get_score(importance_type='gain')
-            total_gain = sum(score_dict.values()) if score_dict else 1.0
-            
-            # Approximate margin deviation
-            margin = float(np.log(prob_pos / max(1e-7, (1.0 - prob_pos))))
-            base_value = 0.0
-            contribs = []
-            for col in input_df.columns:
-                gain = score_dict.get(col, 0.0)
-                norm_gain = gain / total_gain
-                val = float(input_df[col].iloc[0])
-                contribs.append(val * norm_gain * margin)
-            shap_values_array = np.array(contribs)
+            # XGBoost supplies exact TreeSHAP contributions, including the bias.
+            contributions = native_tree_contributions(model, input_df)[0]
+            shap_values_array = contributions[:-1]
+            base_value = float(contributions[-1])
+            is_tree_shap = True
+
+        import xgboost as xgb
+        expected_margin = float(model.predict(input_df, output_margin=True)[0])
+        if not np.isclose(base_value + np.sum(shap_values_array), expected_margin,
+                          atol=1e-4, rtol=1e-4):
+            raise ValueError('TreeSHAP contributions do not reconstruct the prediction margin')
 
         feature_names = list(input_df.columns)
         shap_series = pd.Series(shap_values_array, index=feature_names)

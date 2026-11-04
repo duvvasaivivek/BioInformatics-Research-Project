@@ -19,6 +19,8 @@ Usage
 import os
 import re
 import sys
+import json
+import hashlib
 from typing import List, Tuple
 
 import pandas as pd
@@ -406,6 +408,41 @@ def verify_deleted_files_absent() -> None:
               f'found {hits}' if hits else '')
 
 
+def verify_regenerated_tables_and_snapshot() -> None:
+    """Check full table cells and model provenance, not just isolated numbers."""
+    from sync_result_tables import build_tables, block, DOCS
+    section('8. Regenerated result tables and current-model provenance')
+    tables = build_tables()
+    for path in DOCS:
+        text = path.read_text(encoding='utf-8')
+        for name, contents in tables.items():
+            check(f'{path.name}: complete {name} table matches CSV', block(name, contents) in text)
+        check(f'{path.name}: screening and docking are labelled historical',
+              '20 October' in text and '24 October' in text and 'historical' in text.lower())
+
+    path = os.path.join(RESULTS_DIR, 'documentation_model_snapshot.json')
+    with open(path, encoding='utf-8') as stream:
+        snapshot = json.load(stream)
+    for task, expected in snapshot['model_sha256'].items():
+        with open(os.path.join(BASE_DIR, 'models', f'{task}_xgboost.json'), 'rb') as stream:
+            actual = hashlib.sha256(stream.read()).hexdigest()
+        check(f'{task}: benchmark snapshot belongs to current model', actual == expected,
+              'refresh the documentation snapshot after retraining' if actual != expected else '')
+    man = read_doc('RESEARCH_PAPER_MANUSCRIPT.md')
+    for name, record in snapshot['benchmarks'].items():
+        expected = (f"| {name} | `{record['smiles']}` | "
+                    f"{record['bbb']['probability']*100:.1f}% | "
+                    f"{record['pgp']['probability']*100:.1f}% | Q{record['quadrant']} |")
+        check(f'{name}: current benchmark probability row matches snapshot', expected in man)
+    from core.artifacts import clean_structures
+    data = clean_structures(pd.read_csv(os.path.join(BASE_DIR, 'data', 'processed_pgp_data.csv')))
+    count = len(data)
+    positives = int(data.Label.sum())
+    check('manuscript distinguishes featurized P-gp rows from unique training structures',
+          f'{count:,} unique XGBoost structures' in man and
+          f'{positives} substrates and {count-positives} non-substrates' in man)
+
+
 def main() -> int:
     print('=' * 78)
     print('DOCUMENTATION CONSISTENCY CHECKER')
@@ -419,6 +456,7 @@ def main() -> int:
     verify_docking_count()
     verify_benchmark_structures()
     verify_deleted_files_absent()
+    verify_regenerated_tables_and_snapshot()
 
     passed = sum(1 for _, ok, _ in _results if ok)
     failed = [n for n, ok, _ in _results if not ok]
