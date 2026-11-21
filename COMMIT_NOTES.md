@@ -12,7 +12,7 @@ This document explains three commits from **Tuesday 20 October 2026**, which lan
 
 The arc is **discover → validate → document**: commit 1 produces a computational claim, commit 2 tests that claim against an independent biophysical modality, commit 3 makes both legible to a reader arriving cold.
 
-> **Path warning.** All three commits were authored under a directory named `B3DB Based Model/`. That directory **no longer exists** — commit `a53789f` renamed it to `Novelty Upgrade/`. Every path quoted from these commits must be re-rooted before you try it at `HEAD`. Likewise, the two XGBoost model files were later renamed (`bbb_xgboost_optuna_best.json` → `bbb_xgboost.json`, `pgp_xgboost_model.json` → `pgp_xgboost.json`).
+> **Path warning.** All three commits were authored under a directory named `B3DB Based Model/`. That directory **no longer exists** — commit `a53789f` renamed it to `Novelty Upgrade/`, which is now structured as `Novelty 1/` at `HEAD`. Every path quoted from these commits must be re-rooted before you try it at `HEAD`. Likewise, the two XGBoost model files were later renamed (`bbb_xgboost_optuna_best.json` → `bbb_xgboost.json`, `pgp_xgboost_model.json` → `pgp_xgboost.json`).
 
 ---
 
@@ -231,7 +231,7 @@ The current README does still cover both pieces of work — `### Pharmacopeia sc
 
 ## 5. Reproducing these results today
 
-From inside `Novelty Upgrade/` at `HEAD`:
+From inside `Novelty 1/` (formerly `Novelty Upgrade/`) at `HEAD`:
 
 ```bash
 # 1. Curate the Broad Drug Repurposing Hub library (needs network access)

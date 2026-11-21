@@ -6,7 +6,7 @@ Use this file as the revision brief for `main.tex`. Make the changes in the manu
 
 This is the highest-priority issue and affects the paper's central interpretation.
 
-- The project file is `Novelty Upgrade/data/pgp_broccatelli.tab`, with `Drug_ID`, `Drug` (SMILES), and `Y` columns. The preprocessing code passes `Y` through as the label.
+- The project file is `Novelty 1/data/pgp_broccatelli.tab`, with `Drug_ID`, `Drug` (SMILES), and `Y` columns. The preprocessing code passes `Y` through as the label.
 - The cited Broccatelli 2011 article is titled *A Novel Approach for Predicting P-Glycoprotein (ABCB1) Inhibition Using Molecular Interaction Fields* (DOI: `10.1021/jm101421d`).
 - TDC describes its `Pgp_Broccatelli` task as **P-gp inhibition prediction**, not substrate prediction.
 - Therefore, do not call `Y=1` an effluxed/transported substrate unless the exact raw-file provenance and positive-class mapping have been independently verified.
@@ -38,7 +38,7 @@ Until this is resolved, describe outputs as **project P-gp benchmark labels** an
 
 ## 3. Reconcile all numerical values with the exact artifacts
 
-- Replace stale SHAP values using the selected, final result artifact. The current repository result `Novelty Upgrade/results/shared_properties_quantitative_comparison.csv` reports:
+- Replace stale SHAP values using the selected, final result artifact. The current repository result `Novelty 1/results/shared_properties_quantitative_comparison.csv` reports:
   - BBB TPSA mean |SHAP| = 1.1825
   - P-gp MolLogP mean |SHAP| = 1.3949
   - BBB MolWt mean |SHAP| = 0.5366
@@ -53,7 +53,7 @@ Until this is resolved, describe outputs as **project P-gp benchmark labels** an
 
 ## 4. Correct methods wording and scope
 
-- In `Novelty Upgrade/core/features.py`, ETKDGv3 conformers are embedded to calculate 3D shape descriptors; this descriptor path does not force-field-minimize them. Do not claim minimization for the P-gp descriptor model unless another invoked method actually does it. Describe docking ligand preparation separately if it includes minimization.
+- In `Novelty 1/core/features.py`, ETKDGv3 conformers are embedded to calculate 3D shape descriptors; this descriptor path does not force-field-minimize them. Do not claim minimization for the P-gp descriptor model unless another invoked method actually does it. Describe docking ligand preparation separately if it includes minimization.
 - Explain that TreeSHAP explains the repository's XGBoost models, not the GNN. Do not imply the GNN itself has been explained by these SHAP results.
 - Describe SHAP as model attribution, not causal effect or proof of transporter mechanism.
 - Describe the approved-drug screen as computational prioritization/hypothesis generation, not validated repurposing or external validation. State benchmark overlap.

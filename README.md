@@ -9,7 +9,7 @@ Clinical benchmark probabilities and local SHAP values were recomputed from the
 current models on 4 November. Table checks verify numerical consistency, not
 scientific validity or clinical efficacy.
 
-Run `venv\Scripts\python -m pytest "Novelty Upgrade/tests"` for regression tests.
+Run `venv\Scripts\python -m pytest "Novelty 1/tests"` and `venv\Scripts\python -m pytest "Novelty 2/tests"` for regression tests.
 Install test dependencies with `pip install -r requirements-dev.txt`; docking
 dependencies are in `requirements-docking.txt`. `requirements-lock.txt` pins the
 tested environment's dependency versions (Windows, CUDA 12.8 PyTorch build).
@@ -354,46 +354,29 @@ Install `requirements-dev.txt` into the same environment and run all tests there
 The current project virtual environment already includes pytest.
 
 ```bash
-# Predict one molecule, with the full explainability report
-python "Novelty Upgrade/inference.py" --smiles "CN1C=NC2=C1C(=O)N(C(=O)N2C)C" --explain
+# --- Novelty 1 (Joint & Parallel Composed Suite) ---
+python "Novelty 1/inference.py" --smiles "CN1C=NC2=C1C(=O)N(C(=O)N2C)C" --explain
+python "Novelty 1/inference.py" --test-benchmark
 
-# A worked output is committed at results/loperamide_report.{csv,html}
-
-# The five clinical reference drugs
-python "Novelty Upgrade/inference.py" --test-benchmark
+# --- Novelty 2 (Sequential Cascaded Sieve Suite) ---
+python "Novelty 2/inference.py" --smiles "CC[C@@H](C(=O)N)N1CCCC1=O"
+python "Novelty 2/inference.py" --test-benchmark
 ```
 
 ```bash
-cd "Novelty Upgrade"
-
-# 1. Featurise          2. Train
-python training/bbb_data_preprocessing.py   ; python training/bbb_model_training.py
-python training/pgp_data_preprocessing.py   ; python training/pgp_model_training.py
-
-# 3. Validate
-python scripts/run_validation.py            # random + scaffold, bootstrap CIs
-python scripts/run_ablation_study.py        # feature-subset ablation
-python scripts/run_explainability_analysis.py
-
-# 4. Apply
-python scripts/run_repurposing_screen.py          # 2,405-drug screen
-python scripts/run_cryoem_docking_validation.py   # docking into 6QEX
-
-# 5. Multi-task GNN
-python scripts/train_multitask_gnn.py --tasks bbb,pgp --split random
-python scripts/run_kfold_multitask.py --tasks bbb,pgp --folds 5 --tag multitask
-# Generate matching single-task OOF predictions before joint decision analysis.
-python scripts/run_kfold_multitask.py --tasks bbb --folds 5 --tag single_bbb
-python scripts/run_kfold_multitask.py --tasks pgp --folds 5 --tag single_pgp
-python scripts/run_metric_analysis.py
-python scripts/run_seed_variance.py
-
-# 6. Verify  — run after anything that changes a saved metric
+# 1. Novelty 1 Workflow (Joint & Parallel Suite)
+cd "Novelty 1"
 python scripts/sync_result_tables.py --check  # all marked tables match CSVs
 python scripts/verify_doc_consistency.py        # documentation and provenance checks
 python scripts/verify_decision_metrics.py       # 31 checks: metric definitions
 python scripts/verify_multitask_gnn.py          # 29 checks: splits, masking, CUDA
 python -m pytest tests -q                     # behavior and audit regressions
+
+# 2. Novelty 2 Workflow (Sequential Sieve & Transfer Suite)
+cd "../Novelty 2"
+python scripts/verify_sequential_pipeline.py  # 35 checks: sequential sieve invariants
+python scripts/benchmark_novelty1_vs_novelty2.py # head-to-head empirical contrast
+python -m pytest tests -q                     # sequential pipeline tests
 ```
 
 ---
@@ -401,19 +384,25 @@ python -m pytest tests -q                     # behavior and audit regressions
 ## Layout
 
 ```
-Novelty Upgrade/
-  inference.py          single-molecule prediction with --explain
-  core/                 features.py (featurisation + scaled loading)
-                        decision_matrix.py (four quadrants, S_CNS)
-  training/             preprocessing + training, one pair per barrier
-  explainability/       TreeSHAP, substructure mapping, applicability domain, counterfactuals
-  gnn/                  multi-task GNN: featurizer, model, masked loss, splits, decision metrics
-  scripts/              validation, ablation, screening, docking, GNN experiments, 3 verifiers
-  tests/                four-quadrant behavioural contracts
-  data/ models/ results/ figures/
-Initial Model/          base-paper reference implementation (unmodified, not in the pipeline)
+Initial Model/          base-paper reference implementation (unmodified baseline)
                         GCN-BBB on the legacy corpus: 1,890 molecules from the Zhao 2007
                         supporting information, split Adenot (1,621) & Li (269)
+
+Novelty 1/              Dual-Barrier Joint/Parallel & Multi-Task Predictor (former Novelty Upgrade)
+                        • Overlap analysis (N=216, Cramér's V = 0.064)
+                        • Simultaneous GINEConv multi-task GNN & masked loss
+                        • Optuna-tuned BBB XGBoost & P-gp XGBoost
+                        • TreeSHAP explainability in log-odds space
+                        • Historical 2,405-drug pharmacopeia screen & Cryo-EM docking
+
+Novelty 2/              Sequential Cascaded Sieve & Transfer Learning Architecture
+                        • Direct response to faculty review ("Why common out rather than sequential?")
+                        • Stage 1: High-throughput BBB permeation filter (full 7,805 B3DB compounds)
+                        • Stage 2: Targeted P-gp efflux gatekeeper (full 1,205 Broccatelli compounds)
+                        • Early Termination Computation Savings (ETCS): impermeable molecules bypass Stage 2
+                        • Sequential Transfer Learning (BBB pre-trained trunk -> P-gp head)
+                        • Eliminates negative transfer and label masking
+
 docs/VIVA_PREP.md       defence brief: every figure traced to its source file
 README.md  RESEARCH_PAPER_MANUSCRIPT.md  requirements.txt
 ```

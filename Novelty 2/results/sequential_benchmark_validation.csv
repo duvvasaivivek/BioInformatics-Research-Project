@@ -1,0 +1,6 @@
+Drug,SMILES,Stage 1 BBB Permeant,Stage 2 P-gp Evaluated,Stage 2 P-gp Efflux,Final Disposition,Early Compute Saved,Total Latency (ms)
+Levetiracetam (Keppra),CC[C@@H](C(=O)N)N1CCCC1=O,97.9% (PASS),YES,1.4%,CNS_PENETRANT,NO,565.58
+Loperamide (Imodium),CN(C)C(=O)C(CCN1CCC(O)(c2ccc(Cl)cc2)CC1)(c1ccccc1)c1ccccc1,94.5% (PASS),YES,99.1%,PARADOXICAL_EFFLUX,NO,626.07
+Caffeine,CN1C=NC2=C1C(=O)N(C(=O)N2C)C,86.5% (PASS),YES,1.5%,CNS_PENETRANT,NO,421.56
+Diazepam (Valium),CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13,99.3% (PASS),YES,6.4%,CNS_PENETRANT,NO,451.06
+Penicillin G,CC1(C)S[C@@H]2[C@H](NC(=O)Cc3ccccc3)C(=O)N2[C@H]1C(=O)O,0.9% (REJECT),NO (Bypassed),N/A,PERIPHERAL_LOW_PERMEATION,YES,194.08
