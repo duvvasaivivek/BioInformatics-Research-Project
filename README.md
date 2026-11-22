@@ -403,8 +403,20 @@ Novelty 2/              Sequential Cascaded Sieve & Transfer Learning Architectu
                         • Sequential Transfer Learning (BBB pre-trained trunk -> P-gp head)
                         • Eliminates negative transfer and label masking
 
-docs/VIVA_PREP.md       defence brief: every figure traced to its source file
-README.md  RESEARCH_PAPER_MANUSCRIPT.md  requirements.txt
+Novelty 3/              empty workspace for the next research contribution
+
+docs/
+  main.pdf                     source research paper
+  RESEARCH_PAPER_MANUSCRIPT.md  searchable transcription of the source paper
+  MANUSCRIPT_REVISION_BRIEF.md  required paper revisions (formerly changes.md)
+  COMMIT_NOTES.md               historical implementation and commit notes
+  VIVA_PREP.md                  local defence brief
+
+README.md                      project overview and usage
+requirements.txt               shared runtime dependencies
+requirements-dev.txt           development and test dependencies
+requirements-docking.txt       optional docking dependencies
+requirements-lock.txt          pinned environment snapshot
 ```
 
 ---

@@ -6,7 +6,7 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parents[1]
 RESULTS = BASE / 'results'
-DOCS = (BASE.parent / 'README.md', BASE.parent / 'RESEARCH_PAPER_MANUSCRIPT.md')
+DOCS = (BASE.parent / 'README.md', BASE.parent / 'docs' / 'RESEARCH_PAPER_MANUSCRIPT.md')
 
 
 def rows(name):

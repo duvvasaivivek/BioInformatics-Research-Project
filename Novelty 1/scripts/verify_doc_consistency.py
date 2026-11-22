@@ -56,7 +56,7 @@ def section(title: str) -> None:
 # ---------------------------------------------------------------------------
 
 # The documentation set was consolidated to two public documents: README.md is
-# the single technical entry point and RESEARCH_PAPER_MANUSCRIPT.md is the
+# the single technical entry point and docs/RESEARCH_PAPER_MANUSCRIPT.md is the
 # academic write-up. The former ARCHITECTURE.md, BLOCK_DIAGRAM.md and
 # RESEARCH_LOG.md were internal working documents; they are recoverable from
 # git history at 8af9c2f^ and are no longer asserted here.
@@ -66,7 +66,7 @@ def section(title: str) -> None:
 # presence assertion had to change.
 EXPECTED_DOCS = (
     ('README.md',),
-    ('RESEARCH_PAPER_MANUSCRIPT.md',),
+    ('docs/RESEARCH_PAPER_MANUSCRIPT.md',),
 )
 
 
@@ -113,7 +113,7 @@ def verify_validation_metrics() -> None:
     superseded = ['0.9544', '0.8962', '0.9593', '0.9715', '0.9336']
     docs = {
         'README.md': read_doc('README.md'),
-        'RESEARCH_PAPER_MANUSCRIPT.md': read_doc('RESEARCH_PAPER_MANUSCRIPT.md'),
+        'docs/RESEARCH_PAPER_MANUSCRIPT.md': read_doc('docs/RESEARCH_PAPER_MANUSCRIPT.md'),
         'docs/ARCHITECTURE.md': read_doc('docs', 'ARCHITECTURE.md'),
     }
     # Audit documents legitimately quote the old values while describing the defect.
@@ -126,7 +126,7 @@ def verify_validation_metrics() -> None:
               f'found {hits}' if hits else '')
 
     # The authoritative values should actually appear where results are reported.
-    man = docs['RESEARCH_PAPER_MANUSCRIPT.md']
+    man = docs['docs/RESEARCH_PAPER_MANUSCRIPT.md']
     if man:
         check('manuscript abstract quotes the current BBB ROC-AUC',
               str(authoritative['BBB ROC-AUC']) in man, str(authoritative['BBB ROC-AUC']))
@@ -143,7 +143,7 @@ def verify_shap_table() -> None:
         return
     df = pd.read_csv(csv).set_index('Property')
 
-    man = read_doc('RESEARCH_PAPER_MANUSCRIPT.md')
+    man = read_doc('docs/RESEARCH_PAPER_MANUSCRIPT.md')
     sci = read_doc('docs', 'ARCHITECTURE.md')
 
     missing: List[str] = []
@@ -230,7 +230,7 @@ def verify_dataset_counts() -> None:
     n_pos, n_neg = int((pgp.Label == 1).sum()), int((pgp.Label == 0).sum())
     print(f'      P-gp: {n_pos} substrates / {n_neg} non-substrates ({len(pgp)} total)')
 
-    man = read_doc('RESEARCH_PAPER_MANUSCRIPT.md')
+    man = read_doc('docs/RESEARCH_PAPER_MANUSCRIPT.md')
     if man:
         check('manuscript quotes the measured P-gp class balance',
               f'$N={n_pos}$ substrates' in man and f'$N={n_neg}$ non-substrates' in man,
@@ -262,7 +262,7 @@ def verify_docking_count() -> None:
     counts = df.quadrant.value_counts().to_dict()
     print(f'      quadrant composition: {counts}')
 
-    man = read_doc('RESEARCH_PAPER_MANUSCRIPT.md')
+    man = read_doc('docs/RESEARCH_PAPER_MANUSCRIPT.md')
     if man:
         check('manuscript states the correct docked count',
               f'All **{n}** representative therapeutics' in man, f'n = {n}')
@@ -295,7 +295,7 @@ def verify_docking_count() -> None:
     print(f'      recomputed: Spearman rho = {rho:.4f} (p = {p_rho:.3e}), '
           f'Welch t = {t_stat:.4f} (p = {p_t:.3e})')
 
-    for doc in ('README.md', 'RESEARCH_PAPER_MANUSCRIPT.md', 'docs/RESEARCH_LOG.md'):
+    for doc in ('README.md', 'docs/RESEARCH_PAPER_MANUSCRIPT.md', 'docs/RESEARCH_LOG.md'):
         text = read_doc(doc)
         if not text:
             continue
@@ -361,7 +361,7 @@ def verify_benchmark_structures() -> None:
 
     b3db = keyset(os.path.join(BASE_DIR, 'data', 'B3DB_classification.tsv'), 'SMILES')
     brocc = keyset(os.path.join(BASE_DIR, 'data', 'pgp_broccatelli.tab'), 'Drug')
-    man = read_doc('RESEARCH_PAPER_MANUSCRIPT.md')
+    man = read_doc('docs/RESEARCH_PAPER_MANUSCRIPT.md')
 
     for label, meta in BENCHMARK_DRUGS.items():
         short = label.split('(')[0].strip()
@@ -428,7 +428,7 @@ def verify_regenerated_tables_and_snapshot() -> None:
             actual = hashlib.sha256(stream.read()).hexdigest()
         check(f'{task}: benchmark snapshot belongs to current model', actual == expected,
               'refresh the documentation snapshot after retraining' if actual != expected else '')
-    man = read_doc('RESEARCH_PAPER_MANUSCRIPT.md')
+    man = read_doc('docs/RESEARCH_PAPER_MANUSCRIPT.md')
     for name, record in snapshot['benchmarks'].items():
         expected = (f"| {name} | `{record['smiles']}` | "
                     f"{record['bbb']['probability']*100:.1f}% | "
