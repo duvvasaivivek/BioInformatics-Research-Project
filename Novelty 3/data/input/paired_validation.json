@@ -1,0 +1,76 @@
+{
+  "description": "Exploratory paired measurements. Compound structures use the free forms. Unspecified stereochemistry represents aggregated stereoisomers where the assay pooled them.",
+  "molecules": {
+    "risperidone": {"inchikey": "RAPZEAPATHNIPO-UHFFFAOYSA-N", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/5073"},
+    "paliperidone": {"inchikey": "PMXMIIMHBWHSKN-UHFFFAOYSA-N", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/115237"},
+    "venlafaxine": {"inchikey": "PNVNVHUZROJLTJ-UHFFFAOYSA-N", "smiles": "CN(C)CC(c1ccc(OC)cc1)C1(O)CCCCC1", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/5656"},
+    "desvenlafaxine": {"inchikey": "KYYIDSXMWOZKMP-UHFFFAOYSA-N", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/125017"},
+    "N-desmethylvenlafaxine": {"inchikey": "MKAFOJAJJMUXLW-UHFFFAOYSA-N", "smiles": "CNCC(c1ccc(OC)cc1)C1(O)CCCCC1", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/3501942"},
+    "clozapine": {"inchikey": "QZUDBNBUXVUHMW-UHFFFAOYSA-N", "smiles": "CN1CCN(CC1)C2=NC3=C(C=CC(=C3)Cl)NC4=CC=CC=C42", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/135398737"},
+    "N-desmethylclozapine": {"inchikey": "JNNOSTQEZICQQP-UHFFFAOYSA-N", "smiles": "C1CN(CCN1)C2=NC3=C(C=CC(=C3)Cl)NC4=CC=CC=C42", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/135409468"},
+    "osimertinib": {"inchikey": "DUYJMQONPNNFPI-UHFFFAOYSA-N", "smiles": "CN1C=C(C2=CC=CC=C21)C3=NC(=NC=C3)NC4=C(C=C(C(=C4)NC(=O)C=C)N(C)CCN(C)C)OC", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/71496458"},
+    "AZ5104": {"inchikey": "IQNVEOMHJHBNHC-UHFFFAOYSA-N", "smiles": "CN(C)CCN(C)C1=CC(=C(C=C1NC(=O)C=C)NC2=NC=CC(=N2)C3=CNC4=CC=CC=C43)OC", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/71496460"},
+    "AZ7550": {"inchikey": "ZROCWKZRGJYPTG-UHFFFAOYSA-N", "smiles": "CNCCN(C)c1cc(OC)c(Nc2nccc(n2)c3cn(C)c4ccccc34)cc1NC(=O)C=C", "structure_source": "https://pubchem.ncbi.nlm.nih.gov/compound/71496459"}
+  },
+  "studies": [
+    {
+      "id": "wang_2004",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/15683552/",
+      "human_metabolism_source": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=01859e07-1262-4cc6-b7ed-5a273cbf0c36",
+      "locator": "Tables 1–2; Figure 1 for P-gp effect",
+      "species": "wild-type FVB mice",
+      "endpoint": "brain-to-plasma ratio of group mean concentrations, mL/g",
+      "parent": "risperidone",
+      "observations": [{"condition": "1 h after parent dose", "brain": {"risperidone": 100, "paliperidone": 24}, "systemic": {"risperidone": 254, "paliperidone": 329}}],
+      "pgp_limitation": {"source": "https://pubmed.ncbi.nlm.nih.gov/15683552/", "basis": "Reported increase in brain-to-plasma ratio in Abcb1a/b knockout mice", "fold_increase": {"risperidone": 12, "paliperidone": 29}}
+    },
+    {
+      "id": "karlsson_2010",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/20466523/",
+      "human_metabolism_source": "https://pubmed.ncbi.nlm.nih.gov/10192828/",
+      "full_text": "https://www.diva-portal.org/smash/get/diva2%3A345829/FULLTEXT01.pdf",
+      "locator": "Table 1; wild-type group arithmetic means pooled across S and R",
+      "species": "wild-type mice",
+      "endpoint": "brain-to-serum ratio of group mean concentrations on the paper's reported nmol/L scale",
+      "parent": "venlafaxine",
+      "observations": [
+        {"condition": "1 h", "brain": {"venlafaxine": 3731, "desvenlafaxine": 169, "N-desmethylvenlafaxine": 327}, "systemic": {"venlafaxine": 918, "desvenlafaxine": 97.5, "N-desmethylvenlafaxine": 414}},
+        {"condition": "3 h", "brain": {"venlafaxine": 266, "desvenlafaxine": 73.5, "N-desmethylvenlafaxine": 190}, "systemic": {"venlafaxine": 61.7, "desvenlafaxine": 14.7, "N-desmethylvenlafaxine": 56.9}},
+        {"condition": "6 h", "brain": {"venlafaxine": 20, "desvenlafaxine": 20.3, "N-desmethylvenlafaxine": 39.8}, "systemic": {"venlafaxine": 5.4, "desvenlafaxine": 3.3, "N-desmethylvenlafaxine": 4.4}},
+        {"condition": "9 h", "brain": {"venlafaxine": 9.1, "desvenlafaxine": 7.9, "N-desmethylvenlafaxine": 9.3}, "systemic": {"venlafaxine": 2.3, "desvenlafaxine": 1.5, "N-desmethylvenlafaxine": 1.0}}
+      ]
+    },
+    {
+      "id": "weigmann_1999",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/10208296/",
+      "human_metabolism_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1873700/",
+      "locator": "Abstract; study-reported brain relative to serum fold differences",
+      "species": "Sprague-Dawley rats",
+      "endpoint": "reported brain-to-serum ratio",
+      "parent": "clozapine",
+      "observations": [{"condition": "study summary after repeated parent dosing", "ratio": {"clozapine": 15.8, "N-desmethylclozapine": 2.7}}]
+    },
+    {
+      "id": "ballard_2016",
+      "source": "https://doi.org/10.1158/1078-0432.CCR-16-0399",
+      "human_metabolism_source": "https://www.dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5e81b4a7-b971-45e1-9c31-29cea8c87ce7",
+      "locator": "Table 1; 25 mg/kg arm with quantitative AZ7550 brain AUC",
+      "species": "female SCID mice with H1975 xenograft",
+      "endpoint": "brain-to-plasma AUC ratio of group summary values, both AUCs in micromolar hours",
+      "parent": "osimertinib",
+      "observations": [{"condition": "25 mg/kg arm; 0 to last sample", "brain": {"osimertinib": 67.0, "AZ7550": 0.80}, "systemic": {"osimertinib": 23.9, "AZ7550": 8.07}}],
+      "pgp_limitation": {"source": "https://pubmed.ncbi.nlm.nih.gov/31175939/", "basis": "Mouse knockout experiment reported ABCB1 restriction of brain accumulation, with an additional ABCG2 contribution", "reported_limited": ["osimertinib"]}
+    },
+    {
+      "id": "colclough_2021",
+      "source": "https://doi.org/10.1158/1078-0432.CCR-19-1871",
+      "human_metabolism_source": "https://www.dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5e81b4a7-b971-45e1-9c31-29cea8c87ce7",
+      "locator": "Cynomolgus PET brain exposure table, Kp brain:blood column",
+      "species": "cynomolgus macaques",
+      "endpoint": "PET total-radioactivity brain-to-blood Kp after separate tracer administration",
+      "parent": "osimertinib",
+      "observations": [{"condition": "study-reported Kp", "ratio": {"osimertinib": 2.59, "AZ5104": 0.35}}],
+      "pgp_limitation": {"source": "https://pubmed.ncbi.nlm.nih.gov/31175939/", "basis": "Mouse knockout experiment reported ABCB1 restriction of brain accumulation, with an additional ABCG2 contribution", "reported_limited": ["osimertinib", "AZ5104"]}
+    }
+  ]
+}
