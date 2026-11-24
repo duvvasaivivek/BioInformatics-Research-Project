@@ -403,7 +403,7 @@ Novelty 2/              Sequential Cascaded Sieve & Transfer Learning Architectu
                         • Sequential Transfer Learning (BBB pre-trained trunk -> P-gp head)
                         • Eliminates negative transfer and label masking
 
-Novelty 3/              empty workspace for the next research contribution
+Novelty 3/              Metabolite-aware BBB → P-gp screening and evaluation (see Novelty 3/README.md)
 
 docs/
   main.pdf                     source research paper
