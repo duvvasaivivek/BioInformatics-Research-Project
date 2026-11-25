@@ -1,0 +1,591 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=19mm,headheight=15pt]{geometry}
+\usepackage{amsmath,booktabs,tabularx,array,microtype,xcolor,enumitem,fancyhdr}
+\DeclareMathSizes{10}{10}{8}{6}
+\definecolor{Navy}{HTML}{14283D}
+\definecolor{Teal}{HTML}{00645D}
+\definecolor{Slate}{HTML}{425365}
+\definecolor{Pale}{HTML}{EDF5F4}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage[colorlinks=true,linkcolor=Teal,urlcolor=Teal,pdfauthor={Novelty 3 Project},pdftitle={Novelty 3 Workflow and Results}]{hyperref}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{Slate} NOVELTY 3}
+\fancyhead[R]{\small\color{Slate} WORKFLOW AND RESULTS}
+\fancyfoot[L]{\small\color{Slate} Bioinformatics Project}
+\fancyfoot[R]{\small\color{Slate}\thepage}
+\renewcommand{\headrulewidth}{0.35pt}
+\linespread{1.06}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{2em}
+\setcounter{tocdepth}{1}
+\newcommand{\code}[1]{\nolinkurl{#1}}
+\newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\lead}[1]{\par\smallskip\textbf{\textcolor{Navy}{#1}}\par\nobreak}
+\newcommand{\pagehead}[1]{\clearpage\section{#1}}
+\newcommand{\callout}[1]{\par\smallskip\noindent\colorbox{Pale}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{\vspace{3pt}#1\vspace{3pt}}}\par\smallskip}
+\newcommand{\src}[2]{\href{#1}{#2}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newenvironment{compact}{\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt,parsep=0pt]}{\end{itemize}}
+\newcommand{\dense}{\small\renewcommand{\arraystretch}{1.11}\setlength{\tabcolsep}{4pt}}
+\begin{document}
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\thispagestyle{empty}
+\vspace*{20mm}
+{\large\color{Teal}\bfseries BIOINFORMATICS PROJECT\par}
+\vspace{7mm}
+{\fontsize{37}{42}\selectfont\bfseries\color{Navy} Novelty 3\par}
+{\fontsize{22}{27}\selectfont\color{Navy} Workflow and Results\par}
+\vspace{6mm}
+{\large\color{Slate} Sequential BBB and P-gp screening\\
+with parent-relative metabolite prioritisation\par}
+\vspace{8mm}
+{\color{Teal}\rule{\linewidth}{1.2pt}}
+\vspace{5mm}
+
+\textbf{The research question}\par
+Can screening a metabolite relative to its parent help select useful candidates when there is capacity to investigate only a few?
+
+\textbf{The decision sequence}\par
+First check blood--brain barrier (BBB) permeability. For compounds that pass, check P-glycoprotein (P-gp) substrate risk. Among passing metabolites, prioritise candidates by how much their model-based screening score improves over their own parent.
+
+\textbf{What the saved run shows}\par
+The pipeline scored 3,803 distinct molecules associated with 2,647 parent--metabolite relationships. Of these molecules, 456 passed both screens. The ranking found early favourable annotations, with sparse joint labels. A small published brain-distribution pilot produced zero eligible picks under the deployed policy.
+
+\vfill
+\textbf{Reading routes}\par
+\begin{compact}
+\item Follow Sections~\ref{sec:flow}--\ref{sec:ranking} to understand the pipeline in order.
+\item Use Sections~\ref{sec:results}--\ref{sec:prospective} to interpret the evidence.
+\item See Section~\ref{sec:files} for the file map and Section~\ref{sec:review} for review preparation.
+\end{compact}
+
+\vspace{8mm}
+{\small\color{Slate}Workspace snapshot \quad 25 November 2026 \quad Revision \texttt{7182c98}\par}
+\end{titlepage}
+\setcounter{page}{2}
+\hypersetup{pageanchor=true}
+\tableofcontents
+
+\pagehead{The pipeline at a glance}\label{sec:flow}
+\lead{Plain language}
+A drug can turn into other molecules after metabolism. Those metabolites may behave differently from the parent. Novelty 3 asks which observed metabolites are worth looking at more closely when brain delivery matters.
+
+\begin{enumerate}[leftmargin=*,itemsep=4pt]
+\item \textbf{Collect the evidence.} Read BBB labels, P-gp substrate labels, and published parent--metabolite links from their respective sources.
+\item \textbf{Make molecules comparable.} Standardise their identities, remove duplicates, and group connected compounds and related structures before splitting the endpoint datasets.
+\item \textbf{Train two independent classifiers.} Each learns from its own endpoint data. Compounds with both labels are useful for evaluation but do not define the training pool.
+\item \textbf{Calibrate first, then screen in sequence.} Compounds below the BBB cutoff stop. The survivors reach P-gp and are flagged when predicted substrate probability meets the P-gp cutoff.
+\item \textbf{Rank candidates that pass.} Compare the passing metabolite's screening score with its parent's score. Select at most one candidate per family under a fixed review budget.
+\item \textbf{Evaluate the outcomes.} Score each classifier on held-out annotations. Compare ranking policies at equal budgets and check them against a small published-measurement pilot.
+\end{enumerate}
+
+\lead{Technical handoff}
+{\dense
+\begin{tabularx}{\linewidth}{L{0.25\linewidth}YY}
+\toprule
+Command or stage & Main input & Main artifact or decision\\
+\midrule
+\code{audit} & Pinned source files and optional curated rows & Registry, relationships, group information and feasibility report\\
+\cmd{data prepare} & Normalised audit outputs & Molecular graphs and endpoint partitions\\
+\cmd{train bbb}, \cmd{train pgp} & Endpoint train and validation partitions & Five saved members per endpoint\\
+\cmd{calibrate bbb}, \cmd{calibrate pgp} & Raw ensemble scores on calibration partitions & Logistic score mapping, cutoff and checkpoint receipts\\
+\code{screen}, \code{evaluate} & Frozen models and relationship list & Sequential flags, annotations and ranking comparisons\\
+\code{validate}, comparator commands & Published-pair data or benchmark partitions & External pilot and P-gp comparisons\\
+\bottomrule
+\end{tabularx}}
+
+\callout{\textbf{Reading a screen pass.} It means the BBB score reached its cutoff and the P-gp model did not flag a substrate. Brain concentration and therapeutic activity are separate measurements.}
+
+\pagehead{Data sources, identities and labels}
+\lead{What is loaded}
+{\dense
+\begin{tabularx}{\linewidth}{L{0.19\linewidth}YYY}
+\toprule
+Source & Used for & Input count & Normalised endpoint or link count\\
+\midrule
+B3DB & BBB+/BBB-- binary labels & 7,807 rows, 2 invalid & 7,805 molecules, 4,956 positive and 2,849 negative\\
+P-gp source snapshot & Substrate/nonsubstrate labels & 3,003 rows, 8 invalid, 22 repeat identity/label rows & 2,973 molecules, 1,578 substrate and 1,395 nonsubstrate\\
+GLORYx & Parent--metabolite relationships & 1,420 reference and 37 test parent records & 2,647 unique directed relationships after validation and deduplication\\
+Curated measurements & Metabolite-specific endpoint validation & Header in CSV & 0 independently curated endpoint labels in the saved run\\
+\bottomrule
+\end{tabularx}}
+
+\lead{Plain language}
+A compound can appear in several files and be written in several ways. The code assigns it one structure key before counting labels, training models or connecting it to its parent. A metabolite relationship tells you how two compounds are connected. Experimental endpoint measurements supply labels separately.
+
+\lead{Technical implementation}
+\begin{compact}
+\item \code{core/sources.py} pins upstream revisions and SHA-256 digests. Fetching writes source receipts and a manifest. The audit verifies local bytes before use.
+\item \code{IdentityStore} in \code{core/audit.py} parses with RDKit and caches canonical isomeric SMILES, full InChIKey, connectivity key and scaffold. Strict identity retains salts and stereochemistry. Invalid or incomplete rows are recorded. \code{endpoint_labels} reconciles labels by structure key; there were zero conflicting structures after matching in the saved audit.
+\item GLORYx provides 2,453 reference and 205 test links before full cleanup. The union has 1,503 unique parents, including intermediates, and 2,551 unique metabolites. Some molecules appear in both roles, giving 3,803 distinct molecules in the relationship network.
+\item There are 346 compounds labelled for both BBB and P-gp across the full registry and 24 such metabolites. Endpoint-specific training still has 4,197 BBB and 1,827 P-gp compounds.
+\item Among the metabolites, 94 have a BBB label and 44 have a P-gp label. These are existing endpoint annotations mapped to metabolite structures. The separately curated CSV has no data rows.
+\end{compact}
+
+\lead{Reading a positive label}
+BBB positive means the dataset labels the compound BBB-permeable. P-gp positive means the dataset labels it a substrate, which is the liability the second gate seeks to flag. A P-gp substrate label is a classification target. B3DB mixes assay definitions and does not isolate passive permeability. The P-gp snapshot lacks per-record assay context and the model does not predict an efflux ratio. The downloaded metabolism files lack complete study-level provenance for many relationships.
+
+\smallskip
+Sources \src{https://doi.org/10.1038/s41597-021-01069-5}{B3DB publication},
+\src{https://doi.org/10.1021/acs.chemrestox.0c00224}{GLORYx publication},
+\src{https://doi.org/10.1021/acs.jcim.6c01938}{SF-GA substrate snapshot},
+\src{https://doi.org/10.1021/acs.jcim.4c02122}{Han et al.\ upstream P-gp study}.
+
+
+\pagehead{How the splits prevent obvious leakage}
+\lead{Plain language}
+If a drug enters training and a closely related metabolite enters testing, the test can be easier than a genuinely unfamiliar case. The project first groups compounds that should stay together, holds aside metabolite-related groups, then creates the usual train, validation, calibration and test sets for each endpoint.
+
+\lead{Technical implementation}
+\code{family_components} links each parent to its metabolites in an undirected graph for grouping. The audit found 1,186 family components, the largest with 23 molecules. \code{leakage_groups} also joins matching connectivity keys and largest-fragment identities or nonempty Bemis--Murcko scaffolds without stereochemistry. It strips counterions for grouping while retaining the audited identity for graphs and labels. There were 58 reserved groups containing annotated metabolites before endpoint-specific filtering. \code{endpoint_split} uses shuffled ten-fold \code{StratifiedGroupKFold} with seed 2026 separately for BBB and P-gp. The first three folds containing both classes become validation, calibration and test. The other folds form training. A single structure key enters only one split per endpoint.
+
+{\dense
+\begin{center}
+\begin{tabular}{lrrrrrr}
+\toprule
+& \multicolumn{3}{c}{BBB} & \multicolumn{3}{c}{P-gp}\\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Partition & Molecules & Positive & Groups & Molecules & Positive & Groups\\
+\midrule
+Train & 4,197 & 2,412 & 1,515 & 1,827 & 1,005 & 1,147\\
+Validation & 543 & 309 & 210 & 267 & 122 & 165\\
+Calibration & 515 & 293 & 224 & 227 & 140 & 154\\
+Endpoint test & 585 & 337 & 229 & 268 & 163 & 169\\
+Reserved & 1,965 & 1,605 & 57 & 384 & 148 & 46\\
+\bottomrule
+\end{tabular}
+\end{center}}
+
+\begin{compact}
+\item \textbf{Train} updates neural weights. \textbf{Validation} picks a checkpoint. \textbf{Calibration} fits the probability mapping and operating cutoff. \textbf{Endpoint test} measures performance with those decisions fixed.
+\item Reserved counts include labelled members of held groups. The metabolite-only metric filters these to structures that occur as metabolites, giving 94 BBB and 44 P-gp examples.
+\item Scope matters. There is no exact structure or group overlap across splits within either endpoint. There is cross-endpoint overlap, since the models learn separately. The audit found 13 BBB test structures in P-gp train and 12 P-gp test structures in BBB train.
+\item Exact scaffold grouping still permits similar molecules with different scaffolds. A Morgan similarity check at 0.80 found 5 ordinary BBB test and 21 ordinary P-gp test compounds with a training neighbour. It found none among the respective annotated-metabolite subsets.
+\item All 48 reference tags represented in the B3DB test subset also appear in training. The endpoint test represents grouped chemical holdout within the dataset. A publication-held-out or time-held-out study would test a different form of generalisation.
+\end{compact}
+
+\pagehead{How structures become model inputs}
+\lead{Plain language}
+Each molecule becomes a graph. Atoms are nodes and bonds are links. The model passes information along each bond, then summarises the entire graph to make a prediction.
+
+\lead{Graph features}
+\code{molecule_graph} creates a 12-value feature vector per atom and a 7-value vector per bond edge. Undirected bonds become two directed edges. RDKit supplies molecular features and \code{graph_data} wraps the cached arrays in PyTorch Geometric \code{Data}. Both classifiers use the same feature representation and train their own weights.
+
+\lead{Network architecture and activations}
+{\dense
+\begin{tabularx}{\linewidth}{L{0.25\linewidth}YY}
+\toprule
+Layer & Configuration & Role\\
+\midrule
+Input projection & Linear 12 to 128, ReLU & Embed atom features\\
+Message passing & Three GINEConv blocks, trainable epsilon, edge features mapped from 7 to 128 & Combine adjacent atoms and bond information\\
+Inside each GINE block & 128 to 128 linear, ReLU, 128 to 128 linear & Learn a nonlinear transform of messages\\
+After each GINE block & LayerNorm, then ReLU & Normalise and activate node states\\
+Readout & Global mean pooling & Average node states into one vector per molecule\\
+Prediction head & Linear 128 to 64, ReLU, dropout 0.20, linear 64 to 1 & Produce one raw logit\\
+\bottomrule
+\end{tabularx}}
+
+In GINE, an edge-aware message uses a ReLU on the sum of a neighbour representation and the edge representation. Each block adds the trainable self contribution before its multilayer transform. $\operatorname{ReLU}(x)=\max(0,x)$ retains positive activations. Dropout is active during training and disabled at inference. The final logit has no activation in the network. \code{BCEWithLogitsLoss} accounts for sigmoid internally during training, and the separately fitted calibrator maps ensemble logits to probabilities at inference.
+
+\callout{\textbf{Separate training.} Similar layer layouts do not imply a shared encoder. BBB and P-gp have separate model instances, losses, validation results, checkpoints and calibration artifacts. The sequence is applied when deciding which compounds reach the second gate.}
+
+\lead{Feature inventory}
+Atoms use atomic number divided by 100, total degree by 6, formal charge and hydrogen count by 4, aromatic and ring flags, three hybridisation flags (sp, sp2, sp3), two chirality flags (R/S), and atomic mass divided by 250. Bonds use bond order divided by 3 and six flags for aromatic, conjugated, ring, E, Z and unspecified stereochemistry.
+
+\pagehead{Training, best epochs and saved checkpoints}
+\lead{What runs when you train}
+Each endpoint runs five independent seeds. In every epoch, the model learns from the training split, then ranks the validation split. It keeps the best validation-average-precision checkpoint and stops after 20 consecutive epochs without a new best value, subject to a 200-epoch cap.
+
+{\dense
+\begin{tabularx}{\linewidth}{L{0.27\linewidth}Y}
+\toprule
+Setting & Value\\
+\midrule
+Random seeds & 11, 23, 37, 53, 71\\
+Optimiser & AdamW, learning rate 0.001, weight decay 0.0001\\
+Loss and weighting & Binary cross-entropy with logits. Positive weight is negatives divided by positives within the endpoint's training split (BBB 0.7400 and P-gp 0.8179).\\
+Batch size and stopping & 32 by default, maximum 200 epochs, patience 20. Validation AP chooses the checkpoint.\\
+Device & Automatic GPU when CUDA is available, otherwise CPU. Saved training logs used CUDA.\\
+Resume & Per-seed checkpoint retains the best weights and progress state. Completed seeds can be reused.\\
+\bottomrule
+\end{tabularx}}
+
+\lead{Saved run}
+{\dense\begin{center}
+\begin{tabular}{rrrrrrr}
+\toprule
+& \multicolumn{3}{c}{BBB} & \multicolumn{3}{c}{P-gp}\\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Seed & Last epoch & Best epoch & Val. AP & Last epoch & Best epoch & Val. AP\\
+\midrule
+11 & 59 & 39 & 0.9289 & 61 & 41 & 0.6352\\
+23 & 44 & 24 & 0.9306 & 48 & 28 & 0.6135\\
+37 & 52 & 32 & 0.9168 & 37 & 17 & 0.6206\\
+53 & 56 & 36 & 0.9333 & 30 & 10 & 0.6272\\
+71 & 49 & 29 & 0.9208 & 38 & 18 & 0.6191\\
+\bottomrule
+\end{tabular}
+\end{center}}
+
+The logs show stronger and steadier validation discrimination for BBB. P-gp loss and validation AP often stagnated or slipped after a better epoch. Inference uses the saved best weights for each requested seed and averages their raw logits. The later P-gp comparator tests a simpler fingerprint representation on the same split.
+
+\pagehead{Calibration and the sequential decision}
+\lead{Plain language}
+The training models output scores. Calibration converts those scores into probabilities and sets a cutoff for each gate. A BBB score equal to or above its cutoff reaches P-gp. A P-gp score equal to or above its cutoff flags substrate risk. A compound below the BBB cutoff stops there.
+
+\lead{Technical implementation}
+If $\ell_1,\ldots,\ell_5$ are member logits, the endpoint first computes their arithmetic mean $\bar{\ell}$. Logistic calibration fits an intercept $b$ and slope $a$ to predict $\sigma(a\bar{\ell}+b)$, where $\sigma(z)=1/(1+e^{-z})$. \code{sensitivity_threshold} chooses the highest cutoff that still catches at least 90\% of calibration positives. The calibration file records model receipts and the dataset fingerprint. Evaluation checks these receipts before scoring.
+
+{\dense
+\begin{tabularx}{\linewidth}{Yrrrrrrrrr}
+\toprule
+GNN & Slope & Intercept & Cutoff & TP & FN & FP & TN & AP & ROC AUC\\
+\midrule
+BBB & 1.1231 & 0.1024 & 0.550492 & 264 & 29 & 52 & 170 & 0.9404 & 0.9219\\
+P-gp & 1.9553 & 0.3702 & 0.546043 & 126 & 14 & 55 & 32 & 0.7203 & 0.6716\\
+\bottomrule
+\end{tabularx}}
+
+On the calibration data, BBB sensitivity and specificity were 90.10\% and 76.58\%. P-gp sensitivity and specificity were 90.00\% and 36.78\%. Their Brier scores were 0.1116 and 0.2057. The 90\% requirement applies on calibration data. The test cohorts have their own observed sensitivity.
+
+\lead{Exact logic and saved screen counts}
+\begin{compact}
+\item $p_{\mathrm{BBB}} < 0.550492$ using the full-precision saved value $\Rightarrow$ \code{bbb_rejected}. There were 2,133.
+\item BBB pass and $p_{\mathrm{Pgp}} \ge 0.546043$ using the full-precision saved value $\Rightarrow$ \code{pgp_flagged}. There were 1,214.
+\item BBB pass and $p_{\mathrm{Pgp}} < 0.546043$ $\Rightarrow$ \code{pass}. There were 456.
+\end{compact}
+Of the 3,803 unique screened compounds, 1,670 reached P-gp. Each parent and metabolite is evaluated independently: a rejected parent leaves its child's BBB check unchanged. The 2,647 CSV rows are relationships, so one compound's output can appear in several rows. Endpoint-only metrics score a model on the corresponding labelled cohort for diagnosis, including molecules that would stop at BBB during sequential screening.
+
+
+\pagehead{The main novelty and how the ranking works}\label{sec:ranking}
+\lead{The contribution}
+Novelty 3 introduces a parent-relative decision rule for prioritising \emph{observed} metabolites after a sequential BBB and P-gp screen. The experimental question is whether knowledge of the parent helps allocate a fixed set of follow-up slots. BBB and P-gp form the screening foundation. The family-relative objective and its comparison with two alternative selection policies are the research contribution.
+
+\lead{Plain-language example}
+Imagine metabolite A has screening support 0.70 and its parent has 0.65. Metabolite B has 0.65 and its parent has 0.20. A ranks higher by its own score. B gains 0.45 relative to its parent, while A gains 0.05. If both metabolites pass, the parent-relative policy ranks B first. These numbers are illustrative.
+
+\lead{The exact score}
+Let $p_b$ and $p_p$ be calibrated BBB-positive and P-gp substrate probabilities. Let $s_b$ and $s_p$ be the population standard deviations across the five individually calibrated seed scores for each endpoint. For a molecule $m$ passing both gates, support is
+\[
+S(m)=\max\!\Bigl(0,\;\min\!\bigl(p_b(m)-s_b(m),\;1-p_p(m)-s_p(m)\bigr)\Bigr).
+\]
+For example, $p_b=.78$, $s_b=.04$, $p_p=.25$ and $s_p=.05$ give $\min(.74,.70)=.70$. Gates decide eligibility first. A flagged parent then contributes zero, which can raise its child's relative rank. Rejected or flagged molecules get zero support. The minimum uses the weaker uncertainty-discounted endpoint. A passing child $c$ is ranked by $\Delta(c,a)=S(c)-S(a)$ for its parent $a$. A passing child can have negative $\Delta$. The seed spread measures model disagreement. It is used as a ranking penalty and does not give a confidence interval.
+
+\lead{What the comparisons isolate}
+{\dense
+\begin{tabularx}{\linewidth}{L{0.29\linewidth}YY}
+\toprule
+Policy & Candidate rule & Priority\\
+\midrule
+\code{parent_relative} & Child passes both gates & Child support minus parent support\\
+\code{independent_metabolite} & Child passes both gates & Child support alone\\
+\code{parent_guided} & Parent passes both gates & Parent support, even when child fails\\
+\bottomrule
+\end{tabularx}}
+Each retrospective policy chooses at most one relationship per family. Tie-breaking is deterministic. The measurement pilot uses merged holdout groups for the one-pick limit.
+
+\callout{\textbf{Review emphasis.} Present the pipeline as an experiment in choosing candidates with family context. The classifiers supply the inputs. Supporting contributions are group-aware holdouts, equal-budget comparisons, and a protocol to test a P-gp cutoff on new metabolite series. The cited methods establish related work. A claim of first-in-literature would require a broader review.}
+
+Related work \src{https://pmc.ncbi.nlm.nih.gov/articles/PMC13708059/}{MechBBB},
+\src{https://pmc.ncbi.nlm.nih.gov/articles/PMC13343518/}{pairwise bioactivity study},
+\src{https://doi.org/10.1021/acs.jcim.6c01938}{SF-GA molecular optimisation}.
+The implemented method ranks known links. Its inputs and results contain no proposed edits or disease-target potency endpoint.
+
+\pagehead{Endpoint metrics and false negatives}\label{sec:results}
+\lead{How to read a metric}
+\begin{compact}
+\item \textbf{TP and FN} count correctly detected and missed positives. For BBB, a FN is a known permeable compound screened out. For P-gp, a FN is a known substrate missed by the P-gp classifier.
+\item \textbf{FP and TN} count incorrectly flagged and correctly classified negatives. For BBB, a FP lets a labelled nonpermeable compound proceed. For P-gp, a FP flags a nonsubstrate.
+\item \textbf{Sensitivity} is $\mathrm{TP}/(\mathrm{TP}+\mathrm{FN})$. \textbf{Specificity} is $\mathrm{TN}/(\mathrm{TN}+\mathrm{FP})$. Both depend on the threshold.
+\item \textbf{Average precision (AP)} summarises precision across recall levels and depends on the positive proportion. \textbf{ROC AUC} measures how well scores rank positive above negative examples. Higher is better for both.
+\item \textbf{Brier score} is the mean squared difference between probabilities and observed 0/1 labels. Lower is better.
+\end{compact}
+
+\lead{Saved GNN test results}
+{\dense
+\begin{tabularx}{\linewidth}{Yrrrrrrrrr}
+\toprule
+Cohort & $n$ & Pos. & TP & FN & FP & TN & AP & AUC & Brier\\
+\midrule
+BBB endpoint test & 585 & 337 & 273 & 64 & 71 & 177 & 0.8935 & 0.8575 & 0.1541\\
+BBB reserved metabolites & 94 & 66 & 53 & 13 & 7 & 21 & 0.8970 & 0.8025 & 0.1673\\
+P-gp endpoint test & 268 & 163 & 134 & 29 & 75 & 30 & 0.6352 & 0.5797 & 0.2307\\
+P-gp reserved metabolites & 44 & 19 & 15 & 4 & 12 & 13 & 0.7460 & 0.7389 & 0.2287\\
+\bottomrule
+\end{tabularx}}
+
+{\dense
+\begin{tabularx}{\linewidth}{Yrrr}
+\toprule
+Cohort & Sensitivity & Specificity & Group count in reserved cohort\\
+\midrule
+BBB endpoint test & 81.01\% & 71.37\% & --\\
+BBB reserved metabolites & 80.30\% & 75.00\% & 50\\
+P-gp endpoint test & 82.21\% & 28.57\% & --\\
+P-gp reserved metabolites & 78.95\% & 52.00\% & 26\\
+\bottomrule
+\end{tabularx}}
+
+\lead{Worked reading}
+The BBB metabolite cohort has 66 known permeable examples. The model lets 53 through and misses 13, so sensitivity is $53/66=80.30\%$. The 28 known negatives give 21 correct rejections, so specificity is $21/28=75.00\%$.
+
+The P-gp ordinary endpoint result combines 29 missed substrates with 75 false flags. The reserved set uses a different distribution and only 44 labels. Treat the two results as different pieces of evidence. In the saved report the independent curated sections have $n=0$ and unavailable metrics because the curation file is empty.
+
+\pagehead{What the fixed-budget experiment found}
+\lead{Plain language}
+Imagine you can check five metabolites. Each policy fills the same number of slots and nominates at most one from each family. A selected metabolite counts as a known favourable joint outcome only when it has both annotations, BBB positive and P-gp nonsubstrate. Unknown outcomes stay unknown.
+
+\lead{The comparison pool and outcomes}
+The experiment includes 1,167 metabolites from 492 families. Among these, 66 are annotated BBB positive and 8 have a favourable joint annotation. The full relationship network has 24 metabolites with both endpoint annotations. The table reports \emph{favourable/known} among each policy's chosen candidates. A row of 0/0 has no assessable joint outcome.
+
+{\dense
+\begin{center}
+\begin{tabular}{rcccccc}
+\toprule
+& \multicolumn{2}{c}{Parent-relative} & \multicolumn{2}{c}{Child alone} & \multicolumn{2}{c}{Parent-guided}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Budget & BBB & Joint & BBB & Joint & BBB & Joint\\
+\midrule
+5 & 3/3 & 1/1 & 2/3 & 0/0 & 1/2 & 0/0\\
+10 & 3/3 & 1/1 & 2/3 & 0/0 & 1/2 & 0/0\\
+20 & 6/6 & 1/1 & 6/7 & 2/2 & 2/3 & 0/0\\
+50 & 11/14 & 1/1 & 11/14 & 2/2 & 5/9 & 0/1\\
+\bottomrule
+\end{tabular}
+\end{center}}
+
+\lead{What the counts support}
+At budget five, parent-relative surfaced one known favourable joint case. The remaining four selected outcomes lack a joint label. At budgets 20 and 50, child-only surfaced two known joint favourable cases while parent-relative surfaced one. Labels were collected for other purposes and may be unevenly distributed. The saved comparison shows how the methods behave with incomplete evidence. A confirmed improvement in hit rate would need broader outcome coverage.
+
+\lead{Apparent reversal cases}
+The audit identifies three BBB-negative-parent to BBB-positive-metabolite relationships by existing endpoint annotations. These are retrospective candidate cases. Use a matched parent--metabolite assay or brain-distribution study to evaluate the direction and magnitude of a proposed gain. The next independent evidence in this project is the published-measurement pilot in Section~\ref{sec:pilot}.
+
+
+\pagehead{P-gp fingerprint comparison}
+\lead{Why a comparator was added}
+In the graph model, false substrate flags can discard many otherwise eligible compounds. The comparator asks whether a fixed chemical fingerprint gives better discrimination or fewer false flags. It is evaluated on the same P-gp endpoint partitions, and on the subset that actually reaches P-gp.
+
+\lead{Technical settings}
+RDKit MACCS keys provide 167 binary values representing structural patterns. A CPU XGBoost model uses \code{binary:logistic}, histogram tree construction, depth 4, learning rate 0.05, row and column subsampling 0.85, four threads, seed 2026 and positive weight 0.8179. Its limit is 500 rounds with validation AP early stopping after 30 rounds. The saved iteration count is 34 (zero-based index 33) and AP is 0.8181. Logistic calibration on raw margins gives slope 2.3381, intercept 0.2884 and cutoff 0.550303. Both models target 90\% substrate sensitivity on the original calibration split. The comparator calibration Brier score is 0.1450.
+
+{\dense
+\begin{tabularx}{\linewidth}{YYrrrrrrr}
+\toprule
+Cohort & Model & $n$ & TP & FN & FP & TN & AP & AUC\\
+\midrule
+Validation & GNN & 267 & 104 & 18 & 97 & 48 & .6375 & .7081\\
+& MACCS XGB & 267 & 101 & 21 & 51 & 94 & .8181 & .8250\\
+Calibration & GNN & 227 & 126 & 14 & 55 & 32 & .7203 & .6716\\
+& MACCS XGB & 227 & 126 & 14 & 28 & 59 & .8825 & .8564\\
+Endpoint test & GNN & 268 & 134 & 29 & 75 & 30 & .6352 & .5797\\
+& MACCS XGB & 268 & 127 & 36 & 43 & 62 & .8172 & .7470\\
+Endpoint test after BBB & GNN & 128 & 56 & 16 & 40 & 16 & .5458 & .5017\\
+& MACCS XGB & 128 & 57 & 15 & 24 & 32 & .8037 & .7538\\
+Reserved metabolites & GNN & 44 & 15 & 4 & 12 & 13 & .7460 & .7389\\
+& MACCS XGB & 44 & 8 & 11 & 5 & 20 & .5943 & .7074\\
+Reserved metabolites after BBB & GNN & 27 & 14 & 2 & 7 & 4 & .8706 & .7784\\
+& MACCS XGB & 27 & 7 & 9 & 2 & 9 & .7756 & .7273\\
+\bottomrule
+\end{tabularx}}
+
+The after-BBB cohorts require BBB passage and exclude groups used to fit or calibrate BBB. On 128 ordinary endpoint cases, the comparator catches 57 of 72 substrates and falsely flags 24 of 56 nonsubstrates. GNN catches 56 and falsely flags 40. On the 27 reserved metabolites it catches seven of 16 substrates, compared with 14 for GNN. These are fixed-cutoff comparisons. The GNN remains the deployed screen for the saved metabolite run.
+
+\pagehead{Published parent--metabolite measurement pilot}\label{sec:pilot}
+\lead{What was measured}
+The pilot asks whether a policy would pick an observed metabolite with higher brain-distribution ratio than its parent. For matching study time points, \code{measured_pairs} computes each compound's brain-to-reference-matrix ratio, divides the metabolite ratio by the parent ratio, and takes the median fold across the usable times. The original study, species and matrix are retained. A fold greater than one marks an observed gain within that comparison.
+
+{\dense
+\begin{tabularx}{\linewidth}{YYrL{0.23\linewidth}}
+\toprule
+Parent & Metabolite & Median fold & Screen of both and group eligibility\\
+\midrule
+Risperidone & Paliperidone & 0.185 & P-gp flag, held out\\
+Venlafaxine & N-desmethylvenlafaxine & 1.563 & BBB reject, held out\\
+Venlafaxine & Desvenlafaxine & 1.245 & BBB reject, held out\\
+Clozapine & N-desmethylclozapine & 0.171 & P-gp flag, excluded\\
+Osimertinib & AZ7550 & 0.035 & BBB reject, held out\\
+Osimertinib & AZ5104 & 0.135 & BBB reject, held out\\
+\bottomrule
+\end{tabularx}}
+
+\lead{What happened after the eligibility check}
+\code{holdout_groups} recomputes groups with the added literature structures and parent--metabolite links. If a group intersects train, validation or calibration for either model, its measurements are excluded from the holdout evaluation. This excludes the clozapine pair. The saved report therefore has five measured pairs in three eligible groups. Neither parent nor child passes both gates in those five pairs. Every policy makes zero picks at budgets 1, 2 and 3. Two eligible measured gains are present, and both are missed by the BBB gate. This pilot therefore provides a concrete failure case for the deployed screen.
+
+\lead{Where the measurements come from}
+The pilot includes different species and study matrices. The fold comparisons use each study's matching values and should be interpreted within those experimental conditions.
+
+\src{https://pubmed.ncbi.nlm.nih.gov/15683552/}{Wang et al.},
+\src{https://pubmed.ncbi.nlm.nih.gov/20466523/}{Karlsson et al.},
+\src{https://pubmed.ncbi.nlm.nih.gov/10208296/}{Weigmann et al.},
+\src{https://doi.org/10.1158/1078-0432.CCR-16-0399}{Ballard et al.},
+\src{https://doi.org/10.1158/1078-0432.CCR-19-1871}{Colclough et al.}.
+
+\pagehead{The proposed new metabolite-specific P-gp test}\label{sec:prospective}
+\lead{The problem it addresses}
+Even a better endpoint model can miss many substrates after BBB screening on metabolites. The project implements an evaluation protocol for testing a new P-gp cutoff on genuinely new measurement groups. The trained models and their score mappings stay frozen. This command path uses CPU inference and changes candidate thresholds only.
+
+\begin{enumerate}[leftmargin=*,itemsep=3pt]
+\item \textbf{Audit evidence.} Record compounds, structures, source overlap review, substrate evidence and split. Group by prior structure and family rules, reviewed studies, and Morgan similarity (radius 2, 2,048 bits, Tanimoto at least 0.80). Block groups used in either model's train, validation, calibration, or ordinary test, as well as prior metabolite benchmarks.
+\item \textbf{Score development cases.} Require eligible measured development cases and both labels after the BBB gate. Compute both P-gp models' scores using the frozen artifacts. Choose the highest cutoff meeting 90\% sensitivity for each model on the reached development cohort.
+\item \textbf{Lock before evaluating.} Save the cutoffs with a cohort digest and model receipts. If the sources, cohort or frozen model artifacts change, validate the lock before comparing on test.
+\item \textbf{Evaluate on new held-out groups.} Compare deployed GNN, recalibrated GNN and MACCS XGBoost. Report the BBB exclusions and the post-BBB confusion counts, then compare substrate sensitivity and nonsubstrate false-flag rate with paired group resampling.
+\end{enumerate}
+
+The analysis uses a 10,000-replicate group bootstrap, seed 2026, and percentile 95\% intervals. Replicates must represent both classes. The paired intervals require at least two groups representing each class in the post-BBB test cohort. For XGBoost to be labelled a replacement candidate, the decision rule also requires a lower interval bound of at least zero for sensitivity change, a strictly positive lower bound for false-flag reduction, a paired one-sided test below 0.05, at least as many observed detected substrates and fewer observed false flags than the deployed GNN.
+
+\callout{\textbf{Current status.} The input has nine exploratory candidate entries across seven families. Six intersect earlier benchmark groups. The other three need source or structure review. The saved workspace has no eligible locked development/test result, no \code{models/pgp/metabolite_cutoffs.json}, and no \code{results/pgp_metabolite_evaluation.json}.}
+
+Remaining evidence review includes the seladelpar M2 source relationship and the source provenance or stereochemistry for canagliflozin M5 and M7. Fixtures exercise the logic in tests. Estimating performance for genuinely new metabolite groups requires measured, eligible cases.
+
+
+\pagehead{File-by-file guide to data and entry points}\label{sec:files}
+Paths are relative to \cmd{Novelty 3}. \code{Novelty_3_Workflow.tex} is the editable source for this guide.
+
+\lead{\code{README.md}, \code{requirements.txt} and \code{.gitignore}}
+The README is the operating manual. Requirements lists minimum versions for NumPy, RDKit, SciPy, scikit-learn, Torch, PyTorch Geometric and XGBoost. Git ignores downloaded data, caches, local models, logs, results and Python/test caches. A fresh checkout needs data fetching and model artifacts to reproduce the saved numbers.
+
+\lead{\code{cli.py}}
+The CLI is the entry point. \code{main} parses the stage and imports the corresponding module. \code{environment} reports dependency versions, \code{positive_int} and \code{sensitivity} validate numeric arguments, and \code{add_device} adds the device switch. Commands log to \code{logs/phase1.log} for fetch/audit and \code{logs/workflow.log} for the other stages. Exit 0 means success, 1 is a handled operational failure, 2 is the completed audit's decision status, and 130 indicates interruption.
+
+\lead{\code{core/__init__.py} and \code{core/storage.py}}
+These files name the package and provide safe output writes. The package records version 0.2.0. \code{ROOT} anchors paths at the folder root, independent of the current directory. \code{atomic_bytes} writes to a temporary sibling and atomically replaces the target. \code{write_json} writes UTF-8 JSON and disallows non-finite values.
+
+\lead{\code{core/sources.py}}
+This file is the source manifest and downloader. \code{digest}, \code{source_path} and \code{cached_source} identify and verify local bytes. \code{fetch_sources} downloads or reuses the originals, while \code{verified_sources} checks the source snapshots before audit. Pinned upstream revisions and hash receipts preserve provenance.
+
+\lead{\code{core/audit.py}}
+This file cleans molecules and asks whether the available data can support the research. \code{IdentityStore} caches RDKit identities. \code{load_endpoint}, \code{load_curated} and \code{endpoint_labels} normalise and reconcile label records. \code{load_relationship_json} repairs permitted malformed escape sequences for the pinned input, \code{source_relationships} and \code{load_relationships} recover and deduplicate directed links, and \code{family_components} groups connected compounds. \code{summarize}, \code{render_report}, \code{perform_audit} and \code{run_audit} produce the coverage report and registry artifacts. \code{write_csv} also serves the screening module.
+
+\lead{\code{core/dataset.py}}
+This file turns the audited rows into graph tensors and training partitions. \code{audit_inputs} verifies hashes and produces the dataset fingerprint. \code{molecule_graph} featurises, \code{graph_data} wraps tensors, and \code{leakage_groups} and \code{endpoint_split} determine partitions. \code{partition_summary} counts molecules, positives and groups. \code{prepare} builds or reuses the cache, \code{load_dataset} checks the cache against the current audit, and \code{save_torch} and \code{load_torch} persist and reload tensors.
+
+\pagehead{File-by-file guide to modelling and evaluation}
+\lead{\code{core/learning.py}}
+This file learns BBB and P-gp classifiers and converts their outputs into gate decisions. \code{GINE} defines the network. \code{device_for}, \code{checkpoint_path}, \code{data_loader} and \code{predict_logits} support fitting and inference. \code{train_seed} and \code{train} checkpoint one run per seed. \code{load_ensemble}, \code{ensemble_logits} and \code{probabilities} aggregate model scores and seed spread. \code{fit_score_calibration}, \code{sensitivity_threshold} and \code{calibrate} pick the sigmoid and cutoff. \code{calibrated_ensemble} validates stored receipts, \code{score} returns probability and spread per molecule, and \code{metrics} builds endpoint metric records.
+
+\lead{\code{core/screening.py}}
+This file makes the sequential decisions and runs the central ranking experiment. \code{sequential_scores} scores BBB then scores P-gp only for BBB survivors. \code{relationship_rows} attaches parent and child decisions and relative support. \code{run_screen} saves them. \code{rank_candidates} implements the three policies and deduplication. \code{outcome} maps available annotations to BBB and joint outcomes, \code{fixed_budget} truncates the rankings and counts successes and known outcomes, \code{endpoint_report} builds classifier reports, and \code{run_pipeline} runs screen-only or the full evaluation.
+
+\lead{\code{core/validation.py}}
+This file checks a small set of real measured parent--metabolite pairs. \code{positive_measurement} rejects invalid, zero or censored values. \code{measured_pairs} derives within-study folds, \code{augmented_structures} validates structures and supplies any missing graphs in memory, and \code{holdout_groups} screens for development overlap. \code{validate_pairs} applies frozen predictions, measures budget coverage and writes the pilot JSON.
+
+\lead{\code{core/pgp_baseline.py}}
+This file benchmarks the P-gp model against molecular fingerprints. \code{fingerprint}, \code{matrices} and \code{fingerprint_predictions} implement MACCS features and XGBoost scoring. \code{validation_ap} supplies the stopping metric. \code{fit_baseline} saves the booster and its calibrated cutoff, while \code{load_baseline} checks artifact validity. \code{comparison_cohorts} builds full and post-BBB cohorts, and \code{compare_pgp} writes the side-by-side metrics.
+
+\lead{\code{core/pgp_metabolites.py}}
+This file turns a future measured metabolite dataset into a frozen P-gp threshold comparison. \code{read_cases} validates evidence, \code{group_cases} assigns overlap-aware groups, and \code{cohort}, \code{eligible} and \code{audit_cohort} define available benchmark cases. \code{frozen_models} checks receipts, \code{score_split} applies the existing BBB gate, \code{fit_cutoffs} locks development thresholds, and \code{paired_differences} and \code{evaluate_cutoffs} compare them on test data.
+
+\pagehead{File-by-file guide to inputs and saved artifacts}
+\lead{Hand-maintained research inputs}
+\begin{compact}
+\item \code{data/input/metabolite_measurements.csv} is the separate endpoint-curation register. It accepts compound SMILES, endpoint, 0/1 label, measurement type, value and units where needed, species, assay, source URL and definition. It currently contains the schema only.
+\item \code{data/input/paired_validation.json} stores pilot molecules, study IDs, source records, matching concentration or ratio observations and separate transporter-control notes.
+\item \code{data/input/pgp_metabolite_benchmark.json} stores exploratory parent/metabolite cases, identity evidence, assay labels, source overlap, and split assignments for the new P-gp cutoff experiment.
+\end{compact}
+
+\lead{Local generated data}
+\begin{compact}
+\item \code{data/raw/} holds \code{bbb.tsv}, \code{pgp_substrates.csv}, \code{metabolism_reference.json} and \code{metabolism_test.json}. It also holds \code{bbb_LICENSE.txt}, \code{pgp_README.md}, \code{metabolism_NOTICE.txt} and \code{metabolism_README.md}. Each has a \code{.source.json} receipt; \code{manifest.json} lists the verified snapshots.
+\item \code{data/processed/} holds the registry (\code{molecules.json}), row-level evidence (\code{measurements.json}) and directed pairs (\code{relationships.json}). It also stores the family map (\code{family_components.json}) and excluded inputs (\code{invalid_structures.json}).
+\item \code{data/cache/identities.json} avoids repeating identity work. \code{data/cache/training.pt} holds graph tensors, labels, split assignments, groups and the dataset fingerprint. There are 13,707 cached training/screening graphs and 13,710 audit registry entries.
+\end{compact}
+
+\lead{Local models and training traces}
+\begin{compact}
+\item \code{models/bbb/} and \code{models/pgp/} each contain \code{seed_11.pt}, \code{seed_23.pt}, \code{seed_37.pt}, \code{seed_53.pt}, \code{seed_71.pt} and \code{calibration.json}. A checkpoint stores model and optimiser state, training history, random state and best validation weights. Calibration stores the logistic mapping, cutoff and checkpoint receipts.
+\item \code{models/pgp/maccs_xgboost.ubj} bundles the trained booster and calibration metadata. The metabolite-specific \code{metabolite_cutoffs.json} is pending.
+\item \code{logs/phase1.log} and \code{logs/workflow.log} record command activity. \code{__pycache__/} and \code{.pytest_cache/} are runtime caches.
+\end{compact}
+
+\pagehead{File-by-file guide to results and tests}
+\lead{Audit and feasibility outputs}
+\begin{compact}
+\item \code{results/phase1/feasibility_report.md} is the human-readable audit. Its JSON counterpart, \code{feasibility_report.json}, contains structured counts, evidence status and the curation digest.
+\item \code{results/phase1/candidate_coverage.csv} is the relationship-level evidence inventory with identities, available endpoint labels and provenance.
+\item \code{results/phase1/audit_run.json} stores the audit status and artifact digests used by preparation.
+\end{compact}
+
+\lead{Screening and evaluation outputs}
+\begin{compact}
+\item \code{results/screening.csv} is one row per relationship. It carries family/group IDs, reserved status, parent and metabolite InChIKeys, both endpoint probabilities and seed standard deviations where available, decisions, support and the parent-relative score. P-gp cells stay blank when BBB stops a compound.
+\item \code{results/evaluation.json} contains the dataset fingerprint, splits, model calibration, ordinary endpoint results, held-out metabolite annotation metrics, curated results and ranking at each budget, including known/unknown counts and selected identities.
+\item \code{results/paired_validation.json} contains each curated experimental comparison and model decision, the eligibility check, and the number of picks and gains at each budget.
+\item \code{results/pgp_comparison.json} contains the models' receipts/calibration and cohort-wise statistics for the fingerprint comparison.
+\item \code{results/pgp_metabolite_evaluation.json} is the planned held-out cutoff comparison. It has not been generated for a verified new cohort.
+\end{compact}
+
+\lead{Tests}
+\begin{compact}
+\item \code{tests/test_phase1.py} checks source snapshot handling, identity and source-escape parsing, label and measurement validation, and phase-one audit behavior using fixtures.
+\item \code{tests/test_workflow.py} checks graph shape and boundaries, grouping, threshold selection, ranking and known outcomes, the measured-pair pilot, fingerprints, and the new metabolite cutoff protocol and statistical decision logic.
+\end{compact}
+
+\lead{How to trace a single result backward}
+In \code{evaluation.json}, the first parent-relative pick at budget five is \code{XSQUKJJJFZCRTK-UHFFFAOYSA-N}. In \code{screening.csv} its parent has BBB probability 0.6547 and is then flagged at P-gp (0.5766), giving zero parent support. The child passes with BBB 0.8160 and substrate 0.1346. With seed spreads 0.1580 and 0.0180, the smaller adjusted endpoint score is 0.6580, so relative support is 0.6580. In \code{candidate_coverage.csv}, this row has a BBB-positive annotation and no P-gp label. It counts as a BBB hit and a joint unknown. That is how a high-ranked pick enters the metric table.
+
+
+\pagehead{Reproduce the workflow in PowerShell}
+Run from the repository root with the virtual environment active. Existing verified artifacts can be reused. The inspected environment had Python 3.10.11, Torch 2.11.0+cu128, PyTorch Geometric 2.8.0.post1, RDKit 2026.3.6, scikit-learn 1.7.2, XGBoost 3.2.0, NumPy 2.2.6 and SciPy 1.15.3.
+
+\lead{Environment, evidence and preparation}
+\begin{verbatim}
+Set-Location -LiteralPath 'Novelty 3'
+python -u cli.py environment
+python -u cli.py data fetch
+python -u cli.py data audit
+python -u cli.py data prepare
+\end{verbatim}
+Exit 2 from \cmd{data audit} means the scientific review report was written. Continue to preparation after that status. In PowerShell, use \code{python} from the active environment, or prefix a variable holding the executable path with PowerShell's call operator \texttt{\&}.
+
+\lead{Foreground training, calibration and benchmark}
+\begin{verbatim}
+python -u cli.py train bbb
+python -u cli.py train pgp
+python -u cli.py calibrate bbb
+python -u cli.py calibrate pgp
+python -u cli.py evaluate
+\end{verbatim}
+For shorter sessions append \cmd{--seeds 11} to either training command and later run all default seeds. Completed seeds are reused. Resume an interrupted seed with the same settings. Match the seeds requested in each calibration to its finished checkpoints. \code{screen} is the optional inference-only command. \code{evaluate} also runs screening and defaults to budgets 5, 10, 20 and 50.
+
+\lead{Published pair pilot, comparator and tests}
+\begin{verbatim}
+python -u cli.py validate
+python -u cli.py fit-pgp-baseline
+python -u cli.py compare-pgp
+python -u cli.py pgp-metabolites audit
+python -m pytest tests -q
+\end{verbatim}
+\code{validate} defaults to budgets 1, 2 and 3. After there are eligible measured development and test groups, the two remaining subcommands are \cmd{pgp-metabolites calibrate} and \cmd{pgp-metabolites evaluate}, in that order.
+
+\pagehead{What to highlight in the project review}\label{sec:review}
+\lead{A one-minute explanation}
+\callout{A drug and the molecules it turns into can behave differently. We train separate BBB and P-gp models, so each can use its full labelled training split. We then apply the decisions in sequence. The research question is what to do with the surviving metabolites when there are only a few assay slots. Our ranking compares each survivor with its own parent and discounts evidence when model seeds disagree. We compare it with scoring the child alone and choosing by parent score at the same budget. The retrospective data are sparse, and the measured pilot showed which candidates the BBB gate missed.}
+
+\lead{Evidence to put on slides}
+\begin{compact}
+\item \textbf{Training coverage and sequence.} 4,197 BBB and 1,827 P-gp training examples, separate checkpoints, BBB gate first. Parent and metabolite are screened independently, so rejecting a parent does not stop its child.
+\item \textbf{Screening reach.} 3,803 distinct molecules and 2,647 relationships, with 456 molecules passing both gates.
+\item \textbf{Main novelty result.} At budget five, one parent-relative pick had a known favourable joint label. There were four unknown joint outcomes in those five picks. The child-only policy surfaced two known favourable outcomes at larger budgets.
+\item \textbf{Strongest comparator result.} On 128 ordinary P-gp test compounds reaching stage two, MACCS XGBoost reduced false flags from 40 to 24 and caught 57 substrates versus 56. On 27 reserved metabolites reaching stage two, it caught seven versus 14. Show both cohorts if discussing replacement.
+\item \textbf{Strongest limitation.} The paired pilot yielded zero picks and missed two measured gains at BBB. This is direct evidence of where the current pipeline fails under its deployed thresholds.
+\end{compact}
+
+\lead{Be ready for these questions}
+\begin{compact}
+\item \textbf{Why avoid a shared overlap model?} Jointly annotated molecules help measure joint outcomes. Separate training uses more endpoint evidence and supports the intended decision sequence.
+\item \textbf{Why subtract the parent's support?} Follow-up may prioritise metabolites offering a meaningful change over what the parent already offers. This subtraction is a scoring hypothesis. The matched-measurement pilot is the place to validate it.
+\item \textbf{Is the test clean?} Grouping controls exact structure, family and shared scaffold within endpoints. Report the remaining analog and source overlap limits from Section~3 and the small number of measured series.
+\item \textbf{Is the project ready to claim improved CNS delivery?} The evidence currently supports a reproducible ranking experiment and diagnostic conclusions about its gates. Stronger claims require more source-verified paired measurements and an independent evaluation of the ranking and P-gp cutoff.
+\end{compact}
+
+\lead{Evidence trace}
+The reported numbers come from the existing saved artifacts. The dataset fingerprint, calibration receipts and XGBoost receipt were checked against their corresponding local files. The source dataset fingerprint is \code{fd466bde487b79fce6144e1de20b4b2418a93edd4771abfb1852ba502f847e90}. All 28 implementation tests passed in the workspace. The project results should be read as a snapshot tied to those artifacts.
+\end{document}
+
