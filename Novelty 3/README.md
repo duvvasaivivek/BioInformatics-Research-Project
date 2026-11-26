@@ -59,6 +59,27 @@ The shared structure view uses RDKit maximum common substructure matching with e
 
 The CPU run selected 30 pairs from 58 eligible groups, ten per outcome. The mean absolute probability change above random masking was **0.1150** for BBB across 30 groups (paired 95% interval 0.0682–0.1655) and **0.0435** for P-gp across 22 groups (0.0300–0.0576). The seed top lists overlapped by about 57% at both endpoints. Directional agreement was 87% for BBB and 67% for P-gp.
 
+## Figures for the demo and write-up
+
+The figures use the saved five-seed demo snapshot (dataset `fd466bde`). PNGs are ready for slides. PDFs preserve vector text and charts for LaTeX.
+
+- **Screening outcomes.** Shows where the parent and metabolite stop across all 2,647 relationship rows. [PNG](figures/screening_outcomes.png) · [PDF](figures/screening_outcomes.pdf)
+- **Ranking policy comparison.** Compares BBB-positive recovery across assay budgets and shows positive, negative, and unknown labels among the first five picks. [PNG](figures/ranking_policy_comparison.png) · [PDF](figures/ranking_policy_comparison.pdf)
+- **Held-out model performance.** Shows ROC-AUC, average precision, and cohort sizes for both endpoint tests and the reserved annotated metabolites. [PNG](figures/held_out_model_performance.png) · [PDF](figures/held_out_model_performance.pdf)
+- **P-gp after BBB.** Compares GINE and MACCS XGBoost substrate detection and false flags within two gated cohorts. [PNG](figures/pgp_after_bbb_comparison.png) · [PDF](figures/pgp_after_bbb_comparison.pdf)
+- **Bond-masking benchmark.** Shows the added probability change over random masking with paired 95% intervals, plus overlap and directional agreement across seeds. [PNG](figures/bond_masking_benchmark.png) · [PDF](figures/bond_masking_benchmark.pdf)
+- **Worked pair.** Highlights positive and negative bond effects on the parent and metabolite and shows the parent's skipped P-gp gate. [PNG](figures/worked_pair_bond_maps.png) · [PDF](figures/worked_pair_bond_maps.pdf)
+- **Published-measurement pilot.** Shows the within-study measured fold changes and the screen outcome for each eligible metabolite. [PNG](figures/paired_measurement_pilot.png) · [PDF](figures/paired_measurement_pilot.pdf)
+
+With Matplotlib installed, regenerate the figures from the saved reports. The script verifies that the JSON reports use matching dataset, checkpoint, and calibration records and checks the worked pair against the screening CSV before plotting.
+
+```powershell
+& $py -m pip install matplotlib
+& $py scripts/plot_results.py
+```
+
+Use `--results <directory>` to read reports from another complete run and `--output <directory>` to export its figures separately.
+
 ## Compare the P-gp models
 
 After training and calibrating the GNNs, run these from the active virtual environment in `Novelty 3`.
