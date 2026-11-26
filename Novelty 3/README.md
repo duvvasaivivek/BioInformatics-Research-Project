@@ -17,6 +17,15 @@ $py = '..\venv\Scripts\python.exe'
 
 The audit returns **2** for a completed evidence review report and **1** on failure. Continue to preparation after exit 2. Preparation verifies the audit artifacts and builds a reusable graph cache. It groups structures by connected metabolic family, connectivity and nonempty Bemis–Murcko scaffold. Groups containing annotated metabolites are reserved across both endpoints. Each model independently splits its remaining labelled data into training, early stopping, calibration and test sets. A new environment needs the dependencies in `requirements.txt` and a CUDA-enabled PyTorch build to use the GPU.
 
+For a demo with existing models, check the native command exit code before opening an output file. PowerShell can continue after a Python error, and an earlier CSV or HTML report may still be present.
+
+```powershell
+& $py -u cli.py screen --device cpu
+if ($LASTEXITCODE -ne 0) { throw 'Screening failed. The existing CSV is from an earlier run.' }
+```
+
+If a checkpoint or calibration has a different dataset fingerprint, restore the matching audit artifacts and graph cache together, or archive the old model files and train and calibrate on the current dataset. Recalibration requires checkpoints from that same dataset. Unchanged family assignments preserve the existing audit fingerprint when the audit is repeated.
+
 Run the training commands in order. The default is five seeds per endpoint. To train one seed during a shorter session, append `--seeds 11` to either training command and later run the same command with all seeds. Completed seeds are skipped. Ctrl+C stops foreground training. Rerun the same command with the same settings to continue from the last saved epoch. Run one training session at a time per seed. Device selection defaults to CUDA when available. Use `--device cpu` if needed.
 
 ```powershell
@@ -28,6 +37,27 @@ Run the training commands in order. The default is five seeds per endpoint. To t
 ```
 
 Both GINE models use three graph layers, 128 hidden channels, mean pooling, dropout, AdamW and validation average precision for early stopping. The defaults are batch size 32, a maximum of 200 epochs and patience of 20 epochs. For a one-seed evaluation, use `--seeds 11` on **both calibration commands**. Calibration fits a sigmoid on the mean ensemble logit using its own holdout. The default cutoffs target at least 90% sensitivity for the positive endpoint label on that holdout, including P-gp **substrates**. Adjust the target through `--min-sensitivity` before examining test results.
+
+## Explain a documented pair
+
+Run both commands from `Novelty 3` with the prepared graph cache and the existing five-seed calibrations and checkpoints.
+
+```powershell
+python -u cli.py explain --parent LMEKQMALGUDUQG-UHFFFAOYSA-N --metabolite GLVAUDGFNGKCSF-UHFFFAOYSA-N
+python -u cli.py explain-benchmark
+```
+
+`explain` requires the full InChIKeys of a documented relationship in parent-to-metabolite order. It writes a self-contained `report.html` and matching `explanation.json` to `results/explanations/<parent>__<metabolite>/`. The commands use the frozen models and calibration files. Add `--device cpu` to reproduce the run below.
+
+In the worked pair, the parent scored **0.4737** against the BBB cutoff of **0.5505**, so its report shows **P-gp skipped** and zero ranking support. The metabolite scored **0.6960** at BBB and **0.1394** at P-gp, below the P-gp substrate cutoff of **0.5460**. BBB limited the metabolite's support to **0.5621** after subtracting its seed SD. The rejected parent contributes zero, so the whole relative score comes from the metabolite. The largest absolute mean BBB bond effect for the metabolite was **−0.2730** at bond 0 (S=C), with all five seeds agreeing on the sign. The shared structure covered about 47% of the parent's heavy atoms, so the report shows independent depictions.
+
+Bond effects use original minus masked calibrated seed probability. The replay removes both directed message edges of each bond while preserving the atom features. The maps measure sensitivity of the frozen models under this perturbation. Masked graphs may differ from the training distribution. A biological mechanism or improvement in brain exposure requires matched experimental evidence. [Research on fidelity under graph perturbations](https://proceedings.iclr.cc/paper_files/paper/2024/hash/34293d684b1012ed45c3274b4a7edc00-Abstract-Conference.html)
+
+The shared structure view uses RDKit maximum common substructure matching with exact elements and bond orders, chirality, and complete rings. It uses a five-second search budget and requires a unique mapping covering at least half the heavy atoms on each side. Structural differences appear in amber in a separate view. [RDKit maximum common substructure documentation](https://www.rdkit.org/docs/source/rdkit.Chem.rdFMCS.html)
+
+`explain-benchmark` writes `results/explanations/benchmark.html` and `benchmark.json`. It samples reserved groups excluded from both endpoints’ training, validation, and calibration. One pair per merged group is selected by a seeded hash in BBB-rejected, P-gp-flagged, then pass order, up to ten per outcome. On each rotation, four seeds select the top single-bond effects and the fifth seed masks those bonds together. The comparison uses 100 same-size random masks per rotation and paired bootstrap intervals by group. The report also gives top-bond overlap and directional agreement.
+
+The CPU run selected 30 pairs from 58 eligible groups, ten per outcome. The mean absolute probability change above random masking was **0.1150** for BBB across 30 groups (paired 95% interval 0.0682–0.1655) and **0.0435** for P-gp across 22 groups (0.0300–0.0576). The seed top lists overlapped by about 57% at both endpoints. Directional agreement was 87% for BBB and 67% for P-gp.
 
 ## Compare the P-gp models
 

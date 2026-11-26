@@ -63,6 +63,12 @@ def main(argv=None):
     train.add_argument("--batch-size", type=positive_int, default=32)
     calibrate.add_argument("--min-sensitivity", type=sensitivity, default=0.90)
     screen = commands.add_parser("screen", help="Run sequential BBB then P-gp inference")
+    explain = commands.add_parser("explain", help="Explain the decisions and bond sensitivity of a documented pair")
+    explain.add_argument("--parent", required=True, metavar="INCHIKEY")
+    explain.add_argument("--metabolite", required=True, metavar="INCHIKEY")
+    benchmark = commands.add_parser("explain-benchmark", help="Benchmark bond sensitivity on held-out groups")
+    add_device(explain)
+    add_device(benchmark)
     evaluate = commands.add_parser("evaluate", help="Screen and evaluate on held-out data")
     validate = commands.add_parser("validate", help="Compare frozen models with curated paired experiments")
     commands.add_parser("fit-pgp-baseline", help="Train and calibrate the fingerprint P-gp comparator")
@@ -111,6 +117,12 @@ def main(argv=None):
         elif args.command == "validate":
             from core.validation import validate_pairs
             validate_pairs(args.device, sorted(set(args.budgets)))
+        elif args.command == "explain":
+            from core.explanations import explain_pair
+            explain_pair(args.parent, args.metabolite, args.device)
+        elif args.command == "explain-benchmark":
+            from core.explanation_benchmark import run_benchmark
+            run_benchmark(args.device)
         elif args.command == "fit-pgp-baseline":
             from core.pgp_baseline import fit_baseline
             fit_baseline()

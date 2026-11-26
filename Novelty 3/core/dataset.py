@@ -196,11 +196,14 @@ def prepare():
     return cache
 
 
-def load_dataset():
+def load_dataset(*, include_structures=False):
     if not CACHE.exists():
         raise ValueError("Run 'data prepare' first.")
-    _, data_id = audit_inputs()
+    inputs, data_id = audit_inputs()
     cache = load_torch(CACHE)
     if cache["data_id"] != data_id:
         raise ValueError("The graph cache is stale. Rerun 'data prepare'.")
+    if include_structures:
+        cache["structures"] = {key: row["canonical_smiles"]
+                               for key, row in inputs["molecules"]["molecules"].items()}
     return cache

@@ -168,9 +168,13 @@ def ensemble_logits(cache, endpoint, keys, models, device):
     return np.stack([predict_logits(model, loader, device) for model in models]).astype(np.float64)
 
 
+def calibrated_probability(logits, calibration):
+    return expit(calibration["slope"] * logits + calibration["intercept"])
+
+
 def probabilities(logits, calibration):
-    centre = expit(calibration["slope"] * logits.mean(axis=0) + calibration["intercept"])
-    members = expit(calibration["slope"] * logits + calibration["intercept"])
+    centre = calibrated_probability(logits.mean(axis=0), calibration)
+    members = calibrated_probability(logits, calibration)
     return centre, members.std(axis=0)
 
 
@@ -227,8 +231,10 @@ def calibrated_ensemble(cache, endpoint, device):
     if not path.exists():
         raise ValueError(f"Run 'calibrate {endpoint}' first.")
     report = json.loads(path.read_text(encoding="utf-8"))
-    if (report["data_id"], report["endpoint"], report["model_version"]) != (
-            cache["data_id"], endpoint, MODEL_VERSION):
+    if report["data_id"] != cache["data_id"]:
+        raise ValueError(f"Stale {endpoint} calibration. Restore its matching data snapshot or train and calibrate "
+                         "new checkpoints on the current dataset.")
+    if (report["endpoint"], report["model_version"]) != (endpoint, MODEL_VERSION):
         raise ValueError(f"Stale {endpoint} calibration. Refit it using the current checkpoints.")
     models, receipts = load_ensemble(cache, endpoint, report["seeds"], device)
     if receipts != report["checkpoint_sha256"]:

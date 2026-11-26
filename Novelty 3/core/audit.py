@@ -297,7 +297,7 @@ def family_components(edges):
             members.add(node)
             pending.extend(adjacency[node] - members)
         family_id = "family_" + hashlib.sha256("|".join(sorted(members)).encode()).hexdigest()[:16]
-        assignments.update({node: family_id for node in members})
+        assignments.update({node: family_id for node in sorted(members)})
     return assignments
 
 
@@ -476,7 +476,15 @@ def perform_audit():
     write_json(processed / "molecules.json", {"policy": IDENTITY_POLICY, "molecules": identities.molecules})
     write_json(processed / "relationships.json", edges)
     write_json(processed / "measurements.json", measurements)
-    write_json(processed / "family_components.json", families)
+    family_path = processed / "family_components.json"
+    # Preserve an identical legacy mapping's bytes because its insertion order
+    # was part of the dataset fingerprint used by checkpoints.
+    try:
+        previous_families = json.loads(family_path.read_bytes())
+    except (FileNotFoundError, ValueError):
+        previous_families = None
+    if previous_families != families:
+        write_json(family_path, families)
     write_json(processed / "invalid_structures.json", identities.invalid)
     fields = ("family_id", "parent_inchikey", "metabolite_inchikey", "parent_smiles", "metabolite_smiles", "parent_bbb_label",
               "metabolite_bbb_label", "parent_pgp_substrate_label", "metabolite_pgp_substrate_label",

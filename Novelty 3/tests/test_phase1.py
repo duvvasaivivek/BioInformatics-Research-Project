@@ -71,6 +71,7 @@ def test_shared_descendants_and_cycles_form_one_family():
     assert families["a"] == families["b"] == families["c"]
     assert families["d"] == families["e"] != families["a"]
     assert audit.family_components(list(reversed(edges))) == families
+    assert list(families) == ["a", "b", "c", "d", "e"]
 
 
 def test_nested_literature_schema_retains_intermediate_steps_and_citations():
@@ -210,6 +211,19 @@ def test_audit_writes_complete_outputs_and_returns_review_exit_code(tmp_path, mo
     completion = json.loads((tmp_path / "results/phase1/audit_run.json").read_text())
     assert completion["status"] == "REVIEW_REQUIRED"
     assert len(completion["artifact_sha256"]) == 8
+
+    family_path = tmp_path / "data/processed/family_components.json"
+    families = json.loads(family_path.read_bytes())
+    legacy_bytes = json.dumps(dict(reversed(list(families.items()))), indent=2).encode("utf-8")
+    family_path.write_bytes(legacy_bytes)
+    assert audit.run_audit() == 2
+    assert family_path.read_bytes() == legacy_bytes
+    completion = json.loads((tmp_path / "results/phase1/audit_run.json").read_text())
+    assert completion["artifact_sha256"]["data/processed/family_components.json"] == digest(legacy_bytes)
+
+    family_path.write_text("{}", encoding="utf-8")
+    assert audit.run_audit() == 2
+    assert json.loads(family_path.read_bytes()) == families
 
 
 def test_failed_audit_marks_previous_reports_incomplete(tmp_path, monkeypatch):
